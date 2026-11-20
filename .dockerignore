@@ -1,0 +1,47 @@
+# Control de versiones
+.git/
+.gitignore
+.gitattributes
+
+# Nota: los patrones de .dockerignore NO son recursivos (a diferencia de
+# .gitignore); se usa "**/" para excluir tambien en subdirectorios.
+
+# Entornos virtuales y secretos locales
+**/.venv/
+**/venv/
+**/env/
+**/.env
+**/.env.*
+!**/.env.example
+
+# Caches y artefactos de Python
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+build/
+dist/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+.coverage
+htmlcov/
+
+# Bases de datos locales y temporales
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite3-journal
+**/*.log
+**/tmp/
+**/*.tmp
+
+# Contenido que no forma parte de la imagen
+tests/
+docs/
+web/
+.vscode/
+.idea/
+.claude/
+Dockerfile
+compose.yaml
+.dockerignore

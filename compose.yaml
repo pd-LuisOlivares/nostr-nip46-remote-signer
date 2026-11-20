@@ -1,0 +1,32 @@
+name: nostr-nip46-remote-signer
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nostr-nip46-remote-signer:dev
+    # Puerto del host configurable con APP_PORT (por defecto 8000).
+    # Se publica solo en loopback; el contenedor escucha siempre en 8000.
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 10s
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import sys, urllib.request;
+          sys.exit(0 if urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=3).status == 200 else 1)
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

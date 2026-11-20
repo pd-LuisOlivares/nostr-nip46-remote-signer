@@ -120,6 +120,61 @@ Según el criterio de consolidar al cierre de cada fase, estas interacciones no 
 - **07, verificación previa a publicación:** comprobaciones de solo lectura de commits, árbol de trabajo, archivos incluidos, secretos, rama y remoto. El propietario fijó entonces el criterio de consolidación al cierre de fase. Claude Code señaló dos desajustes de la documentación y propuso corregirlos; la decisión de hacerlo es del propietario (interacción 08). No hubo cambios en el repositorio.
 - **08, ajustes finales de trazabilidad:** el propietario autorizó actualizar `AGENTS.md` §9 y este índice, y un commit local con el mensaje `docs: refine AI traceability policy (phase 0.1)`. Claude Code redactó y verificó los cambios.
 
+## Fase 0.2: Claude Code
+
+### 09. Inicialización técnica del proyecto (FastAPI, pruebas, Docker)
+- **Fecha:** 2026-11-20 (UTC; la construcción de la imagen y el arranque de Compose ocurrieron alrededor de las 16:32 UTC).
+- **Agente y modelo:** Claude Code (extensión de VS Code, versión 2.1.329), modelo **claude-sonnet-5-5**, razonamiento **high**, sesión `35f0f3c1-13e9-47b9-832f-f6252cd2166f`. Estos valores constan en los metadatos del archivo de sesión (verificados en la interacción 10); el nivel de razonamiento no se ha verificado de forma independiente.
+- **Objetivo:** implementar solo la Fase 0.2: estructura del backend, aplicación FastAPI con `GET /health`, pruebas pytest, Dockerfile, Compose, `pyproject.toml` y documentación.
+- **Transcripción:** [2026-11-20_claude-code_fase-0.2_01-implementacion.md](ai-sessions/2026-11-20_claude-code_fase-0.2_01-implementacion.md) (**Completa**, contenido visible; exportada en la interacción 10 desde el archivo de sesión original, sin reconstruir nada).
+- **Archivos nuevos:** `pyproject.toml`, `app/__init__.py`, `app/main.py`, `app/api/__init__.py`, `app/api/health.py`, `app/schemas/__init__.py`, `app/schemas/health.py`, `tests/__init__.py`, `tests/test_health.py`, `Dockerfile`, `compose.yaml`, `.dockerignore`, `.env.example`, `docs/decisions.md`.
+- **Archivos modificados:** `README.md` (se conservó la descripción original) y `docs/ai-log.md`.
+- **Pruebas y verificaciones (ejecutadas por Claude Code):**
+  - Automatizada: `.\.venv\Scripts\python.exe -m pytest -v`: 5 pasaron, 0 fallaron, 0 omitidas, 1 aviso de obsolescencia (`httpx` con `starlette.testclient`).
+  - Validación manual local: uvicorn en 127.0.0.1:8765 y consulta real a `/health` (200, `application/json`, `{"status":"ok"}`) y a una ruta inexistente (404).
+  - Validación manual con Docker: `docker compose up --build -d`, consulta real desde el host a `127.0.0.1:8000/health` (200), healthcheck `healthy`, contenedor con usuario `app` (uid 10001) y sin pytest ni httpx en la imagen, y `docker compose down` correcto.
+  - **No hubo validación real con Stacker News**; esta fase no la incluye.
+- **Decisión humana:** el propietario delimitó el alcance de la Fase 0.2, las dependencias iniciales y las exclusiones, y no autorizó commits, pushes ni la Fase 0.3. Las propuestas de diseño de la implementación están en `docs/decisions.md` como **pendientes de revisión**.
+- **Asistencia de IA:** revisión de contexto, selección de versiones, identificación de riesgos (transitivas sin fijar, aviso de `httpx`, imagen base por etiqueta, `/docs` activo).
+- **Implementación por agentes:** creación de los archivos listados y ejecución de las verificaciones anteriores.
+
+### 10. Revisión técnica y preparación del cierre de la Fase 0.2
+- **Fecha:** 2026-11-20 (el prompt es de las 16:42 UTC).
+- **Agente y modelo:** igual que la interacción 09 (misma sesión).
+- **Objetivo:** documentar las ocho decisiones del propietario, hacer verificaciones adicionales, proponer un bloqueo de dependencias (sin implementarlo) y consolidar la transcripción de la fase.
+- **Transcripción:** [2026-11-20_claude-code_fase-0.2_02-revision-y-cierre.md](ai-sessions/2026-11-20_claude-code_fase-0.2_02-revision-y-cierre.md) (**Completa**, contenido visible). La primera exportación, hecha con la interacción en curso, era parcial. Se **reexportó completa en la interacción 11** desde el archivo de sesión original, con las llamadas posteriores y el informe final incluidos.
+- **Archivos modificados:** `.dockerignore`, `README.md`, `docs/decisions.md`, `docs/ai-log.md`. Archivos nuevos: las dos transcripciones de la Fase 0.2 en `docs/ai-sessions/`.
+- **Verificaciones (ejecutadas por Claude Code):**
+  - Metadatos reales de `pyproject.toml` por `tomllib` y `importlib.metadata`: `fastapi==0.165.0` y `uvicorn==0.54.0` como dependencias de ejecución; `pytest` y `httpx` solo en el extra `dev`.
+  - `.\.venv\Scripts\python.exe -m pytest -q`: 5 pasaron, 0 fallaron, 0 omitidas, 1 aviso (`httpx` con `starlette.testclient`).
+  - `.dockerignore`, probado con una copia del proyecto en el scratchpad (no en el repositorio) con archivos **ficticios**, incluidos `.env` y `.env.local`, anidados, `*.db`, `*.sqlite3`, `__pycache__`, `.venv` y `.git`. **Hallazgo:** la primera versión solo excluía en la raíz porque los patrones de `.dockerignore` no son recursivos (se coló un `app/__pycache__` ficticio). Se corrigió con `**/` y la repetición de la prueba dejó solo `README.md`, `.env.example`, `pyproject.toml` y `app/**/*.py` en el contexto. Los archivos ficticios solo existieron en esa copia temporal.
+  - Healthcheck con servicio caído, en un proyecto Compose aparte (`-p hc-failtest`, sin puertos, sin tocar el proyecto real): el contenedor pasó a `unhealthy` con `exit=1` tras 2 fallos. El proyecto de prueba se eliminó y `docker ps -a` quedó vacío.
+  - Smoke test posterior con la imagen reconstruida: `healthy`, `/health` con 200, `application/json` y `{"status":"ok"}`, y `docker compose down` correcto.
+  - Propuesta de bloqueo A comprobada en Windows (`pip install --dry-run -c`) y en una construcción de prueba en Docker Linux: las mismas 14 versiones que la imagen actual. No se añadió ningún archivo de bloqueo al repositorio.
+  - **Sin validación real con Stacker News.**
+- **Decisión humana:** el propietario aprobó provisionalmente la implementación, mantuvo `httpx`, `python:3.12-slim`, `/docs` y `/openapi.json` por ahora, aprobó el endurecimiento Docker y el enlace a `127.0.0.1`, mantuvo pendiente `config/` frente a `core/`, y prohibió módulos vacíos, SQLite, nuevas herramientas, commits y la Fase 0.3.
+- **Asistencia de IA:** análisis del hallazgo de `.dockerignore`, diseño de la prueba del healthcheck, comparación de opciones de bloqueo (A recomendada, B pendiente de autorización) y priorización de riesgos.
+- **Implementación por agentes:** corrección de `.dockerignore`, actualización de `README.md` y `docs/decisions.md`, ejecución de las verificaciones y exportación de las transcripciones.
+- **Transcripciones pendientes de la Fase 0.1:** las interacciones 06 a 08 siguen sin exportar (la 06 se registró como pendiente y 07 y 08 se dejaron para el cierre de la Fase 0.1). No se exportaron aquí porque la instrucción se limitó a la Fase 0.2. Siguen pendientes y deben decidirse aparte.
+
+### 11. Cierre definitivo y preparación del commit de la Fase 0.2
+- **Fecha:** 2026-11-20 (UTC; el prompt consta en el archivo de sesión).
+- **Agente y modelo:** igual que la interacción 09 (misma sesión).
+- **Objetivo:** adoptar `constraints.txt` (alternativa A), ejecutar las validaciones finales, completar la transcripción 02, actualizar la documentación y verificar el contenido del commit, sin crearlo.
+- **Transcripción:** [2026-11-20_claude-code_fase-0.2_03-cierre-definitivo.md](ai-sessions/2026-11-20_claude-code_fase-0.2_03-cierre-definitivo.md) (**Parcial**). La interacción seguía en curso al exportar: el archivo llega hasta la propia llamada de exportación y **no incluye** las llamadas posteriores ni el informe final. No se reconstruyó nada. Para completarla hay que reexportar la sesión cuando termine, con autorización del propietario.
+- **Archivos nuevos:** `constraints.txt`, y la transcripción 03 de la Fase 0.2. **Modificados:** `Dockerfile`, `README.md`, `docs/decisions.md`, `docs/ai-log.md`, y la transcripción 02 de la Fase 0.2 (reexportada completa). La transcripción 01 se reexportó y no cambió; las de la Fase 0.1 no se tocaron.
+- **Verificaciones (ejecutadas por Claude Code):**
+  - `constraints.txt` generado con `pip freeze --exclude-editable` desde `.venv` y contrastado con una resolución nueva (`pip install --dry-run --report`): 23 paquetes en ambos, sin ajenos, sin faltantes y sin versiones distintas.
+  - Local (Windows): `pip install -c constraints.txt -e ".[dev]"` correcto, `pip check` sin problemas, `pytest` 5 pasaron, 0 fallaron, 0 omitidas, 1 aviso.
+  - Linux con extras `dev` (contenedor temporal): `pip check` limpio, 22 de 23 paquetes (falta solo `colorama`) y 5 pruebas pasan.
+  - Prueba negativa del Dockerfile: con un `constraints.txt` sin `anyio`, la construcción falló señalando `anyio==4.16.0`.
+  - Docker del proyecto: `docker compose build --no-cache`, `up -d`, contenedor `healthy`, `/health` con 200 y `{"status":"ok"}`, y `down` correcto. Imagen final con 14 paquetes de terceros, todos en `constraints.txt`, sin dependencias de desarrollo.
+  - **No hubo validación real con Stacker News.**
+- **Decisión humana:** el propietario aprobó la implementación técnica de la Fase 0.2 y la alternativa A, y autorizó solo estos trabajos de cierre. **No** autorizó el commit, que debe pedirse aparte, ni push (la publicación corresponde solo al propietario) ni la Fase 0.3.
+- **Asistencia de IA:** diseño del guardián del Dockerfile, de la comprobación de resolución y de la verificación en Linux; redacción del procedimiento de actualización.
+- **Implementación por agentes:** creación de `constraints.txt`, modificación del Dockerfile y de la documentación, ejecución de las verificaciones y exportación de las transcripciones.
+- **Estado de las transcripciones de la Fase 0.2:** 01 completa, 02 completa, 03 parcial (ver arriba). Las transcripciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT siguen **pendientes**: no se tocaron y esta interacción no las consolidó.
+
 ## Contexto de planificación
 
 - [`docs/project-context.md`](project-context.md): **síntesis** de discusiones del propietario con ChatGPT, proporcionada y revisada por él. Recoge objetivo, stack previsto, decisiones de dirección, consideraciones técnicas, riesgos y estado de la Fase 0.1.
