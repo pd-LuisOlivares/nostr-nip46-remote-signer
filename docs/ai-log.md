@@ -10,6 +10,22 @@
 - **Estado de la transcripción:** `Completa`, `Parcial` o `NO RECUPERADA`. Una transcripción nunca se reconstruye de memoria.
 - **Entradas por agente:** los prompts preparados con ChatGPT se registran como ChatGPT y no se atribuyen a Claude Code (ver "Interacciones no recuperadas").
 
+## Criterio para distinguir decisión, asistencia e implementación
+
+Este registro separa tres tipos de contenido. Sirve para que la evidencia de uso de IA muestre quién decidió, quién asesoró y quién ejecutó.
+
+| Categoría | Qué incluye | Quién |
+|---|---|---|
+| **Decisión humana** | Selección, aprobación o rechazo de alternativas; autorizaciones; definición de alcance y prioridades. | Una persona (el propietario del proyecto). |
+| **Asistencia de IA** | Análisis, recomendaciones, identificación de riesgos y propuestas. | Un agente de IA. Una propuesta **no** es una decisión mientras una persona no la apruebe. |
+| **Implementación por agentes** | Archivos creados, código modificado, pruebas ejecutadas y sus resultados. | El agente que lo realizó (Claude Code, Codex u otro), nombrado en la entrada. |
+
+Reglas de uso:
+- **No se atribuyen decisiones al propietario por defecto.** Se le atribuye una decisión solo si hay una instrucción, aprobación o rechazo suyos en la transcripción. Si una propuesta de la IA quedó sin aprobación expresa, se registra como propuesta pendiente.
+- **No se atribuye trabajo de implementación a una persona** si lo realizó un agente de IA. Cuando una persona ejecuta algo (por ejemplo, configurar la identidad de Git), se indica como acción humana.
+- Un mismo hecho puede tener varias partes: p. ej. una persona decide, la IA propone la redacción y un agente la implementa.
+- Las acciones de verificación (pruebas, `git diff --check`, escaneos) cuentan como implementación del agente que las ejecutó y deben indicar su resultado real.
+
 ## Método de recuperación (Claude Code)
 
 - Claude Code guarda cada sesión como un archivo JSONL local, en el directorio de datos de usuario de Claude Code, dentro de la carpeta del proyecto. La ubicación y el formato se **comprobaron** en esta tarea; no hay un comando de exportación equivalente que se haya utilizado.
@@ -81,6 +97,28 @@ Todas las entradas: agente **Claude Code** (extensión de VS Code, versión 2.1.
   - Identidad del commit `08f3972` comprobada (ver interacción 03).
   - `git diff --cached --check` antes del commit, según la autorización.
 - **Resultado y decisiones humanas:** el propietario autorizó un commit local de exactamente `docs/ai-log.md`, `docs/project-context.md` y las transcripciones revisadas de `docs/ai-sessions/`, con el mensaje `docs: record AI collaboration and project context (phase 0.1)`. **No** autorizó push, cambios de código ni avanzar a la Fase 0.2. El hash de ese commit consta en el historial de Git, no aquí.
+
+### Clasificación de las interacciones 01 a 06
+
+Las entradas anteriores se conservan tal como se redactaron, y su campo "Resultado y decisiones humanas" reúne contenido de varias categorías. Esta tabla las lee con el criterio de arriba. Se basa en las transcripciones. Donde una pieza no consta como decisión del propietario, figura como propuesta de la IA.
+
+| # | Decisión humana | Asistencia de IA | Implementación por agentes (Claude Code) |
+|---|---|---|---|
+| 01 | El propietario fijó el alcance, el stack previsto y las reglas exigidas en su prompt, y pidió después ajustes. | Análisis del repositorio vacío, propuesta de estructura de las instrucciones e identificación de supuestos pendientes (idioma, fases, `.gitignore`, herramientas de calidad). | Creación de `AGENTS.md` y `CLAUDE.md`; revisión de formato. |
+| 02 | El propietario definió los seis ajustes y sus prioridades. | Propuesta de la redacción concreta de cada ajuste. La definición de "cambio de versión significativo" como cambio de versión mayor fue **propuesta de la IA y no consta como aprobada**. | Modificación de `AGENTS.md` y `CLAUDE.md`; comparación contra una copia previa. |
+| 03 | El propietario autorizó un commit local exclusivo con el mensaje indicado, y resolvió la identidad de Git (la identidad usada se comprobó después, en 06). | Ante la identidad ausente, Claude Code propuso opciones y preguntó, sin elegir por su cuenta. | Escaneo de secretos, staging, `git diff --cached --check` y commit `08f3972`. |
+| 04 | El propietario autorizó la documentación de trazabilidad y fijó los criterios de redacción y de no reconstrucción. | Análisis del almacenamiento de sesiones de Claude Code, propuesta del método de extracción y de las reglas de redacción, e identificación de vacíos. | Creación de `docs/ai-log.md`, `docs/ai-sessions/` y las transcripciones, y script de extracción fuera del repositorio. |
+| 05 | El propietario aportó la síntesis del contexto de ChatGPT y fijó que no es una transcripción. | Estructuración y redacción del documento, indicando qué se verificó y qué no. | Creación de `docs/project-context.md` y actualización de `docs/ai-log.md`. |
+| 06 | El propietario autorizó la reexportación, la revisión y el commit local, y estableció el criterio de transcripciones por fase. | Advertencia de que la identidad del autor quedará visible en el historial al hacer push, y recordatorio de los pendientes (push y exportaciones de ChatGPT). | Reexportación de las transcripciones, actualización del índice, revisión de datos sensibles, verificación de la identidad del autor del commit `08f3972`, corrección de líneas en blanco finales detectadas por `git diff --cached --check` y commit `d3cd293`. |
+
+**Limitaciones de esta clasificación.** La hizo Claude Code a partir de las transcripciones, sin que el propietario la haya revisado, y debe leerse como una propuesta. Las decisiones que el propietario tomó fuera de estas sesiones, por ejemplo en ChatGPT o en conversaciones, no constan aquí.
+
+### Interacciones administrativas posteriores (consolidadas, sin entrada individual)
+
+Según el criterio de consolidar al cierre de cada fase, estas interacciones no tienen entrada individual como las anteriores y, por regla general, no generan un commit propio (la 08 sí lo tiene, por autorización expresa del propietario, porque modifica la política). **Su transcripción está pendiente** y se exportará al cierre de la Fase 0.1, sin reconstruirla.
+
+- **07, verificación previa a publicación:** comprobaciones de solo lectura de commits, árbol de trabajo, archivos incluidos, secretos, rama y remoto. El propietario fijó entonces el criterio de consolidación al cierre de fase. Claude Code señaló dos desajustes de la documentación y propuso corregirlos; la decisión de hacerlo es del propietario (interacción 08). No hubo cambios en el repositorio.
+- **08, ajustes finales de trazabilidad:** el propietario autorizó actualizar `AGENTS.md` §9 y este índice, y un commit local con el mensaje `docs: refine AI traceability policy (phase 0.1)`. Claude Code redactó y verificó los cambios.
 
 ## Contexto de planificación
 
