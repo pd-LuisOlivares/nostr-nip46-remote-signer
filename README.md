@@ -176,3 +176,10 @@ Solo afecta a los recursos de este proyecto (`nostr-nip46-remote-signer`). La im
 ## 14. Próximas fases previstas
 
 Sin fechas ni alcance definidos todavía; cada fase requiere aprobación del propietario. Entre lo previsto por el proyecto: protocolo NIP-46, persistencia SQLite, autenticación local con JWT, interfaz web y la prueba de integración real con Stacker News.
+
+La Fase 0.3 produjo solo **documentos de investigación y diseño** (propuestas **pendientes de aprobación**, sin código ni validación real):
+
+- [Análisis del protocolo NIP-46](docs/nip46-protocol-analysis.md)
+- [Compatibilidad con Stacker News](docs/stacker-news-compatibility.md)
+- [Diseño de seguridad](docs/nip46-security-design.md)
+- [Plan de implementación y prueba real](docs/nip46-implementation-plan.md)

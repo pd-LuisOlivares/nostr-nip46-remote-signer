@@ -1,6 +1,8 @@
 # Contexto del proyecto
 
 > **Origen y naturaleza de este documento.** Es una **síntesis** de discusiones mantenidas por el propietario del proyecto con ChatGPT, proporcionada y revisada por el propietario. **No es una transcripción literal** ni debe leerse como tal. Las decisiones que contiene fueron **establecidas o aprobadas por el propietario**; ChatGPT se utilizó como herramienta complementaria de análisis y no se le atribuyen decisiones. Las transcripciones originales de ChatGPT siguen pendientes de aportarse (ver §7).
+>
+> **Actualización (2026-11-20, revisión de cierre de la Fase 0.3, por petición del propietario).** Se actualizaron los apartados 2, 3 y 6 para reflejar el estado de las Fases 0.1, 0.2 y 0.3. Las demás secciones conservan el texto de la síntesis original.
 
 ## 1. Objetivo del proyecto
 
@@ -17,7 +19,7 @@ Contexto: prueba técnica para la Secretaría de Gobierno Digital del Ministerio
 - Docker Compose para ejecución reproducible.
 - pytest para pruebas automatizadas.
 
-**El stack está previsto, no implementado.** A la fecha de este documento el repositorio no contiene código de aplicación.
+**Estado de la implementación (actualizado).** Desde la Fase 0.2 el repositorio contiene una base de aplicación mínima: FastAPI con `GET /health`, pruebas con pytest, Docker y Docker Compose. **No existe todavía ninguna funcionalidad Nostr, de firma, de JWT, de SQLite ni de interfaz web**; el resto del stack sigue previsto, no implementado.
 
 ## 3. Decisiones de dirección del proyecto
 
@@ -26,6 +28,7 @@ Establecidas o aprobadas por el propietario:
 - Organizar el desarrollo en **fases incrementales**.
 - Reservar la **Fase 0.1** para configurar `AGENTS.md` y `CLAUDE.md`.
 - Reservar la **Fase 0.2** para inicializar la aplicación y Docker.
+- Dedicar la **Fase 0.3** a la investigación y el diseño de la interoperabilidad NIP-46 con Stacker News, **sin implementar** el firmante (autorizada por el propietario el 2026-11-20).
 - Utilizar **Claude Code** como agente principal de implementación.
 - Utilizar **Codex** como herramienta complementaria cuando se requiera.
 - Revisar y aprobar los cambios importantes antes de implementarlos.
@@ -56,12 +59,12 @@ Según lo informado por el propietario (2026-11-20), salvo donde se indica lo co
 
 | Elemento | Estado | Verificación |
 |---|---|---|
-| Git y GitHub configurados | Configurados | Informado por el propietario. El repositorio tiene remoto `origin` y ya se realizó un commit local. No se verificó el acceso a GitHub. |
-| Docker Desktop y WSL 2 | Operativos | Informado por el propietario. No verificado por el agente. |
-| Repositorio | Inicializado | Verificado: contiene `README.md` y `.gitignore` en el commit inicial. |
-| `AGENTS.md` y `CLAUDE.md` | Creados | Verificado: commit local `08f3972`, aún sin push. |
-| Fase 0.1 | En cierre documental | Pendiente de commit la documentación de trazabilidad (`docs/`). |
-| Fase 0.2 | **No iniciada** | |
+| Git y GitHub configurados | Configurados y sincronizados | Verificado por el agente (2026-11-20): `main` coincide con `origin/main` en `392448b3f918bed466824db495008cbd35675898`, publicado por el propietario. |
+| Docker Desktop y WSL 2 | Operativos | Verificado por el agente en la Fase 0.2: Docker 25.0.2 y Compose v2.24.3; imagen construida, contenedor `healthy` y `/health` con HTTP 200. |
+| `AGENTS.md` y `CLAUDE.md` | Creados y publicados | Verificado: commit `08f3972`, contenido en `origin/main`. |
+| **Fase 0.1** | **Completada** | Commits `08f3972`, `d3cd293` y `5c172ca`, contenidos en `origin/main`. Las transcripciones 06 a 08 de Claude Code y las conversaciones de ChatGPT siguen pendientes de exportar o aportar (ver `docs/ai-log.md`). |
+| **Fase 0.2** | **Completada y publicada** | Commit `392448b3f918bed466824db495008cbd35675898` en `origin/main`: FastAPI, `GET /health`, 5 pruebas pytest, Docker, Docker Compose y `constraints.txt` (sin hashes). **Sin validación real con Stacker News.** |
+| **Fase 0.3** | **En revisión de cierre** | Investigación y diseño aprobados **provisionalmente** por el propietario; documentos en `docs/nip46-*.md` y `docs/stacker-news-compatibility.md`. Las decisiones propuestas siguen **pendientes de aprobación** (ver `docs/decisions.md`). Sin cambios de código, sin dependencias nuevas y **sin commit** de esta fase. La Fase 1.0 **no está iniciada**. |
 
 ## 7. Origen y trazabilidad
 

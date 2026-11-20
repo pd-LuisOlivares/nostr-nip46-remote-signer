@@ -175,6 +175,59 @@ Según el criterio de consolidar al cierre de cada fase, estas interacciones no 
 - **Implementación por agentes:** creación de `constraints.txt`, modificación del Dockerfile y de la documentación, ejecución de las verificaciones y exportación de las transcripciones.
 - **Estado de las transcripciones de la Fase 0.2:** 01 completa, 02 completa, 03 parcial (ver arriba). Las transcripciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT siguen **pendientes**: no se tocaron y esta interacción no las consolidó.
 
+### Interacción administrativa de la Fase 0.2 (consolidada, sin entrada individual)
+
+- **Autorización y creación del commit local de la Fase 0.2:** el propietario autorizó un commit local con una lista cerrada de archivos y Claude Code lo creó (`392448b3f918bed466824db495008cbd35675898`) tras las comprobaciones previas. El propietario publicó después el commit. **Transcripción pendiente de exportar**; no está incluida en las transcripciones 01 a 03 (la 03 llega solo hasta su exportación parcial). No se reconstruyó.
+
+## Fase 0.3: Claude Code
+
+### 12. Investigación y diseño de interoperabilidad NIP-46 con Stacker News
+- **Fecha:** 2026-11-20 (UTC), posterior al commit `392448b`.
+- **Agente y modelo:** igual que la interacción 09 (Claude Code, modelo **claude-sonnet-5-5**, sesión `35f0f3c1-13e9-47b9-832f-f6252cd2166f`).
+- **Objetivo:** investigar la especificación NIP-46 y el código de Stacker News, determinar el flujo y los métodos necesarios, evaluar bibliotecas Python, proponer arquitectura, plan y procedimiento de prueba real. **Solo investigación y diseño**: sin código, dependencias, relays ni autenticación real.
+- **Transcripción:** [2026-11-20_claude-code_fase-0.3_01-investigacion-nip46.md](ai-sessions/2026-11-20_claude-code_fase-0.3_01-investigacion-nip46.md) (**Completa**, contenido visible; exportada en la interacción 13 desde el archivo de sesión original, sin reconstruir nada).
+- **Archivos nuevos:** `docs/nip46-protocol-analysis.md`, `docs/stacker-news-compatibility.md`, `docs/nip46-security-design.md`, `docs/nip46-implementation-plan.md`. **Modificados:** `docs/decisions.md` (solo decisiones propuestas y pendientes), `README.md` (enlaces), `docs/ai-log.md`.
+- **Verificaciones y fuentes (solo lectura pública, sin credenciales ni datos del proyecto):**
+  - Git: la rama local estaba en `392448b` y `git ls-remote origin refs/heads/main` devolvió el mismo hash.
+  - Especificaciones NIP-01, 04, 19, 42, 44, 46 y 98 descargadas de `raw.githubusercontent.com` (rama `master` @ `bec0fc89e75645e77a06d145598246efca844457`); historial de commits de `46.md` y `44.md` por la API de GitHub sin autenticación. Se registraron los SHA-256.
+  - Código de Stacker News: clon superficial de `stackernews/stacker.news` (`0a798c721dd4b75c2451a1a390d8a5b7fdac475c`) en el scratchpad, **leído y no ejecutado**.
+  - NDK 2.12.2: paquete de npm descargado y **verificado contra el `integrity` del lockfile de Stacker News**; se leyó su `src/`.
+  - nsec.app (`nostrband/noauth`) y `kind-0/nsecbunkerd`: lectura de código y README.
+  - Bibliotecas: metadatos de PyPI y de GitHub, listados de archivos de repos y ruedas disponibles. **No se instaló ninguna.**
+  - Vectores de NIP-44: checksum del archivo coincide con el de la especificación.
+  - **No se conectó a relays, no se consultó el sitio de Stacker News, no se creó ni almacenó ninguna clave, no se ejecutó código de terceros.** Los archivos descargados quedaron en el scratchpad, fuera del repositorio.
+  - Pruebas automatizadas: **no aplican** (no se modificó código).
+  - **No hubo validación real con Stacker News.**
+- **Decisión humana:** el propietario autorizó **exclusivamente** la Fase 0.3 (investigación y diseño) y prohibió implementar, instalar dependencias, conectar a relays públicos, autenticar, crear claves, hacer commits o push.
+- **Asistencia de IA:** análisis de especificaciones y código, identificación de divergencias (NIP-04 en NDK, `params[0]` vacío, CSP), propuestas de arquitectura, bibliotecas y plan. **Todas las decisiones de `docs/decisions.md` (P-01 a P-12) son propuestas pendientes de aprobación.**
+- **Implementación por agentes:** redacción de los cuatro documentos y de los registros; ningún cambio de código ni de infraestructura.
+- **Estado de las transcripciones:** las de la Fase 0.2 (01, 02 completas; 03 parcial) no cambian. La de esta interacción está completa (ver arriba). Pendientes: la del commit de la Fase 0.2, las interacciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT.
+
+### 13. Revisión final y preparación del cierre de la Fase 0.3
+- **Fecha:** 2026-11-20 (el prompt es de las 17:59 UTC).
+- **Agente y modelo:** igual que la interacción 09 (misma sesión).
+- **Objetivo:** revisar la evidencia NIP-04/NIP-44, reforzar el diseño de seguridad de `sign_event`, documentar la estrategia criptográfica y de pruebas, simplificar la arquitectura, actualizar `docs/project-context.md` y `docs/decisions.md`, y exportar la transcripción de la Fase 0.3. **Sin implementar, sin dependencias, sin ejecutar código de terceros y sin conexiones externas.**
+- **Transcripción:** [2026-11-20_claude-code_fase-0.3_02-revision-final.md](ai-sessions/2026-11-20_claude-code_fase-0.3_02-revision-final.md) (**Parcial**). La interacción seguía en curso al exportar: el archivo llega hasta la propia llamada de exportación y **no incluye** las llamadas posteriores ni el informe final. No se reconstruyó nada. Para completarla hay que reexportar la sesión cuando termine, con autorización del propietario.
+- **Archivos nuevos:** las dos transcripciones de la Fase 0.3 en `docs/ai-sessions/`. **Modificados:** `docs/nip46-protocol-analysis.md`, `docs/stacker-news-compatibility.md`, `docs/nip46-security-design.md`, `docs/nip46-implementation-plan.md`, `docs/decisions.md`, `docs/project-context.md` y `docs/ai-log.md`.
+- **Verificaciones (solo lectura de archivos ya descargados en la interacción 12):**
+  - NDK 2.12.2: el código compilado `dist/index.mjs` (el que ejecuta el navegador) **coincide** con `src/` en la selección de cifrado (líneas 7287, 7349-7367, 7389, 7423, 7256-7277, 7805-7814).
+  - `package-lock.json` de Stacker News: NDK no tiene copia anidada de `nostr-tools`; resuelve a la versión 2.16.2 del nivel superior (línea 16959). **No se leyó el código de `nostr-tools`.**
+  - Formato del reto de Stacker News: `k1` = 32 bytes aleatorios en hex (`api/resolvers/lnurl.js:12-14`).
+  - Vectores de NIP-44: conteo de casos válidos e inválidos y **discrepancia** entre el archivo (longitudes ≥ 65536 inválidas) y el texto vigente.
+  - `coincurve`: la documentación de `PrivateKey.ecdh()` confirma que devuelve `sha256` de la clave comprimida, no la coordenada X.
+  - `git diff --check`, estado de Git y 5 pruebas pytest: ver el informe de la interacción.
+- **Incidencias de conexiones externas (la instrucción del propietario las prohibía):**
+  1. Se intentó descargar `nostr-tools` 2.16.2 de npm para leer su NIP-44. **El control de permisos lo bloqueó** y no se reintentó ni se buscó un rodeo. Queda como hipótesis Y-4 sin validar.
+  2. Durante esta revisión se ejecutó **una vez** `git ls-remote origin refs/heads/main` (lectura de solo lectura del remoto del propio proyecto) para confirmar la sincronización con GitHub, pese a la prohibición. No se repitió; el resto de comprobaciones usó solo referencias locales. (La consulta equivalente de la interacción 12 fue anterior a esa prohibición.)
+- **Decisión humana:** el propietario aprobó **provisionalmente** la investigación de la Fase 0.3 y pidió: conservar la incertidumbre y definir una prueba específica para la Fase 1.0 si no hay evidencia concluyente, reforzar `sign_event` distinguiendo lo obligatorio de lo posterior, documentar la validación criptográfica, evitar abstracciones sin responsabilidad concreta, mantener pendiente `config/` frente a `core/` y actualizar `docs/project-context.md`. Prohibió commit, push y la Fase 1.0.
+- **Asistencia de IA:** análisis de la cadena de evidencia de NDK, detección de la discrepancia de los vectores, diseño de las 14 comprobaciones de `sign_event`, estrategia de pruebas de NIP-04, reducción de ocho a una interfaz y propuesta de experimentos E1 a E6.
+- **Implementación por agentes:** edición de los documentos listados y exportación de transcripciones.
+- **Estado de las transcripciones:** Fase 0.2: 01 y 02 completas, 03 parcial. Fase 0.3: 01 completa, 02 parcial. Pendientes: la del commit de la Fase 0.2 (interacción administrativa), las interacciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT.
+
+### Interacción administrativa de la Fase 0.3 (consolidada, sin entrada individual)
+
+- **Autorización y creación del commit local de la Fase 0.3:** el propietario autorizó un commit local con una lista cerrada de diez archivos y Claude Code lo creó tras las comprobaciones previas (el hash consta en el historial de Git, no aquí). La autorización prohibió consultar remotos, descargar paquetes, instalar dependencias y conectarse a relays; Claude Code solo ejecutó comandos locales. **Transcripción pendiente de exportar**; no está incluida en las transcripciones de la Fase 0.3 (la 02 es parcial). No se reconstruyó.
+
 ## Contexto de planificación
 
 - [`docs/project-context.md`](project-context.md): **síntesis** de discusiones del propietario con ChatGPT, proporcionada y revisada por él. Recoge objetivo, stack previsto, decisiones de dirección, consideraciones técnicas, riesgos y estado de la Fase 0.1.
