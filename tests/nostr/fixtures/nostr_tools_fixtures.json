@@ -1,0 +1,2742 @@
+{
+ "generator": "lab/tools/gen_core_fixtures.mjs",
+ "nostr_tools": "2.16.2",
+ "node": "v22.23.5",
+ "serialization": [
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "hola",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"hola\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "hola",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"hola\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "hola",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"hola\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "hola",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"hola\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "comillas \" y barra \\ y barra / ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"comillas \\\" y barra \\\\ y barra / \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "comillas \" y barra \\ y barra / ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"comillas \\\" y barra \\\\ y barra / \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "comillas \" y barra \\ y barra / ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"comillas \\\" y barra \\\\ y barra / \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "comillas \" y barra \\ y barra / ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"comillas \\\" y barra \\\\ y barra / \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "linea1\nlinea2\r\n\ttab",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"linea1\\nlinea2\\r\\n\\ttab\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "linea1\nlinea2\r\n\ttab",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"linea1\\nlinea2\\r\\n\\ttab\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "linea1\nlinea2\r\n\ttab",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"linea1\\nlinea2\\r\\n\\ttab\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "linea1\nlinea2\r\n\ttab",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"linea1\\nlinea2\\r\\n\\ttab\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "\b\f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"\\b\\f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "\b\f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"\\b\\f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "\b\f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"\\b\\f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "\b\f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"\\b\\f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "nulo \u0000 fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"nulo \\u0000 fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "nulo \u0000 fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"nulo \\u0000 fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "nulo \u0000 fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"nulo \\u0000 fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "nulo \u0000 fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"nulo \\u0000 fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "del ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"del \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "del ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"del \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "del ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"del \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "del ",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"del \"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "   separadores",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"   separadores\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "   separadores",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"   separadores\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "   separadores",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"   separadores\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "   separadores",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"   separadores\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ñandú 漢字 😀 é",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ñandú 漢字 😀 é\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ñandú 漢字 😀 é",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ñandú 漢字 😀 é\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ñandú 漢字 😀 é",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ñandú 漢字 😀 é\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ñandú 漢字 😀 é",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ñandú 漢字 😀 é\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "sol 🌞",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"sol 🌞\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "sol 🌞",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"sol 🌞\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "sol 🌞",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"sol 🌞\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "sol 🌞",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"sol 🌞\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "</script> <b>&amp;</b>",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"</script> <b>&amp;</b>\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "</script> <b>&amp;</b>",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"</script> <b>&amp;</b>\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "</script> <b>&amp;</b>",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"</script> <b>&amp;</b>\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "</script> <b>&amp;</b>",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"</script> <b>&amp;</b>\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "Stacker News Authentication",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"Stacker News Authentication\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "Stacker News Authentication",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"Stacker News Authentication\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "Stacker News Authentication",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"Stacker News Authentication\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "Stacker News Authentication",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"Stacker News Authentication\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl0:\u0000:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl0:\\u0000:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl0:\u0000:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl0:\\u0000:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl0:\u0000:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl0:\\u0000:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl0:\u0000:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl0:\\u0000:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl1:\u0001:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl1:\\u0001:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl1:\u0001:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl1:\\u0001:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl1:\u0001:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl1:\\u0001:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl1:\u0001:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl1:\\u0001:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl2:\u0002:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl2:\\u0002:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl2:\u0002:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl2:\\u0002:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl2:\u0002:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl2:\\u0002:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl2:\u0002:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl2:\\u0002:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl3:\u0003:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl3:\\u0003:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl3:\u0003:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl3:\\u0003:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl3:\u0003:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl3:\\u0003:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl3:\u0003:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl3:\\u0003:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl4:\u0004:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl4:\\u0004:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl4:\u0004:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl4:\\u0004:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl4:\u0004:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl4:\\u0004:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl4:\u0004:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl4:\\u0004:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl5:\u0005:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl5:\\u0005:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl5:\u0005:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl5:\\u0005:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl5:\u0005:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl5:\\u0005:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl5:\u0005:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl5:\\u0005:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl6:\u0006:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl6:\\u0006:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl6:\u0006:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl6:\\u0006:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl6:\u0006:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl6:\\u0006:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl6:\u0006:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl6:\\u0006:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl7:\u0007:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl7:\\u0007:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl7:\u0007:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl7:\\u0007:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl7:\u0007:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl7:\\u0007:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl7:\u0007:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl7:\\u0007:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl8:\b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl8:\\b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl8:\b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl8:\\b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl8:\b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl8:\\b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl8:\b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl8:\\b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl9:\t:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl9:\\t:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl9:\t:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl9:\\t:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl9:\t:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl9:\\t:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl9:\t:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl9:\\t:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl10:\n:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl10:\\n:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl10:\n:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl10:\\n:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl10:\n:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl10:\\n:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl10:\n:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl10:\\n:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl11:\u000b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl11:\\u000b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl11:\u000b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl11:\\u000b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl11:\u000b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl11:\\u000b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl11:\u000b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl11:\\u000b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl12:\f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl12:\\f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl12:\f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl12:\\f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl12:\f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl12:\\f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl12:\f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl12:\\f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl13:\r:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl13:\\r:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl13:\r:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl13:\\r:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl13:\r:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl13:\\r:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl13:\r:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl13:\\r:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl14:\u000e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl14:\\u000e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl14:\u000e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl14:\\u000e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl14:\u000e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl14:\\u000e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl14:\u000e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl14:\\u000e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl15:\u000f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl15:\\u000f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl15:\u000f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl15:\\u000f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl15:\u000f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl15:\\u000f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl15:\u000f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl15:\\u000f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl16:\u0010:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl16:\\u0010:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl16:\u0010:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl16:\\u0010:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl16:\u0010:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl16:\\u0010:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl16:\u0010:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl16:\\u0010:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl17:\u0011:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl17:\\u0011:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl17:\u0011:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl17:\\u0011:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl17:\u0011:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl17:\\u0011:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl17:\u0011:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl17:\\u0011:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl18:\u0012:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl18:\\u0012:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl18:\u0012:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl18:\\u0012:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl18:\u0012:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl18:\\u0012:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl18:\u0012:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl18:\\u0012:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl19:\u0013:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl19:\\u0013:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl19:\u0013:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl19:\\u0013:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl19:\u0013:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl19:\\u0013:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl19:\u0013:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl19:\\u0013:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl20:\u0014:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl20:\\u0014:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl20:\u0014:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl20:\\u0014:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl20:\u0014:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl20:\\u0014:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl20:\u0014:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl20:\\u0014:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl21:\u0015:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl21:\\u0015:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl21:\u0015:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl21:\\u0015:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl21:\u0015:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl21:\\u0015:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl21:\u0015:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl21:\\u0015:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl22:\u0016:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl22:\\u0016:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl22:\u0016:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl22:\\u0016:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl22:\u0016:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl22:\\u0016:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl22:\u0016:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl22:\\u0016:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl23:\u0017:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl23:\\u0017:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl23:\u0017:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl23:\\u0017:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl23:\u0017:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl23:\\u0017:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl23:\u0017:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl23:\\u0017:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl24:\u0018:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl24:\\u0018:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl24:\u0018:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl24:\\u0018:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl24:\u0018:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl24:\\u0018:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl24:\u0018:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl24:\\u0018:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl25:\u0019:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl25:\\u0019:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl25:\u0019:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl25:\\u0019:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl25:\u0019:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl25:\\u0019:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl25:\u0019:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl25:\\u0019:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl26:\u001a:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl26:\\u001a:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl26:\u001a:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl26:\\u001a:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl26:\u001a:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl26:\\u001a:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl26:\u001a:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl26:\\u001a:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl27:\u001b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl27:\\u001b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl27:\u001b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl27:\\u001b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl27:\u001b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl27:\\u001b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl27:\u001b:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl27:\\u001b:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl28:\u001c:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl28:\\u001c:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl28:\u001c:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl28:\\u001c:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl28:\u001c:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl28:\\u001c:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl28:\u001c:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl28:\\u001c:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl29:\u001d:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl29:\\u001d:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl29:\u001d:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl29:\\u001d:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl29:\u001d:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl29:\\u001d:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl29:\u001d:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl29:\\u001d:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl30:\u001e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl30:\\u001e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl30:\u001e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl30:\\u001e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl30:\u001e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl30:\\u001e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl30:\u001e:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl30:\\u001e:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [],
+   "content": "ctl31:\u001f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[],\"ctl31:\\u001f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "challenge",
+     "abababababababababababababababababababababababababababababababab"
+    ],
+    [
+     "u",
+     "https://stacker.news"
+    ],
+    [
+     "method",
+     "GET"
+    ]
+   ],
+   "content": "ctl31:\u001f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"challenge\",\"abababababababababababababababababababababababababababababababab\"],[\"u\",\"https://stacker.news\"],[\"method\",\"GET\"]],\"ctl31:\\u001f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "t",
+     "comillas \" \\ \n"
+    ],
+    [
+     "e"
+    ]
+   ],
+   "content": "ctl31:\u001f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"t\",\"comillas \\\" \\\\ \\n\"],[\"e\"]],\"ctl31:\\u001f:fin\"]"
+  },
+  {
+   "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "created_at": 1800000000,
+   "kind": 27235,
+   "tags": [
+    [
+     "p",
+     "ñ漢😀",
+     "\u0001"
+    ]
+   ],
+   "content": "ctl31:\u001f:fin",
+   "expected": "[0,\"79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798\",1800000000,27235,[[\"p\",\"ñ漢😀\",\"\\u0001\"]],\"ctl31:\\u001f:fin\"]"
+  }
+ ],
+ "nip04": [
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "hola",
+   "payload": "zmZLhyvsrDyLX7oN4tpxhg==?iv=ciwynbGBpeZuAouj9ym90w=="
+  },
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "ñandú 漢字 😀",
+   "payload": "6WdPHZi5TLefCQciTrPhTXPLickR/EHmijikjxmuza4=?iv=z0JUOz2uJiqvE+RaS14Zaw=="
+  },
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "payload": "k7B762w3E8wIfma/kBIh3UwmUct0mbAfWt4yj5o2A/oWCMQ99TWKvUcM1pLx861w7OKz0vCdb8gvhjcFe40Kt9tMPnQ3q/LjqlpG3Rpj6wbdAlX4qJ0yyZYbxtxQcnc8FtSoUlv7E2d/7/3VnK60HtbJNiPJmo9oBvofr9UqEatak/nihxQR7xp2Ey3qkhjkye5OeLPOC4gkcMb7nlv8PXh8KSEC0RoSoO/JOWfW/EcQ7f+svyTQ4an8pVjqc/2TJqemog0RZmpAak8BcmVg1YNwjWIshFJOjDzvU7zjWmEsSg146222l+VDeE0qBAsXDLUka2s+rhKeCJO74rlgDTGlKr87lnM5zIWtl5jLduRxuTVKAGxjfD/9ZT6Fff48k/ymb/PIdXR/P//J+iArZA==?iv=OMHFb3f01Cb/M3rRnT3/tQ=="
+  },
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "{\"id\":\"1\",\"method\":\"connect\",\"params\":[\"\",\"secreto\"]}",
+   "payload": "4zvw6EAvgdYgdF/wwfP1Qj6Z/0WGzwc+Cnlj54nHzg1HeWqbi3lq4ErzImvg0F8lCZPMneMsJpPgDRBH1RXMDA==?iv=9zp5BQGA2u70s619vM26Yg=="
+  }
+ ],
+ "nip44": [
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "hola",
+   "payload": "Ah0gHQ1xcaawzH3Z1izqeizTxyfk3WsvsAObgHubsdr4YKMgq6tME+zidb26BvNMDDKfaQiF5hdS+uuvt+C8ixWpEEIrTn6EWaKxQgNqf3u/uTA2fQBhY1Bpvt9DLusM9fRV"
+  },
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "ñandú 漢字 😀",
+   "payload": "AkVj+lxsQTazLmm6Q5TKB76fcoED+zJLyMYgqrr7cZOM+G34UZ2fKiKhmVa6yUnt2lJWFHy4i7aO9S1IxJEuwSniBJx+8Qb2AGLjAgTl3qGK+NQsz7dOcd8pFz5m6CY5A+/c"
+  },
+  {
+   "sender_sk": "0000000000000000000000000000000000000000000000000000000000000001",
+   "recipient_sk": "0000000000000000000000000000000000000000000000000000000000000002",
+   "sender_pub": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "recipient_pub": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "plaintext": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+   "payload": "AhaGFC8jsc1O5yal4puqhOvxEF6JPQvRxaIazHHjWaegoDZG6Luwmo9r3Ji65TeTPV3DY/jbwqFulVtjN5p/qh+ydM++0ohpHEtvxxkwHM1AGVXqDDp4dxZSpwajH+Jx+nheXGUZBenRJy4vmCfROA/LqWWHMOm3XHED/Z8aQ//Q3M62gToRxZX0Q2RDO28ufGzAFxBIfxCemgoD/SA9GGige3wK2DUrHYSJlgBoSijyTj3+IsIi/11AqkWU8xuqAVIKqvfsmUf7IGASTIiWY2h7kJ/5sCzKgSeePHiC5My4ONz/otHbzp5dCe5lj9nc5fOITmhcjt0Z/dv6hDek9hnHVAGyPzZtJDR7cvpLdFibb3rRrvieTN8BbMq8d/It05RI05fV3xDYRK7fdTUbABrn3C1gFtk1OTwCzXGmUM178SvSUuu/bRM5Dhf5b3JYs8BEish+ewmzIoYTumBYVHsSQWesZes8X1bgp4MvvVDNEcx4IteJgE4aJG3HaWC35ERVhJO59mKIWxrm/NZCVqqS+qqIokhxnp2JsRGoo6WdwLCawZj/nWrfrrGABuElkx0y6dtvCJn6Rq5fPKwzcxXb1MS/nFuKSDfWfuG9vDv2iSIYRn7NP/neCgcDm/hFkJgxFJ34wYxyjPY0O2aMDnIlRnfpcSKxPPwHC8yCSFciHzs/S2yX5g+LOtEqETcMqC8XVQrjatMVUaQXjyc1ooHiwiw4v5k1lHL3ybSQcvBQP+mKKqxgZxho46DyD+Y0HneID5Y2tMBSXY1izwpkj5KgvolwylzunBB2Le32TA49wWrdeu6bTSxbSGMVQ8YWxO0Kiov/sugxsqde+CLT/hucnO/lC43agckUqyetx1hnAg022RJ7JAAq9dKflp+6ho/lZVPBsW5fI3Uj2uWXrdYkJSkm+KVDdNLg/AwDnu3XtS6tfwRd1HzVicaBfTGJd6I6b5weYttL6SRzhYfpTDoQgzeIKvpdhovMTexoDWo68O53356dYQ0ex6bmNUZkAvlUXGMy9GHPe16uzuqW/VkLBpzT/lKrPdKfiYACSseLCSSCfv6opol3hPaJyZ5TkLcdQ5tlkjq/Jrkxl29A5FbueJCkmPVubMAASAA00N/8TA43zhRKNCGdjGgL+TkFY69/Cri3KNuS6wKmArKLB6sB3sMy3x4T0DcRqjKNparyyR9WrWpOFIn/LgCkhlSEwA14A134oCUulejz4LzyYwt+Cw6IOPkmijvB6m4m2c0DHJSYOLSdWiHH23dFqat83agH4+XfQ+5+uxmuHR+uvDIE4nrfybcfDEBI0RiDB6PASHPIX/C+L1lDjvVE93ZRuLKgr6+6oNkItn5oPVVjMHICgfgoAQD34Fr7e/CdkZGlzTp3vVlbku82wACc8pqN2E4eiK50GuCLiMHlywjyFY9EHctbo3loJPTJJku5E8QmaA4="
+  }
+ ],
+ "nip19": [
+  {
+   "secret_hex": "0000000000000000000000000000000000000000000000000000000000000001",
+   "nsec": "nsec1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsmhltgl",
+   "pubkey_hex": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+   "npub": "npub10xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqpkge6d"
+  },
+  {
+   "secret_hex": "0000000000000000000000000000000000000000000000000000000000000002",
+   "nsec": "nsec1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqptcfk2",
+   "pubkey_hex": "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
+   "npub": "npub1ccz8l9zpa47k6vz9gphftsrumpw80rjt3nhnefat4symjhrsnmjs38mnyd"
+  },
+  {
+   "secret_hex": "0000000000000000000000000000000000000000000000000000000000000003",
+   "nsec": "nsec1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqps52s3re",
+   "pubkey_hex": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9",
+   "npub": "npub1lycg5qvjtrp3qjf5f7zl382j9x6nrjz9sdhenvyxq8c3808qxmus6gq266"
+  }
+ ]
+}

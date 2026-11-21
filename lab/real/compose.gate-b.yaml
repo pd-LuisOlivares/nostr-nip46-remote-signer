@@ -1,0 +1,18 @@
+# Compuerta B (observacion sin efecto). Se usa SIEMPRE junto a compose.real.yaml:
+#   docker compose -f lab/real/compose.real.yaml -f lab/real/compose.gate-b.yaml -p nip46-real ...
+# Fija con valores literales lo que NO debe poder cambiar una variable olvidada en la sesion de PowerShell:
+# MODE=observe (el firmante registra la estructura de cada solicitud y deniega TODA firma; ver lab_real/signer.py),
+# aprobacion por terminal y sin guion ni archivo de URI.
+services:
+  signer:
+    environment:
+      MODE: observe
+      APPROVAL_MODE: tty
+      APPROVAL_SCRIPT: ""
+      URI_FILE: ""
+      # Un solo intento de conexion al relay y vida acotada por el propio firmante (defensa adicional al limite del controlador)
+      RELAY_ATTEMPTS: "1"
+      N_URIS: "1"
+      SECRET_TTL_S: "270"
+      CONNECTION_TTL_S: "270"
+      SESSION_TTL_S: "280"

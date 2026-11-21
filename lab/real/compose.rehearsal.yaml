@@ -1,0 +1,51 @@
+# Ensayo local E8-E10 (Fase 1.0A.2): SIN conexiones externas. Se aplica SOBRE compose.real.yaml:
+#   docker compose -f lab/real/compose.real.yaml -f lab/real/compose.rehearsal.yaml -p nip46-rehearsal ...
+# Cambios respecto a la configuracion real: `real_egress` pasa a ser interna (el "Internet" es solo este relay local),
+# se anaden un relay de laboratorio, el cliente NDK 2.12.2 y un tmpfs para pasar la URI al cliente (solo en el ensayo).
+x-lab: &lab
+  image: nip46-lab-py:1.0a
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 128
+  mem_limit: 256m
+  init: true
+  stop_grace_period: 3s
+
+networks:
+  real_egress:
+    internal: true
+
+volumes:
+  ctl:
+    driver: local
+    driver_opts: {type: tmpfs, device: tmpfs, o: "size=1m,mode=1777"}
+
+services:
+  signer:
+    volumes: ["ctl:/ctl"]
+
+  relay-lab:
+    <<: *lab
+    command: ["python", "-m", "lab_relay"]
+    environment: {LAB_ACTOR: relay-lab, RELAY_PORT: "7777"}
+    networks: [real_egress]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 7777), 2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
+
+  client:
+    <<: *lab
+    image: nip46-lab-node:1.0a
+    command: ["node", "client/main.mjs"]
+    environment:
+      LAB_ACTOR: client
+      SCENARIO: ${SCENARIO:-e2}
+      TIMEOUT_MS: ${TIMEOUT_MS:-15000}
+      SIGN_TIMEOUT_MS: ${SIGN_TIMEOUT_MS:-6000}
+      BUNKER_FROM_STDIN: ${BUNKER_FROM_STDIN:-}      # solo ensayo interactivo: la URI llega por la entrada estandar, nunca por archivo
+    volumes: ["ctl:/ctl:ro"]
+    networks: [real_egress]

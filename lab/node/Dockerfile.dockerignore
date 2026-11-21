@@ -1,0 +1,7 @@
+results/
+**/__pycache__/
+**/*.pyc
+node/node_modules/
+py/
+vendor/wheels/
+vendor/vectors/

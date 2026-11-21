@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Imagen base: vacio = etiqueta por defecto del Dockerfile; ver el comentario del Dockerfile para fijar un digest.
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim}
     image: nostr-nip46-remote-signer:dev
     # Puerto del host configurable con APP_PORT (por defecto 8000).
     # Se publica solo en loopback; el contenedor escucha siempre en 8000.

@@ -1,0 +1,383 @@
+{
+  "descripcion": "Manifiesto de artefactos del laboratorio NIP-46 (Fase 1.0A). Hashes verificados en el paso 1 contra el registro oficial.",
+  "npm": {
+    "installs": [
+      {
+        "path": "node_modules/@nostr-dev-kit/ndk",
+        "name": "@nostr-dev-kit/ndk",
+        "version": "2.12.2",
+        "tarball": "@nostr-dev-kit__ndk-2.12.2.tgz"
+      },
+      {
+        "path": "node_modules/@noble/curves",
+        "name": "@noble/curves",
+        "version": "1.8.1",
+        "tarball": "@noble__curves-1.8.1.tgz"
+      },
+      {
+        "path": "node_modules/@noble/curves/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.7.1",
+        "tarball": "@noble__hashes-1.7.1.tgz"
+      },
+      {
+        "path": "node_modules/@nostr-dev-kit/ndk/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.5.0",
+        "tarball": "@noble__hashes-1.5.0.tgz"
+      },
+      {
+        "path": "node_modules/@noble/secp256k1",
+        "name": "@noble/secp256k1",
+        "version": "2.1.0",
+        "tarball": "@noble__secp256k1-2.1.0.tgz"
+      },
+      {
+        "path": "node_modules/@nostr-dev-kit/ndk/node_modules/@scure/base",
+        "name": "@scure/base",
+        "version": "1.1.9",
+        "tarball": "@scure__base-1.1.9.tgz"
+      },
+      {
+        "path": "node_modules/debug",
+        "name": "debug",
+        "version": "4.4.3",
+        "tarball": "debug-4.4.3.tgz"
+      },
+      {
+        "path": "node_modules/ms",
+        "name": "ms",
+        "version": "2.1.3",
+        "tarball": "ms-2.1.3.tgz"
+      },
+      {
+        "path": "node_modules/light-bolt11-decoder",
+        "name": "light-bolt11-decoder",
+        "version": "3.2.0",
+        "tarball": "light-bolt11-decoder-3.2.0.tgz"
+      },
+      {
+        "path": "node_modules/@scure/base",
+        "name": "@scure/base",
+        "version": "1.1.1",
+        "tarball": "@scure__base-1.1.1.tgz"
+      },
+      {
+        "path": "node_modules/nostr-tools",
+        "name": "nostr-tools",
+        "version": "2.16.2",
+        "tarball": "nostr-tools-2.16.2.tgz"
+      },
+      {
+        "path": "node_modules/@noble/ciphers",
+        "name": "@noble/ciphers",
+        "version": "0.5.3",
+        "tarball": "@noble__ciphers-0.5.3.tgz"
+      },
+      {
+        "path": "node_modules/nostr-tools/node_modules/@noble/curves",
+        "name": "@noble/curves",
+        "version": "1.2.0",
+        "tarball": "@noble__curves-1.2.0.tgz"
+      },
+      {
+        "path": "node_modules/nostr-tools/node_modules/@noble/curves/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.3.2",
+        "tarball": "@noble__hashes-1.3.2.tgz"
+      },
+      {
+        "path": "node_modules/nostr-tools/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.3.1",
+        "tarball": "@noble__hashes-1.3.1.tgz"
+      },
+      {
+        "path": "node_modules/@scure/bip32",
+        "name": "@scure/bip32",
+        "version": "1.3.1",
+        "tarball": "@scure__bip32-1.3.1.tgz"
+      },
+      {
+        "path": "node_modules/@scure/bip32/node_modules/@noble/curves",
+        "name": "@noble/curves",
+        "version": "1.1.0",
+        "tarball": "@noble__curves-1.1.0.tgz"
+      },
+      {
+        "path": "node_modules/@scure/bip32/node_modules/@noble/curves/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.3.1",
+        "tarball": "@noble__hashes-1.3.1.tgz"
+      },
+      {
+        "path": "node_modules/@scure/bip32/node_modules/@noble/hashes",
+        "name": "@noble/hashes",
+        "version": "1.3.3",
+        "tarball": "@noble__hashes-1.3.3.tgz"
+      },
+      {
+        "path": "node_modules/nostr-tools/node_modules/@scure/bip39",
+        "name": "@scure/bip39",
+        "version": "1.2.1",
+        "tarball": "@scure__bip39-1.2.1.tgz"
+      },
+      {
+        "path": "node_modules/nostr-wasm",
+        "name": "nostr-wasm",
+        "version": "0.1.0",
+        "tarball": "nostr-wasm-0.1.0.tgz"
+      },
+      {
+        "path": "node_modules/tseep",
+        "name": "tseep",
+        "version": "1.3.1",
+        "tarball": "tseep-1.3.1.tgz"
+      },
+      {
+        "path": "node_modules/typescript-lru-cache",
+        "name": "typescript-lru-cache",
+        "version": "2.0.0",
+        "tarball": "typescript-lru-cache-2.0.0.tgz"
+      },
+      {
+        "path": "node_modules/utf8-buffer",
+        "name": "utf8-buffer",
+        "version": "1.0.0",
+        "tarball": "utf8-buffer-1.0.0.tgz"
+      }
+    ],
+    "tarballs": {
+      "@nostr-dev-kit__ndk-2.12.2.tgz": {
+        "name": "@nostr-dev-kit/ndk",
+        "version": "2.12.2",
+        "url": "https://registry.npmjs.org/@nostr-dev-kit/ndk/-/ndk-2.12.2.tgz",
+        "integrity": "sha512-uvautgwbpk3AgddoFpew67/FiaV/zpKwwvSnjCvbE/tAdJBpUUS+VjWR5WfUnJvxTy/ZZpPW+X2TkwVFHhUdvA==",
+        "license": "MIT"
+      },
+      "@noble__curves-1.8.1.tgz": {
+        "name": "@noble/curves",
+        "version": "1.8.1",
+        "url": "https://registry.npmjs.org/@noble/curves/-/curves-1.8.1.tgz",
+        "integrity": "sha512-warwspo+UYUPep0Q+vtdVB4Ugn8GGQj8iyB3gnRWsztmUHTI3S1nhdiWNsPUGL0vud7JlRRk1XEu7Lq1KGTnMQ==",
+        "license": "MIT"
+      },
+      "@noble__hashes-1.7.1.tgz": {
+        "name": "@noble/hashes",
+        "version": "1.7.1",
+        "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.7.1.tgz",
+        "integrity": "sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==",
+        "license": "MIT"
+      },
+      "@noble__hashes-1.5.0.tgz": {
+        "name": "@noble/hashes",
+        "version": "1.5.0",
+        "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.5.0.tgz",
+        "integrity": "sha512-1j6kQFb7QRru7eKN3ZDvRcP13rugwdxZqCjbiAVZfIJwgj2A65UmT4TgARXGlXgnRkORLTDTrO19ZErt7+QXgA==",
+        "license": "MIT"
+      },
+      "@noble__secp256k1-2.1.0.tgz": {
+        "name": "@noble/secp256k1",
+        "version": "2.1.0",
+        "url": "https://registry.npmjs.org/@noble/secp256k1/-/secp256k1-2.1.0.tgz",
+        "integrity": "sha512-XLEQQNdablO0XZOIniFQimiXsZDNwaYgL96dZwC54Q30imSbAOFf3NKtepc+cXyuZf5Q1HCgbqgZ2UFFuHVcEw==",
+        "license": "MIT"
+      },
+      "@scure__base-1.1.9.tgz": {
+        "name": "@scure/base",
+        "version": "1.1.9",
+        "url": "https://registry.npmjs.org/@scure/base/-/base-1.1.9.tgz",
+        "integrity": "sha512-8YKhl8GHiNI/pU2VMaofa2Tor7PJRAjwQLBBuilkJ9L5+13yVbC7JO/wS7piioAvPSwR3JKM1IJ/u4xQzbcXKg==",
+        "license": "MIT"
+      },
+      "debug-4.4.3.tgz": {
+        "name": "debug",
+        "version": "4.4.3",
+        "url": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+        "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+        "license": "MIT"
+      },
+      "ms-2.1.3.tgz": {
+        "name": "ms",
+        "version": "2.1.3",
+        "url": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+        "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+        "license": "MIT"
+      },
+      "light-bolt11-decoder-3.2.0.tgz": {
+        "name": "light-bolt11-decoder",
+        "version": "3.2.0",
+        "url": "https://registry.npmjs.org/light-bolt11-decoder/-/light-bolt11-decoder-3.2.0.tgz",
+        "integrity": "sha512-3QEofgiBOP4Ehs9BI+RkZdXZNtSys0nsJ6fyGeSiAGCBsMwHGUDS/JQlY/sTnWs91A2Nh0S9XXfA8Sy9g6QpuQ==",
+        "license": "MIT"
+      },
+      "@scure__base-1.1.1.tgz": {
+        "name": "@scure/base",
+        "version": "1.1.1",
+        "url": "https://registry.npmjs.org/@scure/base/-/base-1.1.1.tgz",
+        "integrity": "sha512-ZxOhsSyxYwLJj3pLZCefNitxsj093tb2vq90mp2txoYeBqbcjDjqFhyM8eUjq/uFm6zJ+mUuqxlS2FkuSY1MTA==",
+        "license": "MIT"
+      },
+      "nostr-tools-2.16.2.tgz": {
+        "name": "nostr-tools",
+        "version": "2.16.2",
+        "url": "https://registry.npmjs.org/nostr-tools/-/nostr-tools-2.16.2.tgz",
+        "integrity": "sha512-ZxH9EbSt5ypURZj2TGNJxZd0Omb5ag5KZSu8IyJMCdLyg2KKz+2GA0sP/cSawCQEkyviIN4eRT4G2gB/t9lMRw==",
+        "license": "Unlicense"
+      },
+      "@noble__ciphers-0.5.3.tgz": {
+        "name": "@noble/ciphers",
+        "version": "0.5.3",
+        "url": "https://registry.npmjs.org/@noble/ciphers/-/ciphers-0.5.3.tgz",
+        "integrity": "sha512-B0+6IIHiqEs3BPMT0hcRmHvEj2QHOLu+uwt+tqDDeVd0oyVzh7BPrDcPjRnV1PV/5LaknXJJQvOuRGR0zQJz+w==",
+        "license": "MIT"
+      },
+      "@noble__curves-1.2.0.tgz": {
+        "name": "@noble/curves",
+        "version": "1.2.0",
+        "url": "https://registry.npmjs.org/@noble/curves/-/curves-1.2.0.tgz",
+        "integrity": "sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==",
+        "license": "MIT"
+      },
+      "@noble__hashes-1.3.2.tgz": {
+        "name": "@noble/hashes",
+        "version": "1.3.2",
+        "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.3.2.tgz",
+        "integrity": "sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==",
+        "license": "MIT"
+      },
+      "@noble__hashes-1.3.1.tgz": {
+        "name": "@noble/hashes",
+        "version": "1.3.1",
+        "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.3.1.tgz",
+        "integrity": "sha512-EbqwksQwz9xDRGfDST86whPBgM65E0OH/pCgqW0GBVzO22bNE+NuIbeTb714+IfSjU3aRk47EUvXIb5bTsenKA==",
+        "license": "MIT"
+      },
+      "@scure__bip32-1.3.1.tgz": {
+        "name": "@scure/bip32",
+        "version": "1.3.1",
+        "url": "https://registry.npmjs.org/@scure/bip32/-/bip32-1.3.1.tgz",
+        "integrity": "sha512-osvveYtyzdEVbt3OfwwXFr4P2iVBL5u1Q3q4ONBfDY/UpOuXmOlbgwc1xECEboY8wIays8Yt6onaWMUdUbfl0A==",
+        "license": "MIT"
+      },
+      "@noble__curves-1.1.0.tgz": {
+        "name": "@noble/curves",
+        "version": "1.1.0",
+        "url": "https://registry.npmjs.org/@noble/curves/-/curves-1.1.0.tgz",
+        "integrity": "sha512-091oBExgENk/kGj3AZmtBDMpxQPDtxQABR2B9lb1JbVTs6ytdzZNwvhxQ4MWasRNEzlbEH8jCWFCwhF/Obj5AA==",
+        "license": "MIT"
+      },
+      "@noble__hashes-1.3.3.tgz": {
+        "name": "@noble/hashes",
+        "version": "1.3.3",
+        "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.3.3.tgz",
+        "integrity": "sha512-V7/fPHgl+jsVPXqqeOzT8egNj2iBIVt+ECeMMG8TdcnTikP3oaBtUVqpT/gYCR68aEBJSF+XbYUxStjbFMqIIA==",
+        "license": "MIT"
+      },
+      "@scure__bip39-1.2.1.tgz": {
+        "name": "@scure/bip39",
+        "version": "1.2.1",
+        "url": "https://registry.npmjs.org/@scure/bip39/-/bip39-1.2.1.tgz",
+        "integrity": "sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==",
+        "license": "MIT"
+      },
+      "nostr-wasm-0.1.0.tgz": {
+        "name": "nostr-wasm",
+        "version": "0.1.0",
+        "url": "https://registry.npmjs.org/nostr-wasm/-/nostr-wasm-0.1.0.tgz",
+        "integrity": "sha512-78BTryCLcLYv96ONU8Ws3Q1JzjlAt+43pWQhIl86xZmWeegYCNLPml7yQ+gG3vR6V5h4XGj+TxO+SS5dsThQIA==",
+        "license": "MIT"
+      },
+      "tseep-1.3.1.tgz": {
+        "name": "tseep",
+        "version": "1.3.1",
+        "url": "https://registry.npmjs.org/tseep/-/tseep-1.3.1.tgz",
+        "integrity": "sha512-ZPtfk1tQnZVyr7BPtbJ93qaAh2lZuIOpTMjhrYa4XctT8xe7t4SAW9LIxrySDuYMsfNNayE51E/WNGrNVgVicQ==",
+        "license": "MIT"
+      },
+      "typescript-lru-cache-2.0.0.tgz": {
+        "name": "typescript-lru-cache",
+        "version": "2.0.0",
+        "url": "https://registry.npmjs.org/typescript-lru-cache/-/typescript-lru-cache-2.0.0.tgz",
+        "integrity": "sha512-Jp57Qyy8wXeMkdNuZiglE6v2Cypg13eDA1chHwDG6kq51X7gk4K7P7HaDdzZKCxkegXkVHNcPD0n5aW6OZH3aA==",
+        "license": "MIT"
+      },
+      "utf8-buffer-1.0.0.tgz": {
+        "name": "utf8-buffer",
+        "version": "1.0.0",
+        "url": "https://registry.npmjs.org/utf8-buffer/-/utf8-buffer-1.0.0.tgz",
+        "integrity": "sha512-ueuhzvWnp5JU5CiGSY4WdKbiN/PO2AZ/lpeLiz2l38qwdLy/cW40XobgyuIWucNyum0B33bVB0owjFCeGBSLqg==",
+        "license": "MIT"
+      }
+    }
+  },
+  "pypi": [
+    {
+      "name": "coincurve",
+      "version": "21.0.0",
+      "filename": "coincurve-21.0.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/b7/75/050b6fd08978de85a7b480f0f220ab6a30967c0910119f3096a8dd40befc/coincurve-21.0.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "sha256": "1b04778b75339c6e46deb9ae3bcfc2250fbe48d1324153e4310fc4996e135715",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "filename": "cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/d3/69/2c833a049475e0a3444e94c7d0aca0aa51d166374a449b09e92ac98138de/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+      "sha256": "9dab55f57c74c3cad24c323bacbbd04be4705ba6eb0d92e920b1fc4837ed5079",
+      "license": "Apache-2.0 OR BSD-3-Clause"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "filename": "cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf",
+      "license": "MIT-0"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "filename": "pycparser-3.12-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl",
+      "sha256": "a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "websockets",
+      "version": "17.4",
+      "filename": "websockets-17.4-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
+      "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+      "license": "BSD-3-Clause"
+    }
+  ],
+  "data": [
+    {
+      "name": "nip44.vectors.json",
+      "dest": "vectors/nip44.vectors.json",
+      "url": "https://raw.githubusercontent.com/paulmillr/nip44/1f8dba1707d065b39329b75012a13a6d1d8124f5/nip44.vectors.json",
+      "sha256": "269ed0f69e4c192512cc779e78c555090cebc7c785b609e338a62afc3ce25040",
+      "procedencia": "paulmillr/nip44 @ 1f8dba1707d065b39329b75012a13a6d1d8124f5 (2023-12-19); checksum igual al publicado por NIP-44",
+      "licencia": "NO DECLARADA (la API de GitHub devuelve 404): solo datos locales de prueba, sin versionar"
+    }
+  ],
+  "docker": [
+    {
+      "ref": "node:22.23.5-bookworm-slim",
+      "index_digest": "sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee",
+      "amd64_digest": "sha256:47725aca53d3295ec2d3be8f62726599b3033cc262edc2c7e429909b3ac599fc"
+    },
+    {
+      "ref": "python:3.12.16-slim-trixie",
+      "index_digest": "sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+      "amd64_digest": "sha256:05a994d2344eb364cc186910f4fc8786a38215f39f00d0acc25bff33a08f4177"
+    }
+  ],
+  "hosts_permitidos": [
+    "registry.npmjs.org",
+    "files.pythonhosted.org",
+    "raw.githubusercontent.com"
+  ]
+}

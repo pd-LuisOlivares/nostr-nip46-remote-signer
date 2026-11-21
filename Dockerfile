@@ -1,7 +1,13 @@
 # syntax=docker/dockerfile:1
 
+# Imagen base (D3/D-6). Por defecto sigue la etiqueta mutable `python:3.12-slim`. Para un bloqueo verificable ANTES de las
+# pruebas reales, fije el digest del indice multiarquitectura (valido en amd64 y arm64), por ejemplo:
+#   PYTHON_IMAGE=python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b docker compose build
+# (digest de python:3.12.16-slim-trixie verificado en el laboratorio de la Fase 1.0A; ver docs/decisions.md). No activado por defecto.
+ARG PYTHON_IMAGE=python:3.12-slim
+
 # --- Etapa de construcción: instala solo dependencias de ejecución en un venv ---
-FROM python:3.12-slim AS builder
+FROM ${PYTHON_IMAGE} AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -20,7 +26,7 @@ RUN pip install -c constraints.txt . \
        fi
 
 # --- Etapa final: imagen mínima, sin herramientas de construcción ni de desarrollo ---
-FROM python:3.12-slim
+FROM ${PYTHON_IMAGE}
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

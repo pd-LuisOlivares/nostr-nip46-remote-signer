@@ -1,0 +1,90 @@
+# Laboratorio NIP-46 (Fase 1.0A). Red `internal: true`: sin Internet y sin puertos publicados.
+# Construccion sin red (`build.network: none`). Contenedores no root, FS de solo lectura, sin capacidades.
+# Se opera con lab/run_lab.py; no se usa `docker compose up` directamente salvo para depuracion.
+name: nip46-lab
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 256
+  mem_limit: 512m
+  init: true
+  stop_grace_period: 3s
+  networks: [lab_net]
+
+networks:
+  lab_net:
+    internal: true
+
+volumes:
+  # Unico volumen: canal de control EN MEMORIA (tmpfs) entre firmante y cliente (URI bunker sin claves privadas).
+  ctl:
+    driver: local
+    driver_opts: {type: tmpfs, device: tmpfs, o: "size=1m,mode=1777"}
+
+services:
+  relay:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    build: {context: ., dockerfile: py/Dockerfile, network: none}
+    command: ["python", "-m", "lab_relay"]
+    environment: {LAB_ACTOR: relay, RELAY_PORT: "7777"}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 7777), 2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
+
+  signer-py:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    command: ["python", "-m", "lab_signer"]
+    environment:
+      LAB_ACTOR: signer-py
+      RELAY_URL: ws://relay:7777
+      REPLY_MODE: ${REPLY_MODE:-nip44}
+      FAULT: ${FAULT:-none}
+      JITTER_MS: ${JITTER_MS:-0}
+      USE_SECRET: ${USE_SECRET:-1}
+    volumes: [ctl:/ctl]
+    depends_on: {relay: {condition: service_healthy}}
+
+  signer-ref:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    build: {context: ., dockerfile: node/Dockerfile, network: none}
+    command: ["node", "signer-ref/main.mjs"]
+    environment:
+      LAB_ACTOR: signer-ref
+      RELAY_URL: ws://relay:7777
+      REPLY_MODE: ${REPLY_MODE:-nip44}
+      FAULT: ${FAULT:-none}
+      JITTER_MS: ${JITTER_MS:-0}
+      USE_SECRET: ${USE_SECRET:-1}
+    volumes: [ctl:/ctl]
+    depends_on: {relay: {condition: service_healthy}}
+
+  client:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    command: ["node", "client/main.mjs"]
+    environment:
+      LAB_ACTOR: client
+      SCENARIO: ${SCENARIO:-e1}
+      TIMEOUT_MS: ${TIMEOUT_MS:-15000}
+      N_SIGN: ${N_SIGN:-20}
+    volumes: ["ctl:/ctl:ro"]
+
+  py-job:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    command: ["python", "-c", "pass"]
+    environment: {LAB_ACTOR: py-job}
+
+  node-job:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    command: ["node", "-e", "0"]
+    environment: {LAB_ACTOR: node-job}

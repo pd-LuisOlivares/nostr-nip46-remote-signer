@@ -24,7 +24,7 @@ La implementación quedó **aprobada provisionalmente**, sujeta a revisión fina
 | D5 | Aprobar el endurecimiento Docker: usuario no root, sistema de archivos de solo lectura, `cap_drop: ALL` y `no-new-privileges`. | Propuestas 6 y 7 de la tabla: **aprobadas**. |
 | D6 | Mantener el enlace del puerto HTTP a `127.0.0.1`. | Propuesta 7: **aprobada**. |
 | D7 | No crear módulos vacíos ni implementar SQLite todavía. | Propuesta 1: **aprobada**. |
-| D8 | Mantener la diferencia `config/` frente a `core/` como decisión arquitectónica pendiente, sin modificar la estructura. | Propuesta 2: **pendiente**. |
+| D8 | Mantener la diferencia `config/` frente a `core/` como decisión arquitectónica pendiente, sin modificar la estructura. | Propuesta 2: **pendiente**. **Resuelta en la Fase 1.0B por D-2: `app/config.py`.** |
 
 ### Propuestas de Claude Code
 
@@ -109,7 +109,7 @@ Ejecutadas por Claude Code tras incorporar `constraints.txt`. Son pruebas automa
 | `httpx` frente a `httpx2` (D1) | Se mantiene `httpx`; sin migrar. | Al actualizar Starlette o cuando retire el soporte. |
 | Fijar digest de `python:3.12-slim` (D3) | Etiqueta mutable por ahora. | Antes de la prueba real con Stacker News o de cualquier despliegue. |
 | Disponibilidad de `/docs` y `/openapi.json` (D4) | Habilitados en desarrollo. | Antes de producción. |
-| `config/` frente a `core/` (D8) | Pendiente; estructura sin cambios. | Al crear la primera variable de configuración. |
+| `config/` frente a `core/` (D8) | **Resuelta (D-2, Fase 1.0B): `app/config.py`.** | — |
 | SQLite y `.gitignore` (D7) | No implementado; el `.gitignore` no cubre `*.db` ni `*.sqlite`. | Al definir la persistencia. |
 | Bloqueo con hashes (alternativa B) | No aprobado. | Antes de la fase que maneje claves privadas. |
 | Módulos de dominio (`nostr/`, `services/`, `repositories/`) | No creados (D7). | En la fase que los necesite. |
@@ -141,7 +141,7 @@ Ejecutadas por Claude Code tras incorporar `constraints.txt`. Son pruebas automa
 |---|---|---|
 | O-1 | La investigación de la Fase 0.3 queda **aprobada provisionalmente**, sujeta a revisión final (2026-11-20). Aprueba la **investigación**, no las propuestas de implementación. | Aprobada provisionalmente |
 | O-2 | Se autoriza **exclusivamente** la Fase 0.3 (investigación y diseño): sin implementar, sin dependencias nuevas, sin conexiones externas, sin claves, sin commits ni push. La Fase 1.0 **no** está iniciada. | Aprobada |
-| O-3 | La decisión **`config/` frente a `core/`** (D8) se mantiene **pendiente** hasta que exista una necesidad real. | Aprobada |
+| O-3 | La decisión **`config/` frente a `core/`** (D8) se mantiene **pendiente** hasta que exista una necesidad real. | Aprobada (**resuelta por D-2: `app/config.py`**, ver Fase 1.0B) |
 | O-4 | Instrucciones de diseño para la revisión: incorporar autorización explícita de clientes, restricción inicial a `kind 27235`, validación previa a firmar, control de repetición y tratamiento de los desafíos como operaciones sensibles; distinguir lo obligatorio del primer prototipo de las mejoras posteriores; **evitar abstracciones sin responsabilidad concreta**. | Instrucción de diseño (las medidas concretas son las propuestas P-05, P-13 y P-15) |
 
 ### Hallazgos verificados
@@ -210,3 +210,174 @@ Detalladas en [nip46-implementation-plan.md](nip46-implementation-plan.md) §7 (
 ### Documentación
 
 - `docs/project-context.md` se actualizó en la revisión de cierre de la Fase 0.3 por petición del propietario (estado de las Fases 0.1, 0.2 y 0.3). Sigue siendo una **síntesis**, no una transcripción.
+
+## Fase 1.0A: laboratorio de interoperabilidad NDK 2.12.2 (2026-11-20)
+
+> **Estado: lo respaldado por evidencia se marca como tal; todo lo que implica una decisión sigue siendo PROPUESTA pendiente de aprobación del propietario.** Evidencia, método y límites en [nip46-lab-report.md](nip46-lab-report.md). El laboratorio **no valida compatibilidad con Stacker News**: solo con NDK 2.12.2 en Node 22 frente a un relay local mínimo. No se modificó `app/`, ninguna dependencia productiva ni la infraestructura existente.
+
+### Decisiones del propietario en esta fase
+
+| # | Decisión | Estado |
+|---|---|---|
+| O-5 | Laboratorio en Docker con red interna y sin puertos publicados; niveles 1 y 2 de dependencias; experimento E7 adicional; relay mínimo propio; `unittest` para las pruebas del laboratorio. | Aprobada |
+| O-6 | Tres reglas de `.gitignore` (`lab/results/`, `lab/node/node_modules/`, `lab/vendor/`); clausura mínima de 24 entradas npm; descargas con verificación de integridad; vectores NIP-44 como dato local sin versionar. | Aprobada |
+
+### Hipótesis de la Fase 0.3 y su estado tras el laboratorio
+
+| # | Hipótesis | Estado | Evidencia |
+|---|---|---|---|
+| Y-1 | Una respuesta NIP-44 a una solicitud NIP-04 se procesa de extremo a extremo en NDK 2.12.2 | **Validada en laboratorio** (Node 22, relay local; **no** en Stacker News) | E1 y E2, con firmante de referencia y con Python: PASS |
+| Y-2 | El modo espejo (respuesta NIP-04) completa el flujo | **Validada en laboratorio** | E4 y E4m: PASS |
+| Y-3 | El firmante descifra el primer `connect` NIP-04 real de NDK | **Validada en laboratorio** | E3: SHA-256 del texto plano igual en NDK y en Python |
+| Y-4 | `nostr-tools` 2.16.2 acepta nuestras cargas NIP-44 | **Validada en laboratorio** (no se leyó su código) | E5: 7/7 mensajes en ambos sentidos |
+| Y-9 | La serialización NIP-01 de Python coincide con JavaScript | **Validada solo en parte** | Coincide para el evento de login (texto ASCII); los caracteres de control siguen sin probarse |
+| Y-10 | Las APIs de `cryptography` y `coincurve` reproducen los vectores | **Validada** | 33 pruebas, incluidos todos los vectores oficiales válidos e inválidos |
+| Y-5, Y-6, Y-7, Y-8 | Versión de producción, valores del perfil, relays, caducidad de `k1` | **Sin cambios (sin validar)** | Requieren la prueba real |
+
+### Conclusiones respaldadas por evidencia de laboratorio
+
+| # | Conclusión | Experimentos |
+|---|---|---|
+| L-1 | NDK 2.12.2 arranca en NIP-04, cambia a NIP-44 al recibir una respuesta NIP-44 y completa el flujo; con un firmante solo-NIP-44 no podría ni descifrar el `connect` inicial (E3 lo confirma desde el lado del firmante). | E1, E2, E3 |
+| L-2 | El modo espejo NIP-04 también completa el flujo: sirve como contingencia. | E4, E4m |
+| L-3 | Con firmante de referencia y con Python el comportamiento de NDK es el mismo; la criptografía propia es interoperable con `nostr-tools` 2.16.2. | E5, E5b y repeticiones |
+| L-4 | NDK no impone tiempo máximo, tolera respuestas tardías, duplicadas, con `id` ajeno o indescifrables, y soporta `auth_url`. | E6, E7 |
+| L-5 | NDK acepta una respuesta firmada por otra clave si el `id` coincide (correlación solo por `id`). Debilidad del cliente, no corregible desde el firmante. | E7 `spoof` |
+| L-6 | Si `get_public_key` responde con error, `blockUntilReady()` resuelve y `user.pubkey` lanza `npub not set`. | E7 `get_pubkey_error` |
+
+### Regla de decisión (Fase 0.3) aplicada
+
+Sobre las corridas con Python: **E1 y E2 en PASS → recomendar NIP-44 como respuesta predeterminada.** Es una **recomendación respaldada por evidencia de laboratorio, no una decisión aprobada**; actualiza el estado de P-02 y P-17.
+
+### Propuestas nuevas o actualizadas (pendientes de aprobación)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-02 (actualizada) | Responder en NIP-44 por defecto, aceptar NIP-04 solo como entrada y conservar el modo espejo como contingencia. Ya no es solo una inferencia: tiene respaldo experimental (L-1, L-2, L-3). | **Pendiente de aprobación** |
+| P-17 (actualizada) | Los experimentos E1-E7 se ejecutaron: **PASS en todos**. Queda pendiente la prueba real, que es la única que puede decir algo sobre Stacker News. | **Cumplida en laboratorio; prueba real pendiente** |
+| P-18 | Conservar el laboratorio (`lab/`) como **arnés de regresión** y ejecutar E1-E7 contra el firmante productivo cuando exista. | Pendiente |
+| P-19 | El firmante **nunca responde con error a `get_public_key`** a un cliente autorizado, y los textos de `error` de `connect` son genéricos y estables (L-5, L-6). | Pendiente |
+| P-20 | Antes de la prueba real, valorar una ejecución de NDK en un **navegador sin interfaz** (herramienta nueva: requeriría aprobación) para cerrar la diferencia Node/navegador. | Pendiente |
+| P-21 | Confirmar la licencia del archivo de vectores NIP-44 antes de copiarlo al repositorio (reitera P-16). | Pendiente |
+
+### Preguntas pendientes para el propietario
+
+1. ¿Se aprueba P-02 con el respaldo de laboratorio, sabiendo que no cubre Stacker News?
+2. ¿Se aprueba P-19 como requisito del firmante?
+3. ¿Se valora P-20 (navegador sin interfaz) antes de la prueba real?
+4. ¿Se conserva `lab/` en el repositorio (P-18) y se versionan sus archivos, excluidos `lab/vendor/` y `lab/results/`?
+
+## Fase 1.0A.2 y cierre de la Fase 1.0A: validación con relay público y observación de Stacker News (2026-11-20)
+
+> **Estado.** Cierre técnico preparado por Claude Code, **pendiente de aprobación del propietario**. Evidencia, verificación punto por punto y matriz de criterios en [phase-1.0A-closure.md](phase-1.0A-closure.md); propuesta de la Fase 1.0B en [phase-1.0B-proposal.md](phase-1.0B-proposal.md). **Aprobada** = instrucción expresa del propietario en esta sesión; el resto son propuestas. La Fase 1.0B **no** está iniciada. Interoperabilidad de protocolo observada **no** equivale a autenticación completa: **la autenticación real con Stacker News sigue pendiente**.
+
+### Decisiones del propietario
+
+| # | Decisión | Estado |
+|---|---|---|
+| O-7 | Implementar en `lab/` un firmante real mínimo y ensayarlo **solo en local** (E8 a E10); sin conexiones externas, cuentas, commits ni Fase 1.0B. Después: reanudación y verificación local previas a cualquier compuerta. | Aprobada |
+| O-8 | Compuerta A con `relay.nsec.app:443` (2026-11-20, 17:00 a 17:02 Chile, un intento). Resultado **NO-GO**. | Aprobada y ejecutada |
+| O-9 | Seleccionar `relay.primal.net:443` (A1) y `relay.primal.io:443` (A2) con `TLS_GROUPS=X25519` conservando la verificación TLS completa, ventana global de 5 minutos y un intento por destino (2026-11-20, 20:03 a 20:08 Chile). Resultados: A1 **GO**, A2 **NO-GO**. Registrar que el cambio de relay y de grupo TLS impide atribuir causalmente el fallo anterior al tamaño del ClientHello. | Aprobada y ejecutada |
+| O-10 | Seleccionar **exclusivamente** `relay.primal.net:443` para las validaciones siguientes; **no investigar** `relay.primal.io`; no repetir sondas externas. | Aprobada |
+| O-11 | Compuerta B (observación de Stacker News sin firmar): autorizada para 20:14 a 20:19 y **no ejecutada** (no había control automático del límite global ni forma segura de mostrar la URI desde la herramienta del agente). Se decidió construir un controlador verificable (`lab/real/run_gate_b.py`), validarlo con una Compuerta A local y ejecutar la B desde la PowerShell del propietario. | Aprobada |
+| O-12 | Ejecución por el propietario del ensayo local interactivo (dos intentos: NO-GO y GO) y de la Compuerta B real (2026-11-20, ventana configurada 20:50:00 a 20:55:00 Chile; ejecución 20:50:05 a 20:54:24). **El texto de esa autorización no consta en el repositorio [NV].** | Ejecutadas por el propietario; ventana no verificada documentalmente |
+| O-13 | Mantener la clasificación **LAB / DEV / DOC** del uso de IA sin reorganizar el repositorio ni reconstruir tiempos; no registrar las pruebas manuales de conectividad hechas en Windows. | Aprobada |
+
+### Resultados que cambian el estado de las hipótesis (detalle en el cierre, §5)
+
+| # | Hipótesis | Estado |
+|---|---|---|
+| Y-5 | Producción de Stacker News equivale a `master` con NDK 2.12.x | **Compatible con lo observado; no demostrada** |
+| Y-6 | `u`, `content` y formato del reto | **Validada**: `u = https://stacker.news`, `content = Stacker News Authentication`, `method = GET`, etiquetas `challenge`, `u`, `method`, reto de 64 hexadecimales |
+| Y-7 | Un relay público acepta `kind 24133` sin NIP-42 | **Validada solo para `relay.primal.net`** (sin `AUTH`) |
+| Y-8 | El reto no caduca dentro del tiempo de aprobación | **Sin validar** (no se firmó) |
+
+### Hallazgos verificados de la Fase 1.0A.2
+
+| # | Hallazgo | Fuente |
+|---|---|---|
+| F-1 | Hubo dos ejecuciones interactivas de la Compuerta A local: la primera NO-GO (16 de 17; falló solo la atestación del operador, causa **[NV]**) y la segunda GO (17 de 17), sin cambios de código entre ambas. | `lab/results/gate-b-rehearsal-20261120T2342*/`, `…T234353Z/` |
+| F-2 | La evidencia de parada forzada **no incluye `session_end`** (o lo incluye con un motivo artefacto de la carrera de cierre); `cero_firmas` no lo verifica en ese caso. Causa más probable **[H]**: el firmante no maneja `SIGTERM`. | `run_meta_b.json`, `evidence.jsonl` |
+| F-3 | No existe un evaluador GO/NO-GO para la ejecución real de la Compuerta B; la clasificación es manual. | `lab/real/run_gate_b.py` |
+| F-4 | `connect` real: 2 parámetros de tipo cadena, sin permisos, por NIP-04; `get_public_key` y `sign_event` por NIP-44. | `gate-b-run-02/evidence.jsonl` |
+| F-5 | La plantilla de `sign_event` trae `id` y `pubkey` además de `content`, `created_at`, `kind` y `tags` (362 B, etiquetas en orden `challenge`, `u`, `method`): la política debe verificarlos, no ignorarlos. | `observed_sign` |
+| F-6 | El firmante del laboratorio reintentaba la conexión al relay hasta 3 veces; se hizo configurable (`RELAY_ATTEMPTS`) y la Compuerta B lo fija en 1. | `signer.py`, `compose.gate-b.yaml` |
+| F-7 | El ClientHello por defecto (OpenSSL 3.5.7) pesa 1530 B y con `X25519` 517 B; la causa del silencio de `relay.nsec.app` **sigue sin determinar [H]**. | medición local, `real-probe-20261120T165758/` |
+
+### Propuestas nuevas (pendientes de aprobación)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-22 | Parada **ordenada** del firmante (`SIGTERM` manejado, evento de cierre con motivo «detenido por el controlador») y criterio que exija `session_end` o lo declare no verificado (F-2). Aplicable al producto y al laboratorio. | Pendiente |
+| P-23 | Evaluador de la ejecución real de la Compuerta B (antes de cualquier Compuerta C) (F-3). | Pendiente |
+| P-24 | Conservar en el producto la verificación de `id` y `pubkey` opcionales de la plantilla de `sign_event` (F-5) y la regla de un intento de conexión sin reintentos automáticos salvo decisión expresa (F-6). | Pendiente |
+| P-25 | Opción `RELAY_TLS_GROUPS=X25519` en el cliente de relay del producto, conservando la verificación completa (resultado A1). | Pendiente |
+| P-26 | Fase 1.0B: bloques B0 a B6 y decisiones D-1 a D-7 de [phase-1.0B-proposal.md](phase-1.0B-proposal.md); primer bloque recomendado: B0 + B1 (núcleo Nostr). | **Pendiente de aprobación** |
+| P-27 | Versionar `lab/` y conservar una **selección sanitizada** de evidencia, ya que `lab/results/` está excluido de Git (hallazgo F-8 del cierre). | Pendiente |
+
+### Limitaciones y supuestos no verificados
+
+- El firmante de `lab/py/lab_real/` **no es el producto**: identidad y secretos solo en memoria, sin API, interfaz ni persistencia.
+- **No se observó la respuesta de Stacker News a una firma válida** (sesión, cuenta, caducidad del reto). **[NV]** que Stacker News mostrase `unauthorized`: lo declaró el propietario y no hay captura.
+- El contenido de `params[0]` de `connect` no se registra (solo tipos) **[NV]**.
+- Las causas del fallo de `relay.nsec.app` y de `relay.primal.io` están sin determinar.
+- La ventana autorizada de la Compuerta B real no puede contrastarse con el texto de la autorización **[NV]**.
+- Transcripciones de la Fase 1.0A.2 sin exportar (ver `docs/ai-log.md`).
+
+### Restricciones que se mantienen en el desarrollo
+
+Ver [phase-1.0A-closure.md](phase-1.0A-closure.md) §8: interoperabilidad real primero; efectos externos solo con autorización por compuerta; sin claves ni URI reales en repositorio o registros; denegar por defecto y aprobación humana explícita; respuestas NIP-44 y NIP-04 solo como entrada; relay `wss://relay.primal.net:443` con TLS verificado; un intento sin reintentos automáticos; protocolo independiente de FastAPI; dependencias solo con aprobación; evidencia de cierre en toda parada.
+
+## Fase 1.0B, Bloques B0 y B1: dependencias, configuración y núcleo Nostr (2026-11-20)
+
+> **Estado.** Implementados B0 y B1 por Claude Code con autorización expresa del propietario; **B2 a B6 no están autorizados ni iniciados**. Sin commit ni push. Detalle de pruebas y verificaciones en el informe de la interacción 26 de [ai-log.md](ai-log.md). La interoperabilidad con Stacker News sigue siendo **de protocolo observado**; la autenticación completa está pendiente (B4/B6).
+
+### Decisiones del propietario
+
+| # | Decisión | Estado |
+|---|---|---|
+| O-14 | **Cierre técnico de la Fase 1.0A aprobado con observaciones** (primer intento de la Compuerta A NO-GO 16/17, segundo GO 17/17; Compuerta B con `connect`, `get_public_key` y `sign_event` reales y cero firmas; `session_end` ausente y falta de veredicto automático como limitaciones documentadas; autenticación real pendiente para B4/B6). No repetir compuertas; conservar evidencias; `lab/results/` fuera de Git con un resumen sanitizado; `lab/` se conserva como laboratorio y arnés de regresión, separado del producto. | Aprobada |
+| O-15 | **Exportar las transcripciones pendientes de la Fase 1.0A**, revisándolas y eliminando secretos, tokens, claves privadas y URI `bunker://` completas. No registrar en las iteraciones las pruebas exploratorias manuales de conectividad en Windows. | Aprobada |
+| D-1 | Dependencias `coincurve==21.0.0`, `cryptography==50.0.2`, `websockets==17.4`, las versiones verificadas en el laboratorio. | Aprobada (resuelve P-06) |
+| D-2 | Un único módulo `app/config.py` para la configuración por variables de entorno (resuelve D8/O-3: **se descarta `core/`**). | Aprobada |
+| D-3 | La clave privada Nostr vive **solo en memoria** durante el MVP; sin SQLite, almacenamiento cifrado ni persistencia de identidades. **Reemplaza P-07** (AEAD en reposo) para el MVP. | Aprobada |
+| D-4 | Token de operador aleatorio generado al iniciar la aplicación para proteger las operaciones sensibles; **sin JWT ni sistema de usuarios**. Se implementa en B3; en B0/B1 solo se registra. **Modifica expresamente** lo previsto en `AGENTS.md` §3 y §7 (JWT para la API local): prevalece la instrucción del propietario (`AGENTS.md` §Introducción); **`AGENTS.md` no se modificó** (queda como contradicción documental a resolver por el propietario). | Aprobada |
+| D-5 | La identidad de Stacker News para la demostración real **queda pendiente**; no se crean cuentas ni se autentica nada en B0/B1. | Pendiente |
+| D-6 | Mantener Python 3.12 y **preparar** el bloqueo de la imagen base por digest antes de las pruebas reales. | Aprobada (preparada, no activada) |
+| D-7 | Relay de referencia `wss://relay.primal.net`, con verificación TLS y la opción X25519 validada. | Aprobada |
+| O-16 | **Requisito transversal de portabilidad:** la aplicación se clona, instala y ejecuta en cualquier equipo compatible (Windows, Linux, macOS, o Docker) con su propia identidad, configuración y firmante; sin rutas ni IP propias; por defecto sin exponer la API a Internet; sin tokens ni secretos en JavaScript público; instalación reproducible y documentada. No implica servicio multiusuario ni despliegue público. | Aprobada |
+
+### Resumen de implementación
+
+- **B0.** `pyproject.toml` (+3 dependencias, con su propósito), `constraints.txt` (+5 líneas: las tres y `cffi==2.1.1`, `pycparser==3.12`; **certifi se conserva en 2026.10.23**: una resolución nueva traía 2026.11.20 y no se adoptó para no cambiar versiones no pedidas), `Dockerfile`/`compose.yaml` (`PYTHON_IMAGE`, digest preparado: `python@sha256:5e2bdb1b…4fa5b`, el **índice multiarquitectura** de `python:3.12.16-slim-trixie` ya verificado en el laboratorio; **no** activado por defecto), `app/config.py` (`RELAY_URL`, `RELAY_TLS_GROUPS`) y `.env.example`. Verificado: `pip check` limpio, `constraints.txt` idéntico a `pip freeze`, 5 pruebas previas en PASS, construcción Docker (con el guardián de `constraints.txt`), contenedor `healthy` y `/health` 200, importaciones y firma Schnorr dentro de la imagen.
+- **B1.** `app/nostr/{errors,keys,event,nip44,nip04,nip46}.py`. `Keypair` opaco (sin lectura pública de la clave, bloquea `pickle` y `copy`, `repr` sin secreto, errores sin entradas); importación hex y `nsec` (NIP-19, bech32 propio de ~40 líneas comprobado con el ejemplo oficial y con `nostr-tools`); eventos NIP-01 estrictos; NIP-44 v2 con los vectores oficiales; **NIP-04 solo descifra** (sin función de cifrado); mensajes NIP-46 con Pydantic estricto y URI `bunker://` (relay obligatorio, `wss://` salvo bandera, secreto de 128 bits generado con `secrets`, sin parámetros extra). Sin dependencias de FastAPI ni de `lab/`; sin E/S (comprobado por `tests/test_architecture.py`).
+- **Módulo extra:** `app/nostr/errors.py` (errores de dominio compartidos) no estaba en la lista de cinco módulos; se justifica por evitar importaciones circulares y duplicación.
+
+### Hallazgos de B0/B1
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| F-8b | **Defecto real detectado por las pruebas antes de entregar:** en Python `$` de una expresión regular acepta un salto de línea final, de modo que `"<64 hex>\n"` se habría aceptado como clave, id o firma. Corregido con `\Z` en todos los patrones; hay pruebas de regresión por cada uno (claves, `nsec`, ids, firmas, secretos, hosts, métodos). | Corregido |
+| Y-9 | **Validada**: la serialización NIP-01 de Python coincide con `JSON.stringify` de Node 22 en 180 casos (los 32 caracteres de control, `\u007f`, ` / `, comillas, barras, emoji y etiquetas), contrastada con fixtures generados por `lab/tools/gen_core_fixtures.mjs`. Los sustitutos aislados no tienen representación UTF-8 y se **rechazan**. | Validada en laboratorio local |
+| H-NIP19 | El ejemplo oficial de NIP-19 (`nsec1vl029…` ↔ `67dea2ed…`) y las claves codificadas por `nostr-tools` decodifican a la clave esperada. | Verificado |
+| L-BIP340 | **Cerrado en la interacción 27.** En B1 solo estaban verificados los vectores 0 a 3 (transcritos y comprobados por cálculo). Con la descarga autorizada del **CSV oficial completo** (origen `raw.githubusercontent.com/bitcoin/bips/master/bip-0340/test-vectors.csv`, obtenido 2026-11-21T00:55:30Z, SHA-256 `34c9d1d9…851c2d`, 6892 bytes) se ejecutan **los 19 vectores, sin omitir ninguno**: 9 positivos y 10 negativos (15 con mensaje de 32 bytes por la biblioteca y el producto; 4 con mensaje de 0, 1, 17 y 100 bytes por la biblioteca, porque el producto solo firma y verifica identificadores de 32 bytes). Todos pasan; la implementación no se modificó. El JSON provisional con los vectores 0 a 3 se eliminó. | **Cumplido** |
+| L-NIP44 | Los vectores oficiales de NIP-44 **no se versionan** (licencia sin aclarar, P-16/P-21): se leen de una ruta local verificada por SHA-256 `269ed0f6…25040` y se **omiten con aviso visible** si faltan; con el archivo presente pasan todos (válidos e inválidos). | Cumple P-16 |
+| L-TIPOS | `mypy --strict` sobre `app/nostr` y `app/config.py`: sin incidencias, con **herramientas temporales** instaladas fuera de las dependencias del proyecto (mypy no está en `constraints.txt`). Cobertura de líneas y ramas del código de `app/`: 100 % (medida con `coverage`, también temporal). No hay configuración permanente de mypy/ruff: decisión pendiente. | Informado |
+| L-DOCKER | La construcción Docker se verificó con el digest como argumento (`PYTHON_IMAGE`); la construcción con la etiqueta mutable por defecto **no se ejecutó** (habría requerido consultar el registro de imágenes). | Informado |
+
+### Cierre de B1 (interacción 27)
+
+El propietario autorizó **exclusivamente** cerrar los criterios pendientes de B1 (no B2). Aceptó las descargas de PyPI de B0 **como tráfico de instalación de dependencias**: **no deben documentarse como ejecución completamente offline** (las comprobaciones de B0 y B1 que instalaron paquetes usaron PyPI; la generación de fixtures con Node y la ejecución de las pruebas no necesitan red). La prohibición de conexiones externas sigue aplicando a relays, Stacker News y servicios de autenticación. Se autorizó **una única** descarga del CSV oficial de BIP-340 (ver L-BIP340), con TLS verificado, sin código ejecutable ni dependencias nuevas. `mypy` y `ruff` **no** se incorporan como dependencias. **Estado formal de B1: ver la interacción 27 de `docs/ai-log.md`.**
+
+### Dependencias y accesos a red durante B0
+
+Para verificar compatibilidad (instalación en un entorno temporal limpio, en `.venv`, en un contenedor Linux y en la construcción Docker) se **descargaron paquetes del índice público de PyPI** (`pypi.org` y `files.pythonhosted.org`): solo las versiones fijadas y sus transitivas; sin datos del proyecto. **No hubo conexiones a relays, a Stacker News ni a ningún otro servicio.** El criterio «sin conexiones externas» se interpreta como ausencia de relays y servicios; las descargas de paquetes eran inherentes a B0 (instalar dependencias aprobadas) y se informan aquí.
+
+### Propuestas nuevas o actualizadas (pendientes)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-28 | Bloque B2 (firmante NIP-46 sin interfaz): ver [phase-1.0B-proposal.md](phase-1.0B-proposal.md) §9. | Pendiente de aprobación |
+| P-29 | Obtener y verificar el CSV oficial de BIP-340 (con autorización de una descarga) para cerrar el criterio parcial. | **Cumplida** (interacción 27) |
+| P-30 | Valorar `mypy` y `ruff` como dependencias de desarrollo (hoy solo se ejecutaron temporalmente). | Pendiente |
+| P-31 | Resolver la contradicción de `AGENTS.md` (§3/§7 mencionan JWT) con D-4: actualizar `AGENTS.md` por el propietario. | Pendiente |

@@ -1,0 +1,64 @@
+# Firmante remoto minimo + proxy de salida (Fase 1.0A.2). NO se levanta con `up`: se opera con lab/real/README.md.
+#   - `real_internal` (internal: true): solo el firmante y el proxy. El firmante NO tiene ruta a Internet.
+#   - El proxy es el unico servicio que ademas esta en `real_egress` y solo acepta `CONNECT PROXY_ALLOW` (un host:puerto).
+#   - TLS de extremo a extremo: el proxy no lo intercepta; el firmante valida el certificado del relay.
+# El ensayo local (lab/real/compose.rehearsal.yaml) usa ESTE mismo archivo como base, con `real_egress` tambien interna.
+name: nip46-real
+
+x-hardening: &hardening
+  image: nip46-lab-py:1.0a
+  build: {context: .., dockerfile: py/Dockerfile, network: none}
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 128
+  mem_limit: 256m
+  init: true
+  stop_grace_period: 3s
+
+networks:
+  real_internal:
+    internal: true
+  real_egress: {}
+
+services:
+  proxy:
+    <<: *hardening
+    command: ["python", "-m", "lab_real.proxy"]
+    environment:
+      LAB_ACTOR: proxy
+      PROXY_ALLOW: ${PROXY_ALLOW:?defina PROXY_ALLOW=host:puerto (el unico destino permitido)}
+    networks: [real_internal, real_egress]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 3128), 2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
+
+  signer:
+    <<: *hardening
+    command: ["python", "-m", "lab_real"]
+    # La URI bunker:// se muestra SOLO en la terminal; Docker no debe conservar esa salida.
+    logging: {driver: none}
+    stdin_open: true
+    tty: true
+    networks: [real_internal]
+    depends_on: {proxy: {condition: service_healthy}}
+    environment:
+      LAB_ACTOR: signer
+      RELAY_URL: ${RELAY_URL:?defina RELAY_URL=wss://...}
+      SN_ORIGIN: ${SN_ORIGIN:?defina SN_ORIGIN=https://... (origen exacto, sin barra final)}
+      PROXY_URL: http://proxy:3128
+      MODE: ${MODE:-observe}          # denegar por defecto: firmar exige MODE=sign explicito (Compuerta C)
+      MAX_SIGNATURES: ${MAX_SIGNATURES:-2}
+      WINDOW_S: ${WINDOW_S:-120}
+      N_URIS: ${N_URIS:-1}
+      TLS_GROUPS: ${TLS_GROUPS:-}              # vacio = TLS por defecto; X25519 = ClientHello pequeno (ver lab_real/tls.py)
+      APPROVAL_MODE: ${APPROVAL_MODE:-tty}
+      APPROVAL_SCRIPT: ${APPROVAL_SCRIPT:-}
+      APPROVAL_TIMEOUT_S: ${APPROVAL_TIMEOUT_S:-120}
+      URI_FILE: ${URI_FILE:-}
+      EVIDENCE_PATH: /results/evidence.jsonl
+    # Evidencia (sin secretos) en una carpeta del host excluida de Git (lab/results/ esta en .gitignore).
+    volumes: ["${EVIDENCE_DIR:?defina EVIDENCE_DIR=ruta de una carpeta existente}:/results"]

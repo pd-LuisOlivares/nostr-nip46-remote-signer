@@ -1,0 +1,10 @@
+{
+  "name": "nip46-lab-node",
+  "private": true,
+  "type": "module",
+  "description": "Laboratorio NIP-46 (Fase 1.0A): NDK 2.12.2 real y firmante de referencia con nostr-tools. node_modules se instala con install-vendor.mjs desde artefactos verificados por hash, sin npm y sin red.",
+  "dependencies": {
+    "@nostr-dev-kit/ndk": "2.12.2",
+    "nostr-tools": "2.16.2"
+  }
+}

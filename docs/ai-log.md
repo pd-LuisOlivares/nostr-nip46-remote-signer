@@ -228,6 +228,178 @@ Según el criterio de consolidar al cierre de cada fase, estas interacciones no 
 
 - **Autorización y creación del commit local de la Fase 0.3:** el propietario autorizó un commit local con una lista cerrada de diez archivos y Claude Code lo creó tras las comprobaciones previas (el hash consta en el historial de Git, no aquí). La autorización prohibió consultar remotos, descargar paquetes, instalar dependencias y conectarse a relays; Claude Code solo ejecutó comandos locales. **Transcripción pendiente de exportar**; no está incluida en las transcripciones de la Fase 0.3 (la 02 es parcial). No se reconstruyó.
 
+## Fase 1.0A: Claude Code
+
+Misma sesión, agente y modelo que la interacción 09 (Claude Code, `claude-sonnet-5-5`, sesión `35f0f3c1-13e9-47b9-832f-f6252cd2166f`). Laboratorio de interoperabilidad NIP-46 con NDK 2.12.2, autorizado por el propietario en tres pasos. **No se hizo ningún commit ni push, no se conectó a relays públicos ni a Stacker News, y no se modificó `app/`, `pyproject.toml`, `constraints.txt` ni la infraestructura existente.**
+
+### 14. Plan de dependencias del laboratorio (primera entrega)
+- **Fecha:** 2026-11-20 (el prompt es de las 18:15 UTC).
+- **Objetivo:** revisar contexto y Git, e informar un plan de dependencias y de arquitectura **antes** de instalar nada.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A_01-plan-dependencias.md](ai-sessions/2026-11-20_claude-code_fase-1.0A_01-plan-dependencias.md) (**Completa**, exportada en la interacción 16).
+- **Accesos externos:** **ninguno**. Solo lecturas locales (Git, herramientas instaladas, lockfile de Stacker News y metadatos ya descargados en la Fase 0.3).
+- **Hallazgos informados:** E1 a E6 estaban definidos en `docs/stacker-news-compatibility.md` §3.5 y no en el plan de implementación; la tarea T11 decía «E1 a E3»; el manejo de errores no estaba en E1-E6 (se propuso E7); NDK no importa `websocket-polyfill` en su `dist` (clausura mínima).
+- **Decisión humana:** aprobó el diseño en la interacción siguiente.
+
+### 15. Obtención y verificación de metadatos (paso 1)
+- **Fecha:** 2026-11-20 (el prompt es de las 18:21 UTC).
+- **Objetivo:** verificar versiones, integridad, licencias, hashes, digests y avisos de seguridad, **sin descargar paquetes ni imágenes ni ejecutar nada**.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A_02-metadatos.md](ai-sessions/2026-11-20_claude-code_fase-1.0A_02-metadatos.md) (**Completa**, exportada en la interacción 16).
+- **Accesos externos (solo metadatos, ajustados a lo autorizado):** `hub.docker.com` (etiquetas), `auth.docker.io` y `registry-1.docker.io` (token anónimo y manifiestos, sin capas), `nodejs.org` y `raw.githubusercontent.com` (calendario de versiones), `registry.npmjs.org` (documentos de versión, claves públicas y avisos por lote), `pypi.org` (JSON de metadatos). Se envían solo nombres y versiones públicos.
+- **Resultados:** 44/44 integridades sha512 coinciden con el lockfile; 44/44 firmas ECDSA de npm verificadas; sin avisos npm ni PyPI; digests de las dos imágenes confirmados por dos vías.
+- **Verificaciones:** el repositorio quedó sin cambios (0 entradas en `git status`), sin contenedores ni imágenes nuevas.
+- **Nota:** el proceso `node` que aparecía en ejecución no era de esta sesión (runtime de OpenAI Codex, iniciado antes).
+
+### 16. Construcción y ejecución del laboratorio (paso 2)
+- **Fecha:** 2026-11-20 (el prompt es de las 18:31 UTC).
+- **Objetivo:** descargar y verificar los artefactos aprobados, construir el laboratorio sin red, ejecutar E1-E7 y documentar.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A_03-construccion-y-ejecucion.md](ai-sessions/2026-11-20_claude-code_fase-1.0A_03-construccion-y-ejecucion.md) (**Completa** (contenido visible). Reexportada el 2026-11-21 con autorización del propietario: sustituye a la exportación parcial anterior, de la que era un subconjunto).
+- **Accesos externos realizados (todos dentro de lo autorizado):**
+  - Descargas verificadas por hash, con `lab/tools/fetch_artifacts.py`: 23 tarballs de `registry.npmjs.org`, 5 ruedas de `files.pythonhosted.org` y el archivo de vectores NIP-44 de `raw.githubusercontent.com` (fijado a un commit). **29 artefactos, 0 fallos de integridad.**
+  - Consultas de procedencia: documentos completos de `registry.npmjs.org` (fechas de publicación, para investigar la clave expirada) y `api.github.com` (commit y licencia del archivo de vectores).
+  - `docker pull` de dos imágenes **por digest** (`node@sha256:e9f565d3…`, `python@sha256:5e2bdb1b…`). Docker mostró sugerencias de `docker login` y Docker Scout: **no se usaron**.
+  - **Sin** relays públicos, **sin** Stacker News, **sin** servicios de análisis de imágenes. La ejecución del laboratorio ocurrió en una red Docker `internal: true`.
+- **Archivos nuevos:** `lab/` (código, `compose.yaml`, Dockerfiles, `deps/artifacts.json`, pruebas, orquestador, README, definiciones de experimentos), `docs/nip46-lab-report.md` y las tres transcripciones de la Fase 1.0A. **Modificados:** `.gitignore` (tres reglas autorizadas), `docs/decisions.md` y `docs/ai-log.md`. Excluidos de Git: `lab/vendor/` (artefactos descargados y vectores sin licencia aclarada) y `lab/results/` (resultados crudos).
+- **Pruebas y verificaciones ejecutadas:**
+  - Pruebas propias del laboratorio: 33 `unittest` en PASS (relay, vectores oficiales de NIP-44 válidos e inválidos, NIP-04).
+  - Experimentos: E0, aislamiento, E1-E7 con el firmante de referencia, E3, E5, E5b y la repetición con el simulador Python: **39 de 39 en PASS** en la corrida oficial. Regla de decisión sobre las corridas con Python: NIP-44 como respuesta predeterminada (recomendación provisional).
+  - Control negativo del evaluador: un rechazo provocado da FAIL.
+  - Las 5 pruebas pytest existentes (5 pasaron) y `GET /health` (HTTP 200, `{"status":"ok"}`); integridad de los 29 artefactos recomprobada sin red (0 distintos); aislamiento verificado (red `internal`, sin puertos, sin ruta por defecto, usuario 10001, sin capacidades, solo lectura).
+  - **No hubo validación real con Stacker News.**
+- **Problemas y correcciones (detalle en `docs/nip46-lab-report.md` §9):** fallo de contexto de BuildKit en Windows (un solo `COPY`); el manifiesto quedaba ignorado por la regla `MANIFEST` (carpeta renombrada a `lab/deps/`); defecto del arnés al leer `user.pubkey` (E7 inconcluso, corregido sin cambiar el criterio); defecto del arnés en E5 por una importación inexistente en la clausura mínima (E5 bloqueado, corregido y repetido).
+- **Decisión humana:** el propietario aprobó la Opción A (Docker), los niveles 1 y 2, E7, el relay mínimo propio, `unittest`, las tres reglas de `.gitignore`, la clausura mínima y las descargas con verificación. No autorizó commits, push ni la Fase 1.0B.
+- **Asistencia de IA:** diseño del laboratorio y de los criterios de aceptación (fijados antes de ejecutar), atribución de fallos antes de achacarlos al cifrado, análisis de diferencias entre análisis estático y comportamiento real.
+- **Implementación por agentes:** código del laboratorio, ejecución de los experimentos y redacción del informe. Las decisiones de `docs/decisions.md` derivadas de la evidencia siguen **pendientes de aprobación**.
+- **Estado de las transcripciones (al cierre de esta interacción; actualizado después en la interacción 26):** Fase 1.0A: 01 y 02 completas, 03 parcial (**reexportada completa** más tarde). Pendientes: la de la interacción administrativa de la Fase 0.3 (commit), la del commit de la Fase 0.2, las interacciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT.
+
+## Fase 1.0A.2 y cierre de la Fase 1.0A: Claude Code
+
+Misma sesión, agente y modelo que la interacción 09 (Claude Code, `claude-sonnet-5-5`, sesión `35f0f3c1-13e9-47b9-832f-f6252cd2166f`). Validación con un relay público y observación de Stacker News. **Las transcripciones de las interacciones 17 a 23 y 25 se exportaron en la interacción 26** (ver el estado al final); no se reconstruyó ninguna. La interacción 24 son acciones humanas y no tiene transcripción. **No se hizo ningún commit ni push, no se modificó `app/`, `pyproject.toml`, `constraints.txt`, `AGENTS.md` ni `CLAUDE.md`.** Las **horas** son UTC y salen de los archivos de evidencia; **no se registran duraciones de trabajo** porque no se midieron. Resultados completos y verificados en [phase-1.0A-closure.md](phase-1.0A-closure.md).
+
+### 17. Propuesta de validación real con Stacker News (análisis)
+- **Fecha:** 2026-11-20 (UTC).
+- **Objetivo:** proponer el alcance de la validación real (arquitectura mínima, política de firma, relay, identidad desechable, aprobación humana, evidencia, compuertas), sin implementar ni conectar.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_01-propuesta-validacion-real.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_01-propuesta-validacion-real.md) (**Completa** (contenido visible), exportada en la interacción 26).
+- **Accesos externos:** ninguno.
+- **Archivos:** `docs/nip46-real-validation-plan.md` (nuevo).
+- **Decisión humana:** el propietario aprobó la implementación **local** de un firmante real mínimo y sus ensayos, sin conexiones externas (O-7 en `docs/decisions.md`).
+- **Asistencia de IA:** análisis, riesgos y propuesta de cuatro compuertas con autorización separada. **Implementación por agentes:** redacción del documento.
+- **Clasificación:** LAB (análisis y diseño de validación) y DOC.
+
+### 18. Firmante real mínimo de laboratorio y ensayos locales E8 a E10
+- **Fecha:** 2026-11-20 (UTC). La interacción se interrumpió por el límite de uso y dejó un documento de continuidad.
+- **Objetivo:** implementar en `lab/` el firmante real mínimo (política de 11 comprobaciones, aprobación humana, tope de firmas, proxy de un destino, evidencia con lista blanca) y ensayarlo con NDK 2.12.2 y un relay local.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_02-implementacion-local-e8-e10.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_02-implementacion-local-e8-e10.md) (**Completa** (contenido visible), exportada en la interacción 26. Incluye el mensaje del propietario sobre el límite de uso y el punto de compactación del contexto; la nota de continuidad **no es una transcripción**).
+- **Accesos externos:** ninguno.
+- **Archivos:** `lab/py/lab_real/`, `lab/real/`, pruebas `lab/py/tests/test_real_*.py`, etapa `--stage rehearsal` de `lab/run_lab.py`, `lab/experiments/definitions-real.md` (criterios fijados antes de ejecutar, con enmiendas declaradas).
+- **Pruebas:** ver la nota de continuidad (§2 y §4b). Incidencias: tres fallos del evaluador de E10, corregidos y declarados.
+- **Asistencia de IA / implementación por agentes:** diseño de criterios, código, ejecución y corrección. **Decisión humana:** alcance y límites de la fase.
+- **Clasificación:** LAB.
+
+### 19. Reanudación y verificación local final
+- **Fecha:** 2026-11-20 (UTC).
+- **Objetivo:** completar la verificación local antes de cualquier conexión (suite completa, ensayo con controles negativos, flujo interactivo por entrada estándar, escaneos, limpieza Docker) y redactar la solicitud de autorización de la primera sonda.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_03-reanudacion-verificacion-local.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_03-reanudacion-verificacion-local.md) (**Completa** (contenido visible), exportada en la interacción 26).
+- **Accesos externos:** ninguno.
+- **Resultado:** 77 `unittest`, E8 a E10b y sus controles en PASS; solicitud de autorización en borrador.
+- **Decisión humana:** autorizó después, y solo, la Compuerta A de la interacción 20. **Clasificación:** LAB y DOC.
+
+### 20. Compuerta A con `relay.nsec.app` (resultado NO-GO)
+- **Fecha:** 2026-11-20, autorizada de 17:00 a 17:02 Chile (20:00 a 20:02 UTC); sonda de 20:00:00 a 20:00:12 UTC.
+- **Objetivo:** una sonda (TLS verificado, `REQ`, un evento efímero `kind 24133` con clave desechable) contra un único destino.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_05-compuerta-a-nsec-app.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_05-compuerta-a-nsec-app.md) (**Completa** (contenido visible), exportada en la interacción 26).
+- **Accesos externos:** `relay.nsec.app:443` (un túnel, 1530 B enviados, 0 B recibidos). Ningún otro destino, ni Stacker News.
+- **Resultado:** **NO-GO**; causa sin determinar. Docker 0/0/0 y escaneo de secretos limpio. Evidencia: `lab/results/real-probe-20261120T165758/`.
+- **Decisión humana:** autorización con destino, ventana y límites. **Implementación por agentes:** lanzador, ejecución, limpieza e informe. **Clasificación:** LAB.
+
+### 21. Preparación y ejecución de A1 y A2 (relay.primal.net y relay.primal.io)
+- **Fecha:** 2026-11-20 (UTC). Autorizada de 20:03 a 20:08 Chile; ejecución de 23:03:00 a 23:03:14 UTC.
+- **Objetivo:** preparar un lanzador con ventana global de 5 minutos, un proxy con un único destino por prueba, `TLS_GROUPS=X25519` y pruebas con reloj simulado; ejecutar las dos sondas en orden.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_06-a1-a2-preparacion-y-ejecucion.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_06-a1-a2-preparacion-y-ejecucion.md) (**Completa** (contenido visible), exportada en la interacción 26; abarca tres mensajes del propietario y un punto de compactación del contexto).
+- **Accesos externos:** `relay.primal.net:443` (A1) y `relay.primal.io:443` (A2, el proxy no logró conectar). Ningún otro destino, ni Stacker News.
+- **Resultado:** A1 **GO** (TLS 1.3, `EOSE`, `OK` y eco, sin `AUTH`, 1 evento); A2 **NO-GO**. Evidencia: `lab/results/gate-a-ab/`. El propietario descartó `relay.primal.io` y no se investiga.
+- **Hallazgo propio:** el ClientHello de 1530 B medido en local coincidía con la sonda fallida; con X25519 pesa 517 B. Se registró que el cambio **no permite atribuir causalmente** el fallo anterior.
+- **Decisión humana:** relays, TLS, ventana y orden. **Clasificación:** LAB.
+
+### 22. Cierre técnico de A1/A2 y preparación de la Compuerta B
+- **Fecha:** 2026-11-20 (UTC).
+- **Objetivo:** hacer robusta la sonda (error de proxy `InvalidProxyStatus`, TLS y WSS con resultado estructurado) y dejar el procedimiento de la Compuerta B solo para `relay.primal.net`, en modo observación e incluso con un entorno hostil.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_07-cierre-a1-a2-preparacion-compuerta-b.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_07-cierre-a1-a2-preparacion-compuerta-b.md) (**Completa** (contenido visible), exportada en la interacción 26).
+- **Accesos externos:** ninguno.
+- **Pruebas:** 116 `unittest` del laboratorio; `preflight-b` en PASS; comprobación de que la preparación no firmó ni contactó a Stacker News.
+- **Clasificación:** LAB y DOC.
+
+### 23. Controlador de la Compuerta B y Compuerta A local operativa
+- **Fecha:** 2026-11-20 (UTC). Incluye la Compuerta B autorizada para 20:14 a 20:19 Chile y **no ejecutada** por la falta de un control automático del límite global y de una forma segura de mostrar la URI desde la herramienta del agente.
+- **Objetivo:** construir `lab/real/run_gate_b.py` (terminal real, URI solo en pantalla, ventana de 300 s con reserva de limpieza, parada manual, limpieza garantizada) y ensayarlo con una Compuerta A local (relay y cliente NDK locales), sin conexiones externas.
+- **Transcripción:** [2026-11-20_claude-code_fase-1.0A.2_08-controlador-compuerta-b.md](ai-sessions/2026-11-20_claude-code_fase-1.0A.2_08-controlador-compuerta-b.md) (**Completa** (contenido visible), exportada en la interacción 26; incluye la autorización de la Compuerta B de las 20:14 (no ejecutada) y el encargo del controlador).
+- **Accesos externos:** ninguno.
+- **Pruebas:** 119 `unittest` del laboratorio, 14 y 50 pruebas del lanzador y del controlador, 3 ensayos desatendidos en GO. Corrigió además el defecto de reintentos del firmante (`RELAY_ATTEMPTS`).
+- **Decisión humana:** construir el controlador y validar antes de la B. **Clasificación:** LAB y DOC.
+
+### 24. Acciones humanas con el controlador (no son interacciones con agentes)
+- **Fecha:** 2026-11-20 (UTC), de 23:42 a 23:54, según los archivos de evidencia.
+- **Qué hizo el propietario en su PowerShell:** dos ensayos interactivos de la Compuerta A local (23:42:57 UTC **NO-GO**; 23:44:23 UTC **GO**); una ejecución de la Compuerta B **interrumpida antes del inicio de la ventana, sin conexión externa**; y la **Compuerta B real** (de 23:50:05 a 23:54:24 UTC, ventana configurada 20:50:00 a 20:55:00 Chile) con `relay.primal.net:443` y su navegador en Stacker News.
+- **Resultado verificado:** ver [phase-1.0A-closure.md](phase-1.0A-closure.md) §2.3 y §2.4. `connect` por NIP-04 aprobado a mano, `get_public_key` y un `sign_event` del evento `kind 27235` denegado; 0 firmas; 0 residuos Docker. **Sin autenticación completa.**
+- **No verificado:** el texto de la autorización de esa ventana, y lo que mostró la pantalla de Stacker News (declarado por el propietario).
+- **Atribución:** **acción humana**; el controlador lo implementó un agente (interacción 23). **Clasificación:** LAB (ejecución de validaciones).
+
+### 25. Cierre documental de la Fase 1.0A y propuesta de la Fase 1.0B
+- **Fecha:** 2026-11-20 (UTC).
+- **Objetivo:** consolidar y **verificar contra la evidencia** los resultados informados, documentar el cierre y proponer un plan acotado para la Fase 1.0B, sin implementarla.
+- **Transcripción:** [2026-11-21_claude-code_fase-1.0A.3_01-cierre-fase-1.0A-y-propuesta-1.0B.md](ai-sessions/2026-11-21_claude-code_fase-1.0A.3_01-cierre-fase-1.0A-y-propuesta-1.0B.md) (**Completa** (contenido visible), exportada en la interacción 26).
+- **Accesos externos:** ninguno. Solo lectura local de archivos, Git y evidencia.
+- **Archivos nuevos:** `docs/phase-1.0A-closure.md`, `docs/phase-1.0B-proposal.md`. **Modificados:** `docs/decisions.md`, `docs/ai-log.md`, `docs/project-context.md` y las notas de continuidad.
+- **Hallazgos de la verificación:** hubo dos ejecuciones interactivas (la primera NO-GO); no hay `session_end` en la parada forzada; no existe un evaluador de la ejecución real; la ventana autorizada de la B real y lo que mostró Stacker News no son verificables localmente.
+- **Clasificación:** DOC.
+
+### 26. Cierre formal de la Fase 1.0A, Bloques B0 y B1 de la Fase 1.0B, exportación de transcripciones y propuesta del Bloque B2
+- **Fecha:** 2026-11-21 (UTC; el prompt es de las 00:26 UTC).
+- **Agente y modelo:** igual que la interacción 09.
+- **Objetivo (autorizado expresamente por el propietario):** formalizar el cierre técnico y documental de la 1.0A; implementar B0 (dependencias, configuración, decisiones) y B1 (núcleo Nostr en `app/nostr/`); ejecutar pruebas y comprobaciones Docker locales; actualizar documentación y registro de IA; exportar las transcripciones pendientes de la 1.0A; preparar una propuesta para B2. **No** se autorizaron B2 a B6.
+- **Transcripción:** **pendiente de exportar**: la interacción sigue en curso al escribir esta entrada y la exportación se hará al cierre de la siguiente fase, con autorización.
+- **Accesos externos:** descargas de paquetes del índice público de PyPI (`pypi.org`, `files.pythonhosted.org`) para instalar las versiones fijadas (entorno temporal, `.venv`, contenedor Linux y construcción Docker); **ninguna conexión a relays, a Stacker News ni a otros servicios**. Los fixtures de interoperabilidad se generaron con Node y `nostr-tools` con `--network none` (el generador no usa red; **la tarea en conjunto no fue offline**, por las descargas de PyPI aceptadas por el propietario como tráfico de instalación).
+- **Archivos nuevos:** `app/config.py`, `app/nostr/{__init__,errors,keys,event,nip44,nip04,nip46}.py`, `tests/nostr/` (pruebas y fixtures), `tests/test_config.py`, `tests/test_architecture.py`, `lab/tools/gen_core_fixtures.mjs`, `docs/phase-1.0A-evidence-summary.md`, nueve transcripciones de `docs/ai-sessions/` (ocho nuevas y una reexportada completa). **Modificados:** `pyproject.toml`, `constraints.txt`, `Dockerfile`, `compose.yaml`, `.env.example`, `README.md`, `docs/decisions.md`, `docs/phase-1.0A-closure.md`, `docs/phase-1.0B-proposal.md` (§9 propuesta de B2), `docs/project-context.md`, `docs/ai-log.md` y la nota de continuidad. No se modificó `AGENTS.md` ni `CLAUDE.md`.
+- **Pruebas y verificaciones (ejecutadas por Claude Code):** ver el informe final de la interacción y `docs/decisions.md` (sección «Fase 1.0B, Bloques B0 y B1»): 253 pruebas en PASS y 1 omitida con aviso (CSV oficial completo de BIP-340) en Windows (Python 3.12.10) y en Linux (Python 3.12.16), `pip check` limpio, `mypy --strict` sin incidencias y 100 % de líneas y ramas de `app/` (herramientas temporales fuera de las dependencias), construcción Docker con digest fijado y contenedor `healthy`.
+- **Hallazgos:** defecto real de las expresiones regulares con `$` (aceptaban un salto de línea final) detectado por las pruebas y corregido antes de entregar; el criterio de los vectores BIP-340 quedó **parcial** (4 de los oficiales, verificados por cálculo) y se **cerró en la interacción 27**; la contradicción entre D-4 y `AGENTS.md` (JWT) queda registrada, sin modificar `AGENTS.md`.
+- **Decisión humana:** aprobó el cierre de la 1.0A con observaciones, D-1 a D-4, D-6 y D-7, el requisito de portabilidad y la exportación de transcripciones; dejó D-5 pendiente.
+- **Asistencia de IA:** análisis, riesgos, propuesta de B2. **Implementación por agentes:** código, pruebas, documentación, exportación y verificaciones.
+- **Clasificación:** **DEV** (núcleo Nostr de `app/`, configuración y dependencias del producto: primer trabajo DEV del proyecto después de la base de la Fase 0.2), **LAB** (generación de fixtures, medición de cobertura y tipos, verificación de interoperabilidad) y **DOC** (cierre de fase, resumen sanitizado, transcripciones, propuesta B2, README portable).
+
+### 27. Cierre de los criterios pendientes de B1: CSV oficial de BIP-340
+- **Fecha:** 2026-11-21 (UTC; descarga a las 00:55:30 UTC).
+- **Agente y modelo:** igual que la interacción 09.
+- **Objetivo (autorizado expresamente):** cerrar **exclusivamente** los criterios pendientes de B1 (vectores oficiales BIP-340 completos); aclarar el tratamiento de las descargas de PyPI; actualizar documentación. **No** se autorizó B2 ni modificar el firmante, la API o el frontend.
+- **Transcripción:** **pendiente de exportar** (la interacción 26 ya está pendiente y esta continúa la misma tarea).
+- **Accesos externos:** **una** descarga HTTPS (TLS verificado) de `raw.githubusercontent.com/bitcoin/bips/master/bip-0340/test-vectors.csv` (HTTP 200, 6892 bytes). Sin relays, Stacker News ni otros servicios; sin código ejecutable ni dependencias nuevas.
+- **Resultado:** 19 vectores oficiales ejecutados (9 positivos, 10 negativos), 0 omitidos, todos en PASS, sin modificar la implementación (ver `docs/decisions.md`, L-BIP340). Origen, fecha y SHA-256 en `tests/nostr/fixtures/README.md`.
+- **Archivos:** nuevo `tests/nostr/fixtures/bip340_official_test_vectors.csv`; modificados `tests/nostr/test_keys.py` (ejecutor sin omisiones y controles negativos del propio ejecutor), `tests/nostr/fixtures/README.md`, `README.md`, `docs/decisions.md`, `docs/project-context.md`, `docs/ai-log.md`; eliminado el JSON provisional de los vectores 0 a 3 (sustituido por el CSV completo).
+- **Decisión humana:** autorizó la descarga única con restricciones y aceptó las descargas de PyPI como tráfico de instalación (no se documentan como ejecución offline).
+- **Clasificación:** **DEV** (pruebas del núcleo del producto) y **DOC**; **LAB**: ninguna.
+
+### Clasificación de las interacciones por tipo de actividad (LAB / DEV / DOC)
+
+**Criterio** (aprobado por el propietario, O-13): **LAB** = investigación, experimentación, código y validaciones de laboratorio; **DEV** = implementación del producto (`app/`); **DOC** = documentación y procedimientos. Es una **propuesta de clasificación hecha por Claude Code**, sin revisión del propietario. No cambia la estructura del repositorio y **no atribuye tiempos**.
+
+| Interacciones | LAB | DEV | DOC |
+|---|---|---|---|
+| 01 a 08 (instrucciones de agentes, trazabilidad, contexto) | | | **Sí** |
+| 09 a 11 (base FastAPI, Docker, pruebas de `/health`) | | **Sí** | Sí (README, decisiones) |
+| 12 y 13 (investigación y diseño NIP-46 y de seguridad) | **Sí** | | **Sí** |
+| 14 a 16 (laboratorio 1.0A.1: E1 a E7) | **Sí** | | Sí (informe) |
+| 17 (propuesta de validación real) | **Sí** | | **Sí** |
+| 18 y 19 (firmante real mínimo y ensayos E8 a E11 locales) | **Sí** | | Sí |
+| 20 y 21 (Compuerta A: sondas de relay) | **Sí** | | Sí (informes) |
+| 22 y 23 (robustez de la sonda, controlador, Compuerta A local, procedimiento de la B) | **Sí** | | **Sí** |
+| 24 (ejecuciones del propietario) | **Sí** (validación) | | |
+| 25 (cierre y propuesta 1.0B) | | | **Sí** |
+| 26 (cierre formal, B0, B1, transcripciones, propuesta B2) | **Sí** (fixtures, cobertura, tipos) | **Sí** (`app/nostr/`, `app/config.py`, dependencias) | **Sí** |
+| 27 (cierre de criterios de B1: CSV BIP-340) | | **Sí** (pruebas del núcleo) | **Sí** |
+
+**Aclaraciones.** (1) **No hay trabajo DEV en la Fase 1.0A** (interacciones 17 a 25): `app/` no se modificó; el firmante de `lab/py/lab_real/` y el controlador son código de laboratorio, no el producto. **El primer trabajo DEV de la Fase 1.0B es la interacción 26** (B0 y B1). (2) Las Compuertas A y B son **LAB**. (3) La implementación del producto (Fase 1.0B) está iniciada solo en B0 y B1; B2 a B6 no. (4) **Fuera del registro**: las pruebas manuales exploratorias de conectividad que el propietario hizo antes en Windows no se incorporan a las iteraciones. (5) No se reconstruyeron tiempos de trabajo.
+
+### Estado de las transcripciones de la Fase 1.0A (actualizado en la interacción 26)
+Fase 1.0A.1: 01 y 02 completas; **03 reexportada completa** (sustituye a la parcial). Fase 1.0A.2 y cierre: **01, 02, 03, 05, 06, 07, 08 y 1.0A.3_01 completas** (contenido visible); el archivo `04` de esa serie es la nota de continuidad, que **no es una transcripción**. Todas se exportaron con redacción de URI `bunker://` completas, claves, tokens, usuario y equipo de Windows, correo y nombre del propietario, y se revisaron con escaneo de patrones y lectura de los puntos señalados. **Pendientes:** las de las interacciones 26 y 27, la de la interacción administrativa de la Fase 0.3 (commit), la del commit de la Fase 0.2, las interacciones 06 a 08 de la Fase 0.1 y las conversaciones de ChatGPT. Las exportaciones no incluyen razonamiento interno ni salidas de herramientas.
+
 ## Contexto de planificación
 
 - [`docs/project-context.md`](project-context.md): **síntesis** de discusiones del propietario con ChatGPT, proporcionada y revisada por él. Recoge objetivo, stack previsto, decisiones de dirección, consideraciones técnicas, riesgos y estado de la Fase 0.1.

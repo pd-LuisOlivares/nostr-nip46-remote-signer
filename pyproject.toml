@@ -11,6 +11,10 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi==0.165.0",
     "uvicorn==0.54.0",
+    # Nucleo Nostr (Fase 1.0B, D-1): versiones validadas en el laboratorio de la Fase 1.0A.
+    "coincurve==21.0.0",      # BIP-340 (Schnorr) y ECDH sobre secp256k1 (envuelve libsecp256k1)
+    "cryptography==50.0.2",   # ChaCha20 y HKDF (NIP-44), AES-CBC (NIP-04 entrante)
+    "websockets==17.4",       # cliente de relay (se usa a partir del Bloque B2)
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,1 @@
+tests/nostr/fixtures/bip340_official_test_vectors.csv -text whitespace=cr-at-eol

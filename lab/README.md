@@ -1,0 +1,64 @@
+# Laboratorio de interoperabilidad NIP-46 / NDK 2.12.2 (Fase 1.0A)
+
+Laboratorio **aislado y desechable** para comprobar de forma experimental qué combinaciones de cifrado (NIP-04 / NIP-44) funcionan con el
+cliente real que usa Stacker News (NDK 2.12.2) al hablar NIP-46 a través de un relay local. **No es el firmante productivo**, no toca `app/`
+y no valida compatibilidad con Stacker News: solo con la versión de NDK examinada, ejecutándose en Node 22 (no en un navegador).
+
+Resultados y conclusiones: [`docs/nip46-lab-report.md`](../docs/nip46-lab-report.md). Definiciones y criterios de los experimentos:
+[`experiments/definitions.md`](experiments/definitions.md).
+
+## Arquitectura
+
+```text
+red Docker `nip46-lab_lab_net` (internal: true → sin Internet y sin puertos publicados)
+ ├─ relay        Python + websockets 17.4. Relay NIP-01 mínimo (EVENT/REQ/CLOSE, OK/EOSE/CLOSED/NOTICE). Verifica id y firma.
+ ├─ signer-ref   Node + nostr-tools 2.16.2. Firmante de REFERENCIA (aísla el comportamiento de NDK).
+ ├─ signer-py    Python + coincurve/cryptography. Simulador del firmante con NIP-04/NIP-44 propios.
+ ├─ client       Node + NDK 2.12.2 REAL. Replica el parche de URL, el evento y las comprobaciones de servidor de Stacker News.
+ ├─ py-job / node-job   Tareas puntuales (pruebas unittest, E5).
+ └─ volumen `ctl` (tmpfs, en memoria): el firmante deja la URI bunker:// y la clave pública de identidad; nunca claves privadas.
+```
+
+- **Claves**: todas desechables, generadas en memoria al arrancar cada contenedor (E5 usa las claves públicas de juguete de los vectores
+  oficiales). No se guardan ni se registran claves privadas ni secretos de conexión ni texto descifrado (solo su SHA-256).
+- **Coordinación**: el firmante publica `ready` (y escribe `/ctl`) solo después de recibir el `EOSE` de su suscripción; el cliente espera ese
+  archivo. NDK espera su propio `EOSE` antes de enviar. Así no hay solicitudes ni respuestas publicadas antes de que exista la suscripción
+  (el relay no almacena eventos).
+- **Endurecimiento** (todos los servicios): usuario no root, FS de solo lectura, `cap_drop: ALL`, `no-new-privileges`, `tmpfs` en `/tmp`,
+  límites de memoria y procesos. La **construcción** usa `network: none`.
+
+## Dependencias (manifiesto con hashes)
+
+`deps/artifacts.json` fija cada artefacto con su hash: 24 entradas npm (23 tarballs únicos, clausura mínima de NDK 2.12.2 y
+`nostr-tools` 2.16.2, sin scripts de instalación), 5 ruedas Python, los vectores NIP-44 y los digests de las dos imágenes base
+(`node:22.23.5-bookworm-slim`, `python:3.12.16-slim-trixie`, ambas `linux/amd64`). `py/requirements.lock` exige `--require-hashes`.
+
+## Reproducción (Windows/PowerShell; requiere Docker)
+
+```powershell
+# 1) Descargar y verificar artefactos (solo HTTPS, hosts del manifiesto, hash verificado antes de guardar; no ejecuta nada)
+.\.venv\Scripts\python.exe lab\tools\fetch_artifacts.py
+
+# 2) Descargar las dos imágenes base POR DIGEST
+docker pull node@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
+docker pull python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+
+# 3) Construir SIN red (instala solo desde lab/vendor/ con hashes)
+docker compose -f lab/compose.yaml build relay signer-ref
+
+# 4) Ejecutar (todo, o por etapas: units | isolation | ref | py | e5)
+.\.venv\Scripts\python.exe lab\run_lab.py --stage all
+
+# 5) Limpieza exclusiva del proyecto del laboratorio
+docker compose -f lab/compose.yaml -p nip46-lab down -v --remove-orphans
+```
+
+Los resultados crudos van a `lab/results/` (excluido de Git). Los vectores NIP-44 (`lab/vendor/vectors/`) son un **dato local sin versionar**:
+el repositorio de origen no declara licencia.
+
+## Alcance y límites
+
+- Relay mínimo: sin persistencia, NIP-42, NIP-11 ni límites de tasa.
+- NDK corre en **Node 22**, no en el navegador de Stacker News; el comportamiento del bundle de producción no se ha observado.
+- El simulador Python y el firmante de referencia implementan solo lo que NDK usa; no son el firmante definitivo.
+- Límite **provisional** de NIP-44 en el laboratorio: 65535 bytes (propuesta P-14), no una regla de la especificación.

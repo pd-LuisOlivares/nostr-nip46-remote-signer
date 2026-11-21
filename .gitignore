@@ -221,3 +221,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Laboratorio de interoperabilidad NIP-46 (Fase 1.0A). Reglas autorizadas por el propietario.
+# Resultados crudos de ejecucion: pueden contener ids de evento y claves publicas
+# desechables; las conclusiones se documentan en docs/, no se versionan los crudos.
+lab/results/
+# Dependencias npm instaladas: se reproducen desde el manifiesto con hashes versionado.
+lab/node/node_modules/
+# Artefactos descargados (tarballs, ruedas, datos de terceros): binarios verificables
+# por hash; los vectores NIP-44 ademas tienen licencia sin aclarar.
+lab/vendor/
