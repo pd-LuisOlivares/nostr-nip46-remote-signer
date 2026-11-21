@@ -1,0 +1,74 @@
+# Regresión del firmante DEL PRODUCTO (B2) con el cliente NDK 2.12.2 real. Red `internal: true`: sin Internet y sin puertos publicados.
+# Se opera con lab/run_product_regression.py. Reutiliza las imágenes del laboratorio (relay y cliente) y la imagen del producto.
+name: nip46-product
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 256
+  mem_limit: 512m
+  init: true
+  stop_grace_period: 8s
+  networks: [lab_net]
+
+networks:
+  lab_net:
+    internal: true
+
+volumes:
+  ctl:
+    driver: local
+    driver_opts: {type: tmpfs, device: tmpfs, o: "size=1m,mode=1777"}
+
+services:
+  relay:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    command: ["python", "-m", "lab_relay"]
+    environment: {LAB_ACTOR: relay, RELAY_PORT: "7777"}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 7777), 2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
+
+  signer:
+    <<: *hardening
+    image: nostr-nip46-remote-signer:dev
+    command: ["python", "/lab-product/runner.py"]
+    environment:
+      RELAY_URL: ws://relay:7777
+      RELAY_ALLOW_INSECURE: "1"
+      SERVICE_ORIGIN: https://sn.lab.invalid
+      APPROVAL_TTL_S: "30"
+      SESSION_TTL_S: "150"
+      MAX_SIGNATURES: "1"
+    volumes: [ctl:/ctl, "./runner.py:/lab-product/runner.py:ro"]
+    depends_on: {relay: {condition: service_healthy}}
+
+  # P-33: la aplicacion COMPLETA (Uvicorn + FastAPI + runtime + firmante) en la red interna; la opera lab/product/driver.py por la API HTTP.
+  app:
+    <<: *hardening
+    image: nostr-nip46-remote-signer:dev
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      RELAY_URL: ws://relay:7777
+      RELAY_ALLOW_INSECURE: "1"
+      SERVICE_ORIGIN: https://sn.lab.invalid
+      APPROVAL_TTL_S: "30"
+      SESSION_TTL_S: "150"
+      MAX_SIGNATURES: "1"
+    volumes: [ctl:/ctl, "./:/lab-product:ro"]
+    depends_on: {relay: {condition: service_healthy}}
+
+  client:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    command: ["node", "client/main.mjs"]
+    environment:
+      LAB_ACTOR: client
+      SCENARIO: ${SCENARIO:-e1}
+      TIMEOUT_MS: ${TIMEOUT_MS:-20000}
+    volumes: ["ctl:/ctl:ro"]

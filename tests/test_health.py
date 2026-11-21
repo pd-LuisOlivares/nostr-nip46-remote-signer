@@ -6,7 +6,8 @@ from app.main import create_app
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(create_app())
+    # La API solo acepta cabeceras Host locales (anti DNS rebinding): el cliente de pruebas se conecta como un cliente local.
+    return TestClient(create_app(announce_code=False), base_url="http://127.0.0.1")
 
 
 def test_health_returns_200(client: TestClient) -> None:

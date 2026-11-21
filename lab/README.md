@@ -56,6 +56,23 @@ docker compose -f lab/compose.yaml -p nip46-lab down -v --remove-orphans
 Los resultados crudos van a `lab/results/` (excluido de Git). Los vectores NIP-44 (`lab/vendor/vectors/`) son un **dato local sin versionar**:
 el repositorio de origen no declara licencia.
 
+## Regresión del firmante del producto (B2)
+
+`lab/run_product_regression.py` ejecuta el firmante **del producto** (`app/services`, imagen `nostr-nip46-remote-signer:dev`) frente al cliente NDK 2.12.2 real
+y el relay del laboratorio, en una red Docker `internal` (sin Internet ni puertos publicados). Cubre E1, E2, E3 y E8 con criterios fijados en el propio script.
+`lab/product/runner.py` **automatiza la aprobación del operador** y por eso se niega a arrancar si el relay no es `ws://relay:7777` o el origen no termina en `.invalid`:
+es una diferencia exclusiva del arnés (el producto exige una decisión humana por la API). Requisitos: imágenes `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a` y la imagen del producto
+(`docker compose build`, mejor con `PYTHON_IMAGE=<digest>`). Resultados en `lab/results/product-regression-<fecha>/` (excluido de Git).
+
+```powershell
+.\.venv\Scripts\python.exe lab\run_product_regression.py          # servicio del producto
+.\.venv\Scripts\python.exe lab\run_product_regression.py --api    # aplicación completa (Uvicorn + API HTTP con JWT), P-33
+```
+
+El modo `--api` levanta el servicio `app` (Uvicorn) en la red interna; `lab/product/driver.py` se ejecuta dentro del contenedor, canjea el código de acceso (leído del registro del contenedor) por un JWT y opera la API HTTP como lo haría el operador (aprobación por guion, solo en el arnés).
+
+`lab/e2e/compose.yaml` es el escenario del E2E de navegador en Docker (`E2E_DOCKER=1 python -m pytest tests/e2e/test_docker_ndk.py`): producto publicado solo en `127.0.0.1`, relay del laboratorio y cliente NDK real; el producto solo conoce `ws://relay:7777`.
+
 ## Alcance y límites
 
 - Relay mínimo: sin persistencia, NIP-42, NIP-11 ni límites de tasa.

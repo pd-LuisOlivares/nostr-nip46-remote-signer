@@ -15,17 +15,25 @@ dependencies = [
     "coincurve==21.0.0",      # BIP-340 (Schnorr) y ECDH sobre secp256k1 (envuelve libsecp256k1)
     "cryptography==50.0.2",   # ChaCha20 y HKDF (NIP-44), AES-CBC (NIP-04 entrante)
     "websockets==17.4",       # cliente de relay (se usa a partir del Bloque B2)
+    # Autenticacion de la API local (decision D-8, reemplaza a D-4): JWT HS256 firmado por el servidor. Sin extra `crypto`.
+    "PyJWT==2.15.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest==9.2.0",
     "httpx==0.28.1",
+    # Pruebas E2E con navegador real (solo desarrollo; Apache-2.0). Se usa el Chrome/Edge ya instalado (channel), sin descargar navegadores.
+    "playwright==1.64.1",
 ]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+app = ["static/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = ["e2e: pruebas de extremo a extremo con navegador real (Playwright) y relay local; se omiten si no hay navegador"]

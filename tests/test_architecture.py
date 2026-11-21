@@ -21,7 +21,7 @@ def imported_modules(path: Path) -> set[str]:
 
 
 def test_the_core_package_exists_with_the_expected_modules():
-    assert sorted(p.name for p in NOSTR.glob("*.py")) == ["__init__.py", "errors.py", "event.py", "keys.py", "nip04.py", "nip44.py", "nip46.py"]
+    assert sorted(p.name for p in NOSTR.glob("*.py")) == ["__init__.py", "errors.py", "event.py", "keys.py", "nip04.py", "nip44.py", "nip46.py", "relay.py"]
 
 
 def test_the_nostr_core_does_not_import_fastapi_starlette_or_the_http_layer():
@@ -43,12 +43,37 @@ def test_app_never_imports_from_the_laboratory():
             assert module.split(".")[0] not in {"lab", "lab_common", "lab_real", "lab_relay", "lab_signer"}, f"{path} importa {module}"
 
 
-def test_no_network_or_filesystem_io_in_the_core():
-    forbidden = {"socket", "ssl", "urllib.request", "http", "http.client", "websockets", "asyncio", "subprocess", "requests", "aiohttp"}
+def test_network_io_is_confined_to_the_relay_transport():
+    """B2-1: relay.py es el UNICO modulo del producto que hace E/S de red; el resto del nucleo y los servicios no."""
+    forbidden = {"socket", "ssl", "urllib.request", "http", "http.client", "websockets", "subprocess", "requests", "aiohttp"}
     for path in NOSTR.glob("*.py"):
-        assert not (imported_modules(path) & forbidden), path.name
+        mods = imported_modules(path)
+        if path.name == "relay.py":
+            assert {"asyncio", "ssl"} <= mods and any(m.startswith("websockets") for m in mods)
+            continue
+        assert not (mods & forbidden) and "asyncio" not in mods, path.name
         text = path.read_text(encoding="utf-8")
         assert "open(" not in text and "os.environ" not in text and "getenv" not in text, path.name
+    for path in (APP / "services").glob("*.py"):
+        mods = imported_modules(path)
+        assert not any(m.split(".")[0] in {x.split(".")[0] for x in forbidden} for m in mods), path.name
+        assert not any(m.split(".")[0] in {"fastapi", "starlette", "uvicorn"} for m in mods), path.name
+        text = path.read_text(encoding="utf-8")
+        assert "open(" not in text and "os.environ" not in text and "getenv" not in text, path.name
+
+
+def test_the_api_layer_does_not_do_network_io_and_services_do_not_import_the_api():
+    for path in (APP / "api").glob("*.py"):
+        assert not (imported_modules(path) & {"socket", "ssl", "websockets", "subprocess"}), path.name
+    for path in (APP / "services").glob("*.py"):
+        assert not any(m.startswith(("app.api", "app.main")) for m in imported_modules(path)), path.name
+
+
+def test_no_private_key_is_persisted_by_the_application():
+    """D-3: la clave solo vive en memoria. Ningun modulo de app/ escribe archivos ni usa bases de datos."""
+    for path in APP.rglob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        assert not re.search(r"sqlite3|\.write_text\(|\.write_bytes\(|open\([^)]*[\"']w", text), path.name
 
 
 def test_no_personal_paths_or_addresses_in_versioned_sources():
@@ -71,8 +96,31 @@ def test_compose_publishes_only_on_loopback():
 def test_dependencies_are_pinned_and_present_in_constraints():
     pinned = {name.lower(): version for name, version in (line.split("==") for line in (ROOT / "constraints.txt").read_text(encoding="utf-8").split("\n")
                                                           if line and not line.startswith("#"))}
-    for name, version in (("coincurve", "21.0.0"), ("cryptography", "50.0.2"), ("websockets", "17.4"), ("cffi", "2.1.1"), ("pycparser", "3.12")):
+    for name, version in (("pyjwt", "2.15.1"), ("coincurve", "21.0.0"), ("cryptography", "50.0.2"), ("websockets", "17.4"), ("cffi", "2.1.1"), ("pycparser", "3.12")):
         assert pinned[name] == version
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     for dep in ("coincurve==21.0.0", "cryptography==50.0.2", "websockets==17.4"):
         assert f'"{dep}"' in project
+
+
+def test_the_security_package_is_independent_of_the_http_layer():
+    for path in (APP / "security").glob("*.py"):
+        assert not any(m.split(".")[0] in {"fastapi", "starlette"} or m.startswith(("app.api", "app.main")) for m in imported_modules(path)), path.name
+
+
+def test_jwt_is_pinned_to_one_algorithm_and_never_accepts_none():
+    text = (APP / "security" / "operator_auth.py").read_text(encoding="utf-8")
+    assert 'ALGORITHM: Final = "HS256"' in text and "algorithms=[ALGORITHM]" in text and "verify_signature" in text
+    assert "none" not in re.findall(r"algorithms=\[[^\]]*\]", text)[0].lower()
+
+
+def test_the_web_ui_has_no_unsafe_patterns_and_no_browser_storage():
+    static = APP / "static"
+    assert {p.name for p in static.iterdir()} >= {"index.html", "app.js", "app.css"}
+    js = (static / "app.js").read_text(encoding="utf-8")
+    html = (static / "index.html").read_text(encoding="utf-8")
+    for forbidden in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function", "localStorage", "sessionStorage",
+                      "indexedDB", "document.cookie"):
+        assert forbidden not in js, forbidden
+    assert not re.search(r"<script(?![^>]*src=)", html) and not re.search(r"\son[a-z]+\s*=|style\s*=|javascript:", html, re.IGNORECASE)
+    assert not re.search(r"https?://", html + js + (static / "app.css").read_text(encoding="utf-8"))

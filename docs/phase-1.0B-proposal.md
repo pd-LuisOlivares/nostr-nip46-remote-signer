@@ -2,6 +2,12 @@
 
 **Estado actualizado (2026-11-20): el propietario aprobó D-1 a D-4, D-6 y D-7 y autorizó los Bloques B0 y B1, que están COMPLETADOS (B1 cerrado el 2026-11-21 con el CSV oficial de BIP-340; ver la interacción 27 del registro de IA) (ver `docs/decisions.md`, sección «Fase 1.0B, Bloques B0 y B1»). D-5 sigue pendiente. B2 a B6 NO están autorizados; el §9 detalla B2. El texto de las secciones 1 a 8 conserva la propuesta original.** Versión original: «PROPUESTA pendiente de aprobación; no se implementó nada». Parte de la evidencia de [phase-1.0A-closure.md](phase-1.0A-closure.md) y respeta [nip46-security-design.md](nip46-security-design.md) y [nip46-implementation-plan.md](nip46-implementation-plan.md) (de los que esta propuesta es una **versión recortada y ordenada por riesgo**). Etiquetas: **[D]** propuesta; **[LAB]** observado en la Fase 1.0A; **[PDF]** alcance indicado por el propietario.
 
+> **Actualización de avance (2026-11-21).** B0 y B1 completados; **B2 y B3 implementados y verificados localmente** (O-17; detalle y resultados en `docs/decisions.md`, sección «Fase 1.0B, Bloques B2 y B3»); **B4 preparado y pendiente de una única autorización operativa** (`docs/phase-1.0B-B4-gate.md`; D-5 sin decidir). B5 y B6 **no** están autorizados. Las decisiones B2-1 a B2-7 se aplicaron según su recomendación. Este documento no se reestructura: es la propuesta original.
+
+> **Actualización de avance (2026-11-21, cierre local).** B2 y B3 verificados (P-33 cumplida); D-4 reemplazada por **D-8 (JWT)**; **B5 (interfaz) implementada y probada con un navegador real**; **B6 verificado solo en local** (E2E de navegador y de Docker con NDK 2.12.2 real); **B4 sigue preparado y sin ejecutar** (`docs/phase-1.0B-B4-gate.md`): ni B4 ni la validación real de B6 se dan por completados sin evidencia de una sesión autenticada en Stacker News.
+
+> **Actualización de avance (2026-11-21, cierre de jornada).** **B4 se ejecutó: PASS con observaciones** (`docs/phase-1.0B-B4-gate.md`, `docs/decisions.md`). B6 sigue pendiente de la validación real y de la reproducibilidad desde un clon limpio. Continuidad: `docs/handoff-2026-11-21.md`.
+
 ## 1. Alcance (solo lo necesario) y exclusiones
 
 Incluye únicamente las diez capacidades pedidas **[PDF]**: (1) clave Nostr, crear o ingresar; (2) firmante NIP-46 en Python; (3) conexión al relay validado; (4) URI `bunker://`; (5) API FastAPI para controlar el firmante y consultar solicitudes pendientes; (6) interfaz HTML, CSS y JavaScript sin frameworks; (7) aprobación explícita de `connect`; (8) validación y aprobación explícita del `sign_event` de autenticación; (9) firma y respuesta NIP-46; (10) demostración real de inicio de sesión en Stacker News.
@@ -98,7 +104,7 @@ Cada bloque cierra con `pytest`, `git diff --check`, `README`/`docs/decisions.md
 4. ¿Se versiona `lab/` y qué evidencia sanitizada se conserva en el repositorio (hallazgo F-8)?
 5. ¿Se autoriza exportar las transcripciones de la Fase 1.0A para cerrar la 1.0A.3?
 
-## 9. Propuesta detallada del Bloque B2 (firmante NIP-46 sin interfaz) — **no implementada, pendiente de autorización expresa**
+## 9. Propuesta detallada del Bloque B2 (firmante NIP-46 sin interfaz) — **implementada y verificada localmente el 2026-11-21 (O-17)**
 
 **Objetivo.** Un firmante NIP-46 completo **dentro del proceso**, sin API ni interfaz, que reciba solicitudes por un relay, aplique la política y entregue las decisiones humanas a través de **solicitudes pendientes** (en B3 las resolverá la API). Se prueba con un relay falso en proceso, un cliente doble que imita a NDK y, como regresión, con el cliente NDK 2.12.2 del laboratorio contra un relay **local**. No se conecta a ningún relay público ni a Stacker News.
 

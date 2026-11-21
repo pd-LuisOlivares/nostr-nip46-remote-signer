@@ -1,0 +1,10 @@
+Resumen tecnico:
+  eventos: 16
+  sign_ok: 1
+  session_end: 1
+  connect_o_firma_pendientes: 2
+  errores: 0
+  avisos_del_relay: 0
+  politica_fallida: 0
+Sin fugas. Resumen COHERENTE con una sesion de B4.
+Recuerde: PASS exige ademas que Stacker News muestre una sesion autenticada (observacion del propietario).

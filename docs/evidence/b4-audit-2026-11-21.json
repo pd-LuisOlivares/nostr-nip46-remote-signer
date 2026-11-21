@@ -1,0 +1,137 @@
+{
+ "entries": [
+  {
+   "seq": 1,
+   "ts": 1795230065.913,
+   "event": "session_start",
+   "relay_host": "relay.primal.net",
+   "origin": "https://stacker.news",
+   "max_signatures": 1,
+   "window_s": 120,
+   "tls_groups": "X25519"
+  },
+  {
+   "seq": 2,
+   "ts": 1795230067.517,
+   "event": "relay_ready"
+  },
+  {
+   "seq": 3,
+   "ts": 1795230092.833,
+   "event": "bunker_issued",
+   "transport_pub8": "6ca6e74a",
+   "ttl_s": 600
+  },
+  {
+   "seq": 4,
+   "ts": 1795230100.191,
+   "event": "request",
+   "method": "connect",
+   "scheme": "nip04",
+   "client8": "049b201e"
+  },
+  {
+   "seq": 5,
+   "ts": 1795230100.191,
+   "event": "pending_created",
+   "request_id": "jqs7-qPt5s2Y",
+   "kind": "connect",
+   "client8": "049b201e",
+   "ttl_s": 120
+  },
+  {
+   "seq": 6,
+   "ts": 1795230113.608,
+   "event": "decision",
+   "request_id": "jqs7-qPt5s2Y",
+   "kind": "connect",
+   "approved": true,
+   "reason": "humano",
+   "latency_ms": 13421
+  },
+  {
+   "seq": 7,
+   "ts": 1795230113.953,
+   "event": "response_published",
+   "method": "connect",
+   "relay_ok": true,
+   "relay_message": ""
+  },
+  {
+   "seq": 8,
+   "ts": 1795230114.469,
+   "event": "request",
+   "method": "get_public_key",
+   "scheme": "nip44",
+   "client8": "049b201e"
+  },
+  {
+   "seq": 9,
+   "ts": 1795230114.812,
+   "event": "response_published",
+   "method": "get_public_key",
+   "relay_ok": true,
+   "relay_message": ""
+  },
+  {
+   "seq": 10,
+   "ts": 1795230115.321,
+   "event": "request",
+   "method": "sign_event",
+   "scheme": "nip44",
+   "client8": "049b201e"
+  },
+  {
+   "seq": 11,
+   "ts": 1795230115.321,
+   "event": "policy",
+   "ok": true,
+   "failed": [],
+   "origin_seen": "https://stacker.news",
+   "content_ok": true,
+   "challenge_sha16": "18a35840dfe391c6",
+   "created_at_age_s": 1
+  },
+  {
+   "seq": 12,
+   "ts": 1795230115.321,
+   "event": "pending_created",
+   "request_id": "01cGrGDMtz2p",
+   "kind": "sign_event",
+   "client8": "049b201e",
+   "ttl_s": 120
+  },
+  {
+   "seq": 13,
+   "ts": 1795230123.102,
+   "event": "decision",
+   "request_id": "01cGrGDMtz2p",
+   "kind": "sign_event",
+   "approved": true,
+   "reason": "humano",
+   "latency_ms": 7780
+  },
+  {
+   "seq": 14,
+   "ts": 1795230123.102,
+   "event": "sign_ok",
+   "event_id16": "51c47cba0cadf388",
+   "self_verify": true
+  },
+  {
+   "seq": 15,
+   "ts": 1795230123.448,
+   "event": "response_published",
+   "method": "sign_event",
+   "relay_ok": true,
+   "relay_message": ""
+  },
+  {
+   "seq": 16,
+   "ts": 1795230189.87,
+   "event": "session_end",
+   "reason": "detenido_por_el_operador",
+   "signatures": 1
+  }
+ ]
+}

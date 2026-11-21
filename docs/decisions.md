@@ -341,7 +341,7 @@ Ver [phase-1.0A-closure.md](phase-1.0A-closure.md) §8: interoperabilidad real p
 | D-1 | Dependencias `coincurve==21.0.0`, `cryptography==50.0.2`, `websockets==17.4`, las versiones verificadas en el laboratorio. | Aprobada (resuelve P-06) |
 | D-2 | Un único módulo `app/config.py` para la configuración por variables de entorno (resuelve D8/O-3: **se descarta `core/`**). | Aprobada |
 | D-3 | La clave privada Nostr vive **solo en memoria** durante el MVP; sin SQLite, almacenamiento cifrado ni persistencia de identidades. **Reemplaza P-07** (AEAD en reposo) para el MVP. | Aprobada |
-| D-4 | Token de operador aleatorio generado al iniciar la aplicación para proteger las operaciones sensibles; **sin JWT ni sistema de usuarios**. Se implementa en B3; en B0/B1 solo se registra. **Modifica expresamente** lo previsto en `AGENTS.md` §3 y §7 (JWT para la API local): prevalece la instrucción del propietario (`AGENTS.md` §Introducción); **`AGENTS.md` no se modificó** (queda como contradicción documental a resolver por el propietario). | Aprobada |
+| D-4 | Token de operador aleatorio generado al iniciar la aplicación para proteger las operaciones sensibles; **sin JWT ni sistema de usuarios**. Se implementa en B3; en B0/B1 solo se registra. **Modifica expresamente** lo previsto en `AGENTS.md` §3 y §7 (JWT para la API local): prevalece la instrucción del propietario (`AGENTS.md` §Introducción); **`AGENTS.md` no se modificó** (queda como contradicción documental a resolver por el propietario). | **Reemplazada por D-8** (2026-11-21; JWT) |
 | D-5 | La identidad de Stacker News para la demostración real **queda pendiente**; no se crean cuentas ni se autentica nada en B0/B1. | Pendiente |
 | D-6 | Mantener Python 3.12 y **preparar** el bloqueo de la imagen base por digest antes de las pruebas reales. | Aprobada (preparada, no activada) |
 | D-7 | Relay de referencia `wss://relay.primal.net`, con verificación TLS y la opción X25519 validada. | Aprobada |
@@ -381,3 +381,211 @@ Para verificar compatibilidad (instalación en un entorno temporal limpio, en `.
 | P-29 | Obtener y verificar el CSV oficial de BIP-340 (con autorización de una descarga) para cerrar el criterio parcial. | **Cumplida** (interacción 27) |
 | P-30 | Valorar `mypy` y `ruff` como dependencias de desarrollo (hoy solo se ejecutaron temporalmente). | Pendiente |
 | P-31 | Resolver la contradicción de `AGENTS.md` (§3/§7 mencionan JWT) con D-4: actualizar `AGENTS.md` por el propietario. | Pendiente |
+
+
+## Fase 1.0B, Bloques B2 y B3: firmante NIP-46 funcional y API local de control; preparación de B4 (2026-11-21)
+
+### Decisiones del propietario
+
+| # | Decisión | Estado |
+|---|---|---|
+| O-17 | **Implementar conjuntamente B2 (firmante NIP-46), B3 (API local y control del operador) y preparar B4** sin aprobaciones intermedias; una **única** autorización operativa antes de cualquier conexión real. B5 y B6 quedan sin autorizar. Se mantienen: sin commit ni push, sin modificar `AGENTS.md`/`CLAUDE.md`, sin relays públicos ni Stacker News, sin cuentas, sin firmar solicitudes externas, sin persistencia de claves, sin JWT, sin ampliar la política a otros `kind`, sin interfaz web. | Aprobada |
+| B2-1 a B2-7 | Las siete decisiones del plan de B2 (`docs/phase-1.0B-proposal.md` §9.2) se aplican **según su recomendación**: `websockets`/`asyncio`/`ssl` solo en `app/nostr/relay.py` (la prueba de arquitectura vigila el resto); origen `https://stacker.news` configurable; una aprobación = una firma de un reto; caducidad de solicitudes 120 s; un único intento de conexión al relay, sin reconexión; auditoría en memoria con lista blanca (sin SQLite); aprobación por guion solo en el arnés del laboratorio. | Aplicadas |
+| D-5 | Identidad de Stacker News para B4: **sigue pendiente**. Se presentan las opciones A (desechable, cuenta real huérfana) y B (identidad de prueba dedicada del propietario) en `docs/phase-1.0B-B4-gate.md` §3. | Pendiente |
+
+### Resumen de implementación
+
+- **Capas.** `app/nostr/relay.py` (transporte; única E/S de red) · `app/services/{policy,connections,approvals,audit,signer,runtime}.py` (sin FastAPI ni red) · `app/api/{control,security}.py` y `app/schemas/control.py` (HTTP) · `app/main.py` (`create_app`, `lifespan`, validación de `Host`) · `app/config.py` ampliado. `tests/test_architecture.py` comprueba: el núcleo no importa FastAPI, la red solo está en `relay.py`, los servicios no importan la API, y la aplicación no persiste claves.
+- **Firmante.** Clave de **transporte** distinta de la de **identidad**; los eventos de transporte se validan (firma, `id`, `kind 24133`, `p`, ventana, repetición) **antes** de descifrar; `connect` NIP-04 entrante se acepta y toda respuesta va en NIP-44; `connect` exige secreto de un solo uso (solo se guarda su SHA-256) **y** aprobación humana; `sign_event` solo para `kind 27235` con 11 comprobaciones; una solicitud que incumple la política **no se ofrece** al operador; la aprobación se consume de forma atómica (sin `await` entre comprobar y consumir) antes de firmar, la firma se **autoverifica** y se verifica que etiquetas, contenido y `created_at` no cambiaron; topes de firmas, solicitudes, pendientes, clientes y secretos sin usar; errores hacia el cliente genéricos y estables; `session_end` siempre (parada, cancelación, error, `AUTH`, `CLOSED`, vida máxima).
+- **API.** Token de operador de 256 bits generado al arrancar y mostrado una vez (se conserva solo su SHA-256; comparación en tiempo constante; límite por fallos → 429); dependencia a nivel de router (denegar por defecto); `Host` restringido (anti DNS rebinding); `Cache-Control: no-store` y cabeceras de seguridad; el manejador de 422 **no repite la entrada** (una clave mal formada no reaparece); la URI `bunker://` solo viaja en la respuesta de `POST /api/connections`.
+- **Configuración nueva** (todas validadas, sin valores sensibles por defecto): `RELAY_ALLOW_INSECURE`, `SERVICE_ORIGIN`, `SIGNER_WINDOW_S`, `SECRET_TTL_S`, `CONNECTION_TTL_S`, `SESSION_TTL_S`, `APPROVAL_TTL_S`, `MAX_SIGNATURES` (por defecto 1), `MAX_REQUESTS`, `MAX_PENDING`, `ALLOWED_HOSTS`. **Sin dependencias nuevas** (`pip check` limpio; `constraints.txt` sin cambios).
+- **Docker.** Dentro del contenedor se escucha en `0.0.0.0:8000`; el host publica solo `127.0.0.1` (comprobado: `/health` 200, `/api/status` 401 sin token y 200 con token, `Host` ajeno 400). `compose.yaml` pasa las variables del firmante.
+
+### Verificaciones ejecutadas (automatizadas y de laboratorio; **no** son validación con Stacker News)
+
+| Verificación | Resultado |
+|---|---|
+| `python -m pytest -q` (Windows, Python 3.12.10) | **530 passed**, 0 omitidas (254 de B0/B1 + pruebas nuevas de política, conexiones, aprobaciones, auditoría, firmante, `runtime`, transporte `relay` con servidor WebSocket local y CA desechable, API y configuración) |
+| `mypy --strict app` (herramienta temporal; no es dependencia) | Sin incidencias (25 archivos) |
+| Cobertura de líneas y ramas (herramienta temporal) | **99 %** de `app/` en conjunto; todos los módulos nuevos ≥ 92 % (mínimo `runtime.py`: la rama de tiempo agotado de la parada de 10 s no se ejercita) |
+| Regresión NDK 2.12.2 contra el firmante **del producto** (`lab/run_product_regression.py`; relay del laboratorio, red `internal`, aprobación por guion **solo** en el arnés) | E1, E2, E3 y E8: **PASS**; las 9 variantes inválidas de E8 se rechazan sin llegar al operador, la válida se firma intacta, la repetición se rechaza, 1 firma |
+| Contenedor del producto (publicación solo en `127.0.0.1`, token, `Host`) | OK |
+| `pip check`, `git diff --check` | Limpios |
+
+### Hallazgos de B2/B3
+
+| # | Hallazgo |
+|---|---|
+| F-9 | Las respuestas de error NIP-46 llevan `result="error"` además de `error` (comportamiento verificado con NDK en la Fase 1.0A); las pruebas distinguen error por el campo `error`, no por la ausencia de `result`. |
+| F-10 | La plantilla de `sign_event` de Stacker News trae `id` y `pubkey` (F-5): la política los **verifica** (id recalculado con la identidad del firmante) y firma lo recibido sin editarlo. |
+| F-11 | Pydantic (Rust) no admite `\Z` en `Path(pattern=…)`: se usa `^…$` en los patrones de FastAPI; las expresiones regulares de `re` mantienen `\Z` (F-8b). |
+| F-12 | Con `ws://` y `ssl=None` explícito `websockets` falla: el transporte solo pasa `ssl` en `wss://`. |
+
+### Limitaciones y supuestos no verificados
+
+- **Sin autenticación real con Stacker News**: nunca se firmó con el origen real; la respuesta de Stacker News a una firma válida no se ha observado (Y-8). Ver `docs/phase-1.0B-B4-gate.md` §2.
+- La API se probó con httpx/ASGI y un cliente doble; no se ejecutó una sesión completa con `uvicorn` real + NDK en red interna (la regresión NDK usa el servicio, sin la capa HTTP).
+- NDK en el **navegador** de Stacker News sigue sin observarse contra este firmante (Y-5).
+- La imagen del producto con etiqueta mutable por defecto no se construyó; sí con el digest (D-6).
+- Sin *hashes* en `constraints.txt` (alternativa B no aprobada); `mypy`/`ruff` siguen sin ser dependencias (P-30).
+- La espera de parada de `SignerRuntime.stop()` (10 s) no tiene prueba de la rama de tiempo agotado.
+- Sin reconexión al relay ni al hacer `start` tras un fallo: se crea una sesión nueva a petición del operador.
+
+### Propuestas nuevas o actualizadas (pendientes)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-32 | Autorización operativa única de B4 (`docs/phase-1.0B-B4-gate.md`): D-5, ventana, operador y restricciones. | **Pendiente de autorización** |
+| P-33 | Ensayo completo local `uvicorn` + NDK en red interna antes de B4 (cierra el límite «API con cliente doble»). | Pendiente (opcional) |
+| P-28 | Bloque B2 (ver `docs/phase-1.0B-proposal.md` §9). | **Cumplida** (implementada y verificada localmente) |
+| P-31 | Resolver la contradicción de `AGENTS.md` (JWT) con D-4. | **Resuelta en lo esencial por D-8** (JWT); `AGENTS.md` no se modificó |
+
+
+## Fase 1.0B, cierre local de B2 a B6: JWT, interfaz web y E2E (2026-11-21)
+
+### Decisiones del propietario
+
+| # | Decisión | Estado |
+|---|---|---|
+| D-8 | **La autenticación de la API local pasa a JWT** (reemplaza a **D-4**, token de operador). Local y monousuario, sin base de datos ni usuarios; sin credenciales predeterminadas; clave de firma aleatoria; expiración corta; validación estricta; revocación al cerrar sesión o reiniciar; sin `localStorage`; protección CSRF con cookies; restricción de `Host` y `Origin`. Resuelve **P-31** en lo esencial (`AGENTS.md` §3 y §7 ya preveían JWT; no se modificó `AGENTS.md`). | Aprobada |
+| O-18 | Completar B2/B3 (P-33 primero), implementar **B5** (interfaz) y **B6** (E2E de navegador real) en local sin aprobaciones intermedias; **B4 real** y cualquier conexión a `relay.primal.net`, Stacker News, cuentas reales o firma externa quedan sujetos a una compuerta única (`docs/phase-1.0B-B4-gate.md`). | Aprobada |
+| D-5 | Identidad para B4: **identidad de prueba dedicada y reutilizable bajo control del propietario** (opción B); sin cuenta real ni clave personal sin aprobación expresa. La confirmación concreta queda en la compuerta. | Parcial (instrucción de principio; confirmación pendiente) |
+
+### Diseño de D-8 (JWT)
+
+- **Inicio de sesión sin credenciales fijas:** al arrancar se genera un **código de acceso** aleatorio (se muestra una vez en la terminal; solo se guarda su SHA-256) que se canjea en `POST /api/auth/login` por un JWT **HS256** firmado con una clave aleatoria de 384 bits que **solo vive en memoria** (cambia en cada arranque: reiniciar invalida todas las sesiones).
+- **Validación:** algoritmo fijado (lista cerrada; `none` y otros algoritmos se rechazan), `exp`/`iat`/`nbf`/`iss`/`aud`/`sub`/`jti`/`csrf` obligatorios, `jti` activo en el servidor (cerrar sesión revoca), máximo 8 sesiones, vida por defecto 900 s (`JWT_TTL_S`, 5–3600).
+- **Transporte del token:** cookie `nip46_session` `HttpOnly` + `SameSite=Strict` + `Path=/api` (`Secure` con `COOKIE_SECURE=1`); la interfaz **no guarda nada** en el navegador. Con cookie, las escrituras exigen `X-CSRF-Token` (claim propio, comparación en tiempo constante) y un `Origin` local que coincida con `Host`; con `Authorization: Bearer` (línea de comandos) no hace falta CSRF. Límite de fallos (429 solo para quien falla; un token válido sigue funcionando), `Host` restringido (400), `docs`/`openapi` deshabilitados, CSP estricta (`default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`) y cabeceras de seguridad.
+- **Desviación consciente de `AGENTS.md` §7** («secreto desde variable de entorno»): la clave de firma del JWT **no** viene del entorno sino que se genera aleatoriamente en cada arranque (orden expresa del propietario: «clave de firma criptográficamente aleatoria», sin claves JWT versionadas). Es más restrictiva (no hay un secreto que configurar ni filtrar); su coste es que las sesiones no sobreviven a un reinicio, lo cual es el comportamiento deseado.
+- **Dependencia nueva:** `PyJWT==2.15.1` (MIT; publicado 2026-09-28, más de siete semanas antes; con HS256 no requiere el extra `crypto`; alternativa de la biblioteca estándar: implementar HS256 a mano con `hmac`, descartada por `AGENTS.md` §7 «no inventes criptografía propia»; mantenida, sin dependencias propias para este uso). Instalada desde PyPI (tráfico de instalación aceptado).
+- **Desarrollo:** `playwright==1.64.1` (Apache-2.0; 2026-10-22) con `greenlet==3.5.6` y `pyee==14.0.0`. Se eligió frente a Selenium/Cypress porque es una biblioteca Python que maneja el Chrome/Edge **ya instalado** (`channel`), sin descargar navegadores ni drivers y con espera automática. **No** entra en la imagen del producto.
+
+### Resultados locales (no son validación con Stacker News)
+
+| Verificación | Resultado |
+|---|---|
+| **P-33** (aplicación completa: Uvicorn → runtime → firmante → relay → NDK real → API HTTP → aprobación → firma), `python lab/run_product_regression.py --api` | E1, E2, E3 y E8 **PASS** (red Docker `internal`; el *driver* opera la API HTTP) |
+| Regresión del servicio (`python lab/run_product_regression.py`) | E1, E2, E3 y E8 **PASS** |
+| `python -m pytest -q` (Windows, Python 3.12.10) | **607 passed, 1 omitida** (la omitida es el E2E en Docker, que requiere `E2E_DOCKER=1`; con la variable: 608 passed) |
+| E2E de **navegador real** (Chrome 158 vía Playwright; relay local; identidades ficticias): 7 pruebas de interfaz | PASS: cookie `HttpOnly`/`Strict`, `document.cookie` vacío, `localStorage`/`sessionStorage` vacíos, CSRF, cierre de sesión con revocación, caducidad del JWT, importación de clave sin eco, flujo completo con aprobación y rechazo desde la interfaz, reinicio limpio; sin errores de consola ni violaciones de CSP |
+| E2E en **Docker con NDK 2.12.2 real** (navegador → contenedor → relay del laboratorio ← cliente NDK; `E2E_DOCKER=1`) | PASS: `connect` y `sign_event` aprobados desde la interfaz, login verificado por el cliente NDK (id, firma, reto, identidad), 1 firma, `session_end`, el código de acceso aparece una vez en el registro y nunca la URI |
+| `mypy --strict app` (herramienta temporal) | Sin incidencias (28 archivos) |
+| Cobertura de líneas y ramas (herramienta temporal, sin E2E) | **99 %**; todos los módulos nuevos ≥ 96 % (antes `runtime.py` estaba en 92 %: se añadieron pruebas de la rama de parada con tiempo agotado y con error inesperado) |
+| `pip check`, `git diff --check` | Limpios |
+
+### Hallazgos
+
+| # | Hallazgo |
+|---|---|
+| F-13 | Playwright (API síncrona) deja un bucle de eventos activo que rompía **66** pruebas asíncronas posteriores en la misma ejecución; se corrigió con el navegador en alcance de módulo. |
+| F-14 | El navegador registra en consola cada respuesta 401/400 esperada («Failed to load resource»); las pruebas E2E las excluyen y vigilan CSP y errores de JavaScript. |
+| F-15 | La clave de firma del JWT solo en memoria hace que reiniciar invalide las sesiones; es deseado, pero implica volver a iniciar sesión tras cada arranque. |
+| F-16 | Al montar la interfaz en `/`, una ruta `/api/...` mal normalizada cae en el servidor estático (responde 404/405 sin datos): sin efecto de seguridad. |
+
+### Limitaciones y supuestos no verificados
+
+- **B4 no se ha ejecutado y no se declara completado.** Tampoco la validación real de B6. Nunca se firmó con el origen real, no se observó NDK del **navegador** de Stacker News contra este firmante ni la respuesta de Stacker News a una firma válida (Y-8).
+- Los E2E de navegador usan un relay local mínimo y un cliente de prueba (Python); el E2E Docker usa NDK 2.12.2 en Node (no el bundle de producción de Stacker News).
+- La interfaz se probó en Chrome (Chromium); no en Firefox ni Safari. No se probó la cookie con `COOKIE_SECURE=1` en un navegador (sí a nivel de API).
+- La interfaz no incluye pruebas unitarias de JavaScript; su lógica de «no aprobar con comprobaciones fallidas» está en el código y en la política del servidor (las solicitudes con fallos no se crean), no en una prueba de navegador con datos manipulados.
+- Sigue sin haber *hashes* en `constraints.txt`; `mypy`/`ruff` siguen sin ser dependencias del proyecto (P-30).
+- La imagen del producto con etiqueta mutable por defecto no se construyó; sí con el digest (D-6).
+
+### Propuestas nuevas o actualizadas (pendientes)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-32 | Autorización operativa única de B4 (`docs/phase-1.0B-B4-gate.md`). | **Pendiente de autorización** |
+| P-33 | Ensayo completo `uvicorn` + NDK en red interna. | **Cumplida** (`--api`) |
+| P-34 | Prueba de navegador de la interfaz con datos manipulados (tarjeta con una comprobación en `false`) y en Firefox. | Pendiente (opcional) |
+
+
+## Fase 1.0B, cierre de la compuerta de B4: registro de D-5 y preparación operativa (2026-11-21)
+
+### Decisiones del propietario
+
+| # | Decisión | Estado |
+|---|---|---|
+| D-5 | **Identidad Nostr nueva, dedicada y reutilizable** para la prueba de B4, generada y conservada **solo por el propietario**, fuera del repositorio y sin mostrarse en informes. Completa la instrucción de principio de O-18. | **Aprobada** |
+| O-19 | **Destino de B4:** `https://stacker.news/signup`, flujo «Continue with Nostr» mediante `bunker://`, relay `wss://relay.primal.net:443`, ventana máxima de 15 minutos, **una** firma real, aprobación humana de `connect` y `sign_event`, sin ampliar la política `kind 27235`, sin reintentos automáticos de autenticación. El propietario **acepta** que se cree una **cuenta real de prueba** en Stacker News. | **Aprobada** |
+| O-20 | **Esta decisión no autoriza ejecutar la demostración real.** La ventana empieza solo con la confirmación expresa del propietario. Hasta entonces: sin conexión a `relay.primal.net`, sin interacción con Stacker News, sin crear la cuenta, sin firmar eventos externos. | **Vigente** |
+
+### Preparación realizada (sin servicios externos)
+
+- **Compuerta** (`docs/phase-1.0B-B4-gate.md`) reescrita: decisiones registradas, alcance técnico fijado, autorización y confirmación de inicio por completar, procedimiento exacto por fases (preparación, arranque con variables de entorno de la ventana, interfaz, Stacker News, cierre), condiciones de parada, veredictos PASS/FAIL/BLOCKED y evidencia sanitizada. Ajuste de límites para respetar los 15 minutos: `SESSION_TTL_S=720`, `CONNECTION_TTL_S=720`, `APPROVAL_TTL_S=120`, `MAX_SIGNATURES=1`, `MAX_REQUESTS=30`, `JWT_TTL_S=900`.
+- **Herramientas de laboratorio (no son el producto, no añaden funcionalidad a `app/`):**
+  - `lab/tools/b4_identity.py`: genera la identidad **fuera del repositorio**, con permisos restringidos (`0600` o `icacls`), sin sobrescribir ni escribir dentro del repositorio, y **nunca imprime la clave privada** (solo la pública); `copy` la deja en el portapapeles sin mostrarla y `clear-clipboard` lo vacía.
+  - `lab/tools/b4_check_evidence.py`: comprueba que la auditoría exportada no contiene clave `nsec`, URI `bunker://` ni secreto, JWT, cookies ni `Authorization`, hexadecimales de 64 caracteres (claves, retos, ids, firmas) ni cargas base64 largas, y resume la parte técnica (una `sign_ok`, un `session_end`). **No decide PASS**: eso lo observa el propietario en Stacker News.
+  - Pruebas: `tests/lab_tools/test_b4_tools.py` (14). El verificador se contrastó con la auditoría de una sesión local real (sin fugas, resumen coherente). No se generó ninguna identidad real ni se tocó el portapapeles real.
+- **Comprobación de que la aplicación sigue funcionando en local sin conexiones externas:** ver el informe de la sesión (batería de pruebas, E2E de navegador, E2E Docker con NDK real y arranque con Docker Compose, todo en `127.0.0.1` o en red Docker propia).
+
+### Limitaciones y supuestos no verificados (sin cambios sustanciales)
+
+- B4 **no se ha ejecutado** ni se declara completado; tampoco la validación real de B6.
+- No se conoce cómo muestra Stacker News la identidad tras el inicio de sesión: si no muestra la clave pública, la coincidencia queda como **no verificable** (el criterio PASS lo contempla).
+- El texto exacto de los botones de Stacker News («Continue with Nostr», opción de firmante remoto) es el indicado por el propietario; no se ha verificado en esta sesión.
+- Es probable que la cuenta creada no se pueda borrar [no verificado].
+- `clear-clipboard` en Windows escribe un espacio (el comando `clip` no admite entrada vacía de forma fiable).
+
+### Propuestas
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-32 | Ejecución de B4 (`docs/phase-1.0B-B4-gate.md`). | **Pendiente de autorización expresa y confirmación de inicio** |
+
+## Fase 1.0B, B4: ejecución real y resultado (2026-11-21)
+
+### Autorizaciones y ejecución (alcance autorizado frente a lo ejecutado)
+
+| Concepto | Autorizado | Ejecutado |
+|---|---|---|
+| Servicios | `wss://relay.primal.net:443` y `https://stacker.news/signup` (navegador del propietario) | Solo esos. `relay.primal.net` desde el firmante; Stacker News solo desde el navegador del propietario. El agente no abrió Stacker News |
+| Identidad | Nueva, dedicada y reutilizable, del propietario (D-5); clave pública `c5a035bf14ae…1a3f` | Esa, importada por el propietario desde la interfaz; el agente no vio la clave privada |
+| Ventana 1 | 15 min desde T0 = 2026-11-20 23:53:44 (Santiago) | La aplicación se arrancó; la identidad no estaba importada y quedaban 9 min: el propietario eligió **nueva ventana**. **El firmante no se inició; ninguna conexión externa** |
+| Ventana 2 | 15 min desde «iniciar ahora» | T0 = 2026-11-21 00:01:05, límite 00:16:05; firmante detenido a las **00:03:10** (2 min 5 s) |
+| Firmas | Máximo 1 (`kind 27235`) con aprobación humana de `connect` y `sign_event` | **1**; ambas aprobaciones manuales del propietario (13,4 s y 7,8 s de latencia) |
+| Configuración | Compuerta §5.B | `RELAY_TLS_GROUPS=X25519`, `SERVICE_ORIGIN=https://stacker.news`, `SESSION_TTL_S=720`, `CONNECTION_TTL_S=720`, `APPROVAL_TTL_S=120`, `MAX_SIGNATURES=1`, `MAX_REQUESTS=30`, `JWT_TTL_S=900` |
+
+### Resultado de B4: **PASS** (con observaciones)
+
+- **Auditoría sanitizada** (`lab/results/b4-20261120T235344/audit.json`, excluida de Git): `session_start` → `relay_ready` → `bunker_issued` → `connect` (NIP-04) aprobado → `get_public_key` (NIP-44) → `sign_event` con política `ok=true` (11 comprobaciones, origen visto `https://stacker.news`, antigüedad 1 s) → aprobación humana → **`sign_ok` con autoverificación** → respuesta publicada (`relay_ok=true`) → `session_end` (`detenido_por_el_operador`, 1 firma). 0 errores, 0 avisos del relay, 0 fallos de política. El verificador (`lab/tools/b4_check_evidence.py`): «Sin fugas» y resumen coherente.
+- **Observación del propietario en Stacker News (no verificada por el agente):** Stacker News mostró una **sesión asociada a `@c5a035bf14…`** y el *onboarding* «Step 1 of 3 — Do you need a lightning wallet?»; no se creó ni conectó billetera y el propietario eligió «Skip for now». Es la primera vez que Stacker News acepta una firma de este firmante: **cierra la hipótesis Y-8 en el sentido favorable** (el reto no caducó, la firma se aceptó y se creó/abrió la cuenta).
+- **No se infirió éxito del OK del relay:** el criterio fue la sesión observada por el propietario.
+
+### Observaciones y límites
+
+- La sesión de Stacker News la observó solo el propietario; no se reportó la comprobación de **persistencia al recargar** (§5.D.4 de la compuerta) ni se capturó pantalla. El *onboarding* posterior a la sesión no formaba parte de la autenticación y el propietario no proporcionó datos en él.
+- Stacker News deriva el nombre de la clave pública (`@c5a035bf14…`): es coherencia con la identidad usada, pero no una verificación criptográfica independiente.
+- Se creó una **cuenta real de prueba** ligada a esa clave (aceptado por el propietario); probablemente no se pueda borrar [no verificado].
+- La primera ventana no llegó a iniciar el firmante por falta de tiempo (el código de acceso se copió mal dos veces): lección para el procedimiento: dejar la interfaz iniciada y la clave importada antes de abrir la ventana. Esas dos fallas (401) quedan en el registro del servidor y no suponen riesgo.
+- Tras el cierre se **detuvo el servidor** (la clave desapareció de memoria) y se **borró `server.log`** por contener el código de acceso de la sesión. La clave privada y el respaldo siguen solo en poder del propietario.
+- **No** se declara la validación real de B6 (repetir el inicio de sesión desde la interfaz): requiere su propia autorización.
+
+## Cierre de la jornada del 2026-11-21 (estado y continuidad)
+
+### Estado consolidado
+
+B0 y B1 completados (publicados en `88b2971`). B2, B3 (con JWT, D-8), B5 y el E2E local de B6 implementados y verificados **en local**. **B4: PASS con observaciones** (ver la sección «B4: ejecución real y resultado»). **B6 real y la validación final reproducible: pendientes.** Detalle y orden recomendado en [`handoff-2026-11-21.md`](handoff-2026-11-21.md).
+
+### Lo observado frente a lo verificado (B4)
+
+- **Verificado por la auditoría sanitizada** (`docs/evidence/b4-audit-2026-11-21.json`, `b4-verificador-2026-11-21.txt`): una `sign_ok` con autoverificación, `connect` y `sign_event` aprobados por una persona, `session_end`, 0 errores y 0 fallos de política.
+- **Observado solo por el propietario:** sesión de Stacker News asociada a `@c5a035bf14…` y *onboarding* de billetera omitido (`docs/evidence/b4-notas-2026-11-21.txt`). Sin captura ni comprobación de persistencia.
+
+### Problemas surgidos y su resolución (resumen de la jornada)
+
+| Problema | Resolución |
+|---|---|
+| `\Z` y `$` en expresiones regulares (Python y Pydantic) | `\Z` en `re`; `^…$` en patrones de FastAPI; pruebas de regresión |
+| Pruebas de `/health` rotas al validar `Host` | Base de URL local en el fixture, sin cambiar las pruebas |
+| Playwright síncrono rompía 66 pruebas asíncronas | Navegador en alcance de módulo |
+| Fin de línea CRLF en archivos editados con Python en Windows | Normalización a LF y comprobación antes de publicar |
+| Código de acceso copiado mal (dos 401) y ventana 1 sin tiempo | Nueva ventana autorizada; el firmante no se había iniciado |
+
+### Restricciones que siguen vigentes
+
+Sin conexiones a `relay.primal.net` ni a Stacker News sin autorización expresa y con alcance; una firma por sesión y solo `kind 27235`; aprobación humana de cada `connect` y `sign_event`; claves Nostr solo en memoria; JWT con clave aleatoria por arranque; la URI `bunker://` la emite una persona, nunca el agente; sin `git add -A`, sin `--force`; `AGENTS.md` y `CLAUDE.md` no se modifican sin autorización; las evidencias se sanean antes de conservarse.
+
+### Qué falta para cerrar B6
+
+Reproducibilidad desde un clon limpio; revisión final de README; nueva compuerta operativa para repetir el inicio de sesión real desde la interfaz con la misma identidad (con comprobación de persistencia); cierre documental y exportación de las transcripciones pendientes (ver `ai-log.md`).

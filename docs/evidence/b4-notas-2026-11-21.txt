@@ -1,0 +1,7 @@
+B4 - notas sanitizadas (redactadas por el agente a partir de lo que informo el propietario y de la auditoria)
+Ventana 1 (T0 2026-11-20 23:53:44 Santiago): firmante NO iniciado; abortada por tiempo antes de firmar (0 conexiones externas).
+Ventana 2: T0 2026-11-21 00:01:05, limite 00:16:05; firmante detenido 00:03:10 (duracion de la ventana: 2 min 5 s).
+Identidad (clave publica truncada): c5a035bf14ae...1a3f
+Relay: relay.primal.net (TLS X25519). Destino: https://stacker.news/signup (Continue with Nostr, bunker).
+Observacion del propietario en Stacker News: sesion asociada a @c5a035bf14...; onboarding 'Step 1 of 3 - Do you need a lightning wallet?'; no se creo ni conecto billetera; eligio 'Skip for now'.
+No reportado: recarga de la pagina para comprobar persistencia de la sesion.

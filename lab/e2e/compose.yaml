@@ -1,0 +1,49 @@
+# E2E de la aplicacion COMPLETA en Docker: producto (Uvicorn + interfaz) + relay del laboratorio + cliente NDK 2.12.2 real.
+# El navegador (Playwright, en el host) opera la interfaz publicada SOLO en 127.0.0.1; el cliente NDK recibe la URI por su entrada estandar.
+# El producto esta configurado SOLO con el relay `ws://relay:7777`; no se contacta ningun servicio externo. Se opera con tests/e2e/test_docker_ndk.py.
+name: nip46-e2e
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 256
+  mem_limit: 512m
+  init: true
+  stop_grace_period: 8s
+
+services:
+  relay:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    command: ["python", "-m", "lab_relay"]
+    environment: {LAB_ACTOR: relay, RELAY_PORT: "7777"}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 7777), 2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
+
+  app:
+    <<: *hardening
+    image: nostr-nip46-remote-signer:dev
+    environment:
+      RELAY_URL: ws://relay:7777
+      RELAY_ALLOW_INSECURE: "1"
+      SERVICE_ORIGIN: https://sn.lab.invalid
+      APPROVAL_TTL_S: "60"
+      SESSION_TTL_S: "300"
+      MAX_SIGNATURES: "1"
+    ports: ["127.0.0.1:${E2E_PORT:-18765}:8000"]
+    depends_on: {relay: {condition: service_healthy}}
+
+  client:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    command: ["node", "client/main.mjs"]
+    environment:
+      LAB_ACTOR: client
+      SCENARIO: e2
+      BUNKER_FROM_STDIN: "1"
+      TIMEOUT_MS: "90000"

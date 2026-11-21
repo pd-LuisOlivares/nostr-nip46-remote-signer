@@ -6,6 +6,16 @@
 >
 > **Actualización (2026-11-20, cierre técnico de la Fase 1.0A, por petición del propietario).** Se actualizó el apartado 6 (estado) con las Fases 1.0A y 1.0B. Es un registro de estado redactado por Claude Code a partir de la evidencia (ver `docs/phase-1.0A-closure.md`); no añade decisiones ni sustituye la síntesis original.
 
+> **Actualización (2026-11-21, B2 y B3).** Registro de estado redactado por el agente; no es una síntesis de ChatGPT. El propietario autorizó implementar el firmante NIP-46 (B2) y la API local de control (B3) y preparar la demostración real (B4). Estado: firmante y API **implementados y probados localmente** (530 pruebas; regresión con NDK 2.12.2 en red interna); **sin autenticación real con Stacker News todavía**; B4 espera una única autorización operativa (`docs/phase-1.0B-B4-gate.md`, con D-5 pendiente); B5 y B6 no autorizados. La clave Nostr vive solo en memoria y la API se protege con un token de operador (no hay JWT ni SQLite en este alcance).
+>
+> **Actualización (2026-11-21, cierre local de B2 a B6).** Registro de estado redactado por el agente. El propietario aprobó **JWT** para la API local (D-8, reemplaza al token de operador). Estado: firmante, API con JWT, **interfaz web** y E2E de navegador real **implementados y verificados en local** (607 pruebas; E2E Docker con NDK 2.12.2 real); **B4 (autenticación real con Stacker News) preparado y sin ejecutar**, pendiente de una única autorización operativa (`docs/phase-1.0B-B4-gate.md`, D-5: identidad de prueba dedicada y reutilizable del propietario). No se declara éxito real hasta observar una sesión autenticada en Stacker News.
+>
+> **Actualización (2026-11-21, compuerta de B4).** El propietario registró D-5 (identidad nueva, dedicada y reutilizable, bajo su custodia privada), el destino `https://stacker.news/signup` y su aceptación de una cuenta real de prueba. **No** autorizó aún la ejecución: la ventana de 15 minutos empieza solo con su confirmación. La compuerta, el procedimiento, los criterios PASS/FAIL/BLOCKED y las herramientas de identidad y evidencias están preparados (`docs/phase-1.0B-B4-gate.md`); B4 sigue **sin ejecutar y sin declarar completado**.
+>
+> **Actualización (2026-11-21, ejecución de B4).** Con autorización expresa del propietario se ejecutó la demostración real: el firmante emitió **una** firma `kind 27235` aprobada manualmente y, según la observación del propietario, **Stacker News abrió una sesión asociada a `@c5a035bf14…`** (cuenta real de prueba). Veredicto de B4: **PASS con observaciones** (`docs/decisions.md`). La validación real de B6 (repetición desde la interfaz) sigue pendiente de autorización.
+>
+> **Actualización (2026-11-21, cierre de jornada).** Registro redactado por el agente. Estado: B0 a B5 implementados y verificados en local; **B4 PASS con observaciones** (auditoría verificada; la sesión de Stacker News la observó el propietario); B6: E2E local y Docker aprobados, **validación real y reproducibilidad final pendientes**. El trabajo se publicó en `origin/main`. Para retomar: `docs/handoff-2026-11-21.md` (la primera actividad es cerrar B6, no reimplementar B2 a B5).
+
 ## 1. Objetivo del proyecto
 
 Implementar en Python un firmante remoto (*remote signer*) Nostr conforme a **NIP-46** y demostrar una **autenticación real con Stacker News**.

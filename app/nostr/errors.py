@@ -58,3 +58,7 @@ class InvalidBunkerUri(Nip46Error):
 
 class InvalidNip46Message(Nip46Error):
     """Solicitud o respuesta NIP-46 mal formada."""
+
+
+class RelayError(NostrError):
+    """No se pudo conectar, enviar o seguir usando el relay (mensaje genérico, sin detalles de red)."""
