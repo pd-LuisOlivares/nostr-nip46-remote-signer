@@ -66,14 +66,16 @@ python tools/ai_sessions.py backup --history-dir <historial> --dest <carpeta-pri
 
 ### Cómo cerrar y reexportar una sesión abierta (checklist)
 
-Las transcripciones 40 a 56 salen de **una misma sesión de Claude Code** (`97ea8763…`) y por eso figuran como **PARCIAL**: la herramienta solo las marca **COMPLETA** cuando la sesión de origen está cerrada. **No se declara completa ninguna mientras la sesión siga abierta**, y no se fuerza con `--now`. Lo que ocurra después de cerrar (incluidos estos pasos) no puede formar parte de esa misma transcripción: si hace falta registrarlo, se hace en una sesión nueva como interacción nueva.
+**Qué significa «PARCIAL».** El estado PARCIAL de una transcripción indica que **la sesión de origen sigue activa** cuando se exportó (la herramienta solo marca COMPLETA cuando el último registro tiene más de 120 minutos). **No implica por sí mismo pérdida de mensajes**: la exportación contiene todos los prompts y respuestas visibles hasta el instante indicado en `Hasta (UTC)`, y `python tools/ai_sessions.py check` detecta si hay mensajes posteriores a esa marca que aún no se exportaron. Lo único que puede faltar son esos mensajes posteriores, que se incorporan al reexportar. No se fuerza el estado COMPLETA ni se alteran marcas de hora.
+
+Las transcripciones 40 a 57 salen de **una misma sesión de Claude Code** (`97ea8763…`) y por eso figuran como **PARCIAL**: la herramienta solo las marca **COMPLETA** cuando la sesión de origen está cerrada. **No se declara completa ninguna mientras la sesión siga abierta**, y no se fuerza con `--now`. Lo que ocurra después de cerrar (incluidos estos pasos) no puede formar parte de esa misma transcripción: si hace falta registrarlo, se hace en una sesión nueva como interacción nueva.
 
 1. **Registrar la interacción en curso** (al completarla): entrada en este índice, fila en la tabla de clasificación y su marca de hora de inicio en `tools/ai_sessions_manifest.json`.
 2. **Cerrar la sesión.** No existe una orden de «cerrar»: la herramienta considera cerrada una sesión cuyo **último registro tiene más de 120 minutos**, y cualquier actividad en ella (incluida la de un agente) reinicia ese plazo. Se cierra dejando de escribir en la sesión durante más de 120 minutos; los pasos siguientes se hacen desde una terminal o desde una **sesión nueva** de Claude Code (que no modifica el historial de la anterior).
 3. **Reexportar** con el comando de arriba. Si en el chat se compartió alguna contraseña o dato sensible, pasar su valor literal como `--redact-user` (**sin escribirlo en ningún archivo versionado**). Los archivos `PARCIAL` de la sesión se reescriben; los `COMPLETA` no cambian.
 4. **Verificar sin secretos:** `python tools/ai_sessions.py scan docs/ai-sessions docs/ai-log.md --blocking-only` y un `git grep` de cada valor sensible compartido (resultado esperado: sin coincidencias).
 5. **Comprobar:** `python tools/ai_sessions.py check --history-dir <historial>` debe dar «trazabilidad OK», y `python -m pytest tests/test_ai_traceability.py`.
-6. **Actualizar las etiquetas manuales de este índice:** en las entradas 40 a 56 y en la tabla de clasificación, cambiar «Parcial» por «Completa» **solo** para las que la herramienta marcó `COMPLETA` en su cabecera (`Hasta (UTC)` y estado), y quitar la nota de reexportación.
+6. **Actualizar las etiquetas manuales de este índice:** en las entradas 40 a 57 y en la tabla de clasificación, cambiar «Parcial» por «Completa» **solo** para las que la herramienta marcó `COMPLETA` en su cabecera (`Hasta (UTC)` y estado), y quitar la nota de reexportación.
 7. `git diff --check`, `git status` y, con autorización expresa del propietario, commit y push.
 8. **Respaldo privado** de los JSONL originales con `backup` (fuera del repositorio).
 
@@ -743,6 +745,17 @@ Misma sesión, agente y modelo que la interacción 09 (Claude Code, `claude-sonn
 - **Decisión humana:** aprobó el contenido documental, la clasificación «no recuperadas» de ChatGPT y la publicación condicionada a criterios. **Asistencia de IA:** análisis de por qué la sesión no puede cerrarse desde dentro y diseño del procedimiento. **Implementación por agentes:** script de apoyo, registro, verificaciones, commit documental y push.
 - **Clasificación:** **DOC**.
 
+### 57. Cierre de entrega: trazabilidad inmediata con transcripciones PARCIAL y publicación final
+- **Fecha:** 2026-11-22 (Santiago 10:50 en adelante; UTC 13:50 en adelante).
+- **Agente y modelo:** Claude Code (extensión de VS Code); modelo `claude-sonnet-5-5`; nivel de razonamiento según los campos `model` y `effort` del archivo de sesión (ver la cabecera de la transcripción).
+- **Objetivo (autorizado por el propietario):** finalizar la entrega **sin esperar** los 120 minutos de inactividad que la herramienta exige para marcar una sesión como cerrada: mantener las transcripciones 40 a 56 como **PARCIAL** (sin forzar el estado COMPLETA ni alterar marcas de hora), exportar lo disponible, documentar el significado del estado PARCIAL, ejecutar las verificaciones y publicar con un commit exclusivamente documental y un `git push` normal. Prohibiciones: tocar código, pruebas, dependencias, Docker o B6.2; conectarse a Stacker News o a relays; `force push`; reconstruir conversaciones; enviar el correo de entrega (se hará por separado).
+- **Transcripción:** [2026-11-22_claude-code_fase-1.0B_57-cierre-entrega.md](ai-sessions/2026-11-22_claude-code_fase-1.0B_57-cierre-entrega.md) (**Parcial**: la sesión de origen sigue abierta; se **reexporta al cerrarla**. No es una reconstrucción; la contraseña administrativa de B6.2 se **redactó**.)
+- **Accesos externos:** solo `git` contra GitHub (lectura y el push normal autorizado). Ninguno a Stacker News ni a relays.
+- **Resultado:** las transcripciones 40 a 57 quedan **PARCIAL** y así se identifican (en su cabecera y en este índice); ninguna se declara completa. Se añadió una nota que explica que PARCIAL describe una **sesión aún activa**, no una pérdida de mensajes. Las conversaciones antiguas de ChatGPT siguen **no recuperadas**. Las verificaciones (`check`, pruebas documentales, enlaces, escaneo de secretos, `git diff --check` y ausencia de cambios funcionales) se ejecutan antes de publicar; su resultado se informa al propietario en el cierre.
+- **Archivos:** modificados `docs/ai-log.md`, `tools/ai_sessions_manifest.json` y la transcripción 56; creada la transcripción 57. Sin cambios funcionales.
+- **Decisión humana:** decidió cerrar la entrega ahora con las transcripciones PARCIAL y autorizó la publicación condicionada a las verificaciones. **Asistencia de IA:** ninguna decisión de producto. **Implementación por agentes:** registro, exportación, verificaciones, commit documental y push.
+- **Clasificación:** **DOC**.
+
 ### Clasificación de las interacciones por tipo de actividad (LAB / DEV / DOC)
 
 **Criterio** (aprobado por el propietario, O-13): **LAB** = investigación, experimentación, código y validaciones de laboratorio; **DEV** = implementación del producto (`app/`); **DOC** = documentación y procedimientos. Es una **propuesta de clasificación hecha por Claude Code**, sin revisión del propietario. No cambia la estructura del repositorio y **no atribuye tiempos**.
@@ -790,6 +803,7 @@ Misma sesión, agente y modelo que la interacción 09 (Claude Code, `claude-sonn
 | 54 (simplificación final: instalación oficial única y verificación de `evaluador`) | **Sí** (Docker aislado y clon limpio) | **Sí** (limpieza y pruebas) | **Sí** |
 | 55 (auditoría final y cierre documental) | | | **Sí** |
 | 56 (cierre de trazabilidad y publicación documental) | | | **Sí** |
+| 57 (cierre de entrega con transcripciones PARCIAL) | | | **Sí** |
 
 **Aclaraciones.** (1) **No hay trabajo DEV en la Fase 1.0A** (interacciones 17 a 25): `app/` no se modificó; el firmante de `lab/py/lab_real/` y el controlador son código de laboratorio, no el producto. **El primer trabajo DEV de la Fase 1.0B es la interacción 26** (B0 y B1). (2) Las Compuertas A y B son **LAB**. (3) La implementación del producto (Fase 1.0B) está iniciada solo en B0 y B1; B2 a B6 no. (4) **Fuera del registro**: las pruebas manuales exploratorias de conectividad que el propietario hizo antes en Windows no se incorporan a las iteraciones. (5) No se reconstruyeron tiempos de trabajo.
 

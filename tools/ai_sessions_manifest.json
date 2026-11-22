@@ -206,6 +206,14 @@
       "phase": "1.0B",
       "slug": "cierre-trazabilidad",
       "title": "Cierre de trazabilidad: procedimiento y script de reexportación, y publicación documental autorizada"
+    },
+    {
+      "n": "57",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T13:50:19.109Z",
+      "phase": "1.0B",
+      "slug": "cierre-entrega",
+      "title": "Cierre de entrega: trazabilidad inmediata con transcripciones PARCIAL y publicación final"
     }
   ]
 }
