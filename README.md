@@ -15,7 +15,7 @@ Todo se hace desde el navegador. Tras el comando de arranque no hace falta Power
 ### 2. Clonar el repositorio
 
 ```bash
-git clone <URL-del-repositorio>
+git clone https://github.com/pd-LuisOlivares/nostr-nip46-remote-signer.git
 cd nostr-nip46-remote-signer
 ```
 
@@ -94,6 +94,19 @@ Stacker News debe mostrar una sesión iniciada (menú de usuario). En el panel, 
 - *Inicio de sesión bloqueado:* 5 intentos fallidos bloquean el ingreso 5 minutos.
 - *El firmante queda en «Fallido»:* el relay no respondió o rechazó la conexión; consulte `docker compose -p nip46-evaluacion logs app` (los registros no contienen secretos) y vuelva a pulsar **Iniciar firmante**.
 - *La URI caducó o se usó:* emita otra.
+
+### Requisitos para un evaluador sin archivos del desarrollador
+
+Un clon limpio contiene todo lo necesario para levantar y usar el producto: **no** hace falta un `.env`, ni la identidad de pruebas de B4, ni la carpeta `data/`, ni imágenes de laboratorio. Solo se necesita:
+
+| Para | Necesita |
+|---|---|
+| Levantar y usar la aplicación (pasos 1 a 13) | Docker con Compose v2, Internet (construir la imagen y, al iniciar el firmante, alcanzar el relay) y un navegador. **Nada más** |
+| Ejecutar las pruebas en local (§5 y §9) | Python 3.12 y `pip`; para las E2E de navegador, Chrome o Edge instalado (si no hay, se omiten solas) |
+
+**Qué no trae un clon** (no se versiona a propósito): los **vectores oficiales de NIP-44** (`lab/vendor/`, licencia sin aclarar; sus **8 pruebas se omiten con aviso**, ver §9), las **imágenes de laboratorio** `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a` (solo las necesitan las pruebas de Docker con `E2E_DOCKER=1`, que se omiten sin ellas) y la base de datos de otros entornos.
+
+**Verificado en un clon limpio (2026-11-22, desde GitHub, en un directorio temporal):** `pip install -c constraints.txt -e ".[dev]"` y `pip check` sin errores; `python -m pytest` → **1029 passed, 35 skipped, 0 failed** (26 de Docker, 8 vectores NIP-44 y 1 de permisos POSIX); `docker compose --env-file deploy/demo.env up --build -d` con **proyecto, puerto (18090) y etiqueta de imagen exclusivos de la prueba**, con una segunda construcción **sin caché**: contenedor `healthy`, inicio de sesión con las credenciales de este README (200; contraseña incorrecta, 401), identidad temporal creada sin exponer la clave privada, modo `continuous`, cabeceras de seguridad y `Host` ajeno rechazado. **No se inició el firmante ni se contactó con relays ni con Stacker News**: el flujo completo con Stacker News (pasos 7 a 12) no forma parte de esa verificación. Informe: [`docs/NIGHTLY-REVIEW.md`](docs/NIGHTLY-REVIEW.md).
 
 ## 1. Descripción y objetivo
 

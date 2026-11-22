@@ -879,7 +879,7 @@ Detalle de las interacciones: `docs/ai-log.md`, entradas 42 a 47. **Requerimient
 | D-17.8 | Revocación individual de conexiones con identificadores opacos y aleatorios (`DELETE /api/connections/{id}`, JWT y CSRF, 404 si el id no es del runtime activo) y botón «Revocar» en la interfaz. **La renovación de conexiones queda fuera de alcance**: al caducar, se empareja de nuevo desde la interfaz | **Aprobada e implementada** (Componente 1): `DELETE /api/connections/{id}` con 200, 404, 409 y 422, cancelación de pendientes, auditoría `connection_revoked` y botón «Revocar» |
 | D-17.9 | No se persisten claves privadas ni conexiones: reiniciar el proceso exige volver a cargar la identidad (debe quedar documentado) | **Aprobada**; documentación en el Paso 6 |
 | D-17.10 | La experiencia del evaluador por la interfaz web (identidad temporal como camino principal del README, importación como alternativa) y Docker como mecanismo principal | **Aprobada**; README en el Paso 6 |
-| D-17.11 | La validación real con Stacker News se hará con la **versión final** en Docker y **no** con la imagen `manual-b61d` (que queda obsoleta para ello) | **Aprobada** |
+| D-17.11 | La validación real con Stacker News se hará con la **versión final** en Docker y **no** con la imagen `manual-b61d` (que queda obsoleta para ello) | **Aprobada y ejecutada el 2026-11-22** (PASS confirmado por el propietario; ver «Resultado de la validación real con la versión final») |
 | D-17.12 | **Trazabilidad de IA**: las transcripciones se exportan al cierre de cada Paso o bloque autorizado (no solo de cada fase) y se verifican antes de cada commit y de la publicación final con un **comando explícito** (`python tools/ai_sessions.py check`); **no se instalan hooks de Git**. Se modificaron de forma mínima y solo documental `AGENTS.md` §9 y `CLAUDE.md` | **Aprobada e implementada** (interacción 47) |
 
 ### Estado real de la implementación (2026-11-22)
@@ -892,6 +892,20 @@ Detalle de las interacciones: `docs/ai-log.md`, entradas 42 a 47. **Requerimient
 | Pasos 3 a 5, componente 3 (límites de frecuencia y continuidad) | **Completo y probado** |
 | Paso 6 (reconstrucción y validación local de Docker, ampliación de autorización) | **Completo y probado en local** (no es validación real con Stacker News): imagen `nostr-nip46-remote-signer:d17-continuous`, perfil `deploy/continuous.env`, contenedor local sustituido conservando el volumen y la imagen `manual-b61d` (vía de recuperación: `deploy/b62.env`); detalle y evidencias en la entrada 48 de `docs/ai-log.md` |
 | README y perfiles de despliegue para el evaluador | **Implementados** el 2026-11-22 (D-18: `deploy/demo.env` y «Inicio rápido» del README); **pendiente** la prueba de clon limpio |
+
+### Resultado de la validación real con la versión final (2026-11-22)
+Segunda autenticación real con Stacker News, la primera con la **versión definitiva** (modo continuo, imagen `nostr-nip46-remote-signer:d17-continuous`, perfil `deploy/continuous.env`, interfaz local `http://127.0.0.1:8001`). **Veredicto: PASS declarado y confirmado personalmente por el propietario** el 2026-11-22.
+
+| Lo que **confirmó el propietario** | Lo que **NO está respaldado por evidencia técnica** (no verificado por el agente ni capturado) |
+|---|---|
+| La prueba real con Stacker News fue exitosa | Instantes de inicio y fin y duración |
+| El firmante NIP-46 permitió completar la autenticación real desde la interfaz web | Clave pública usada (se indicó la identidad de prueba B4, no se verificó) |
+| | Número de firmas emitidas y si se respetó el máximo de una |
+| | Aprobación individual y manual de cada `connect` y `sign_event` (la política lo exige y las pruebas lo cubren, pero no hay registro de esta ejecución) |
+| | Auditoría sanitizada de la sesión (vive en memoria; no se exportó antes de cerrar la jornada) |
+| | Cumplimiento de las condiciones de la autorización (ventana, destino exacto, relay) y estado final del firmante (una comprobación mostró una conexión saliente abierta, es decir, probablemente seguía iniciado) |
+
+Consecuencias: (1) cumple el criterio funcional de `AGENTS.md` §3 **según el propietario**, pero sin evidencia reproducible; (2) el supuesto «que el contenedor alcance el relay público con TLS desde Docker Desktop» queda **respaldado indirectamente** por el éxito declarado, no verificado; (3) el supuesto «que Stacker News reutilice su clave de cliente en inicios posteriores» **sigue sin verificar**; (4) si se quiere una evidencia sólida hace falta repetir con captura sanitizada de la auditoría y autorización expresa nueva. D-17.11 queda **ejecutada**.
 
 ### Propuestas y decisiones de implementación de la IA **sin aprobación expresa** (siguen pendientes)
 | # | Propuesta | Estado |
@@ -924,3 +938,5 @@ Autorizada expresamente por el propietario el 2026-11-22. El proyecto será eval
 **Riesgos y mitigaciones.** (1) *Credencial pública:* el puerto se publica solo en loopback, la aplicación comprueba `Host` y el `Origin` del login, la cookie es `HttpOnly` + `SameSite=Strict`, hay límite de intentos (5 por 5 minutos) y, sobre todo, **cada `connect` y cada `sign_event` siguen exigiendo la aprobación humana individual en la interfaz**: conocer la contraseña no permite firmar sin una persona. (2) *Uso fuera de la demostración:* avisos en el perfil, el README y `.env.example`. (3) *Volumen preexistente:* si ya existe un volumen del proyecto, la contraseña del perfil se **ignora** (D-9: no se sobrescribe la cuenta existente). **No se modificó código funcional.**
 
 **Supuestos no verificados (D-18).** (1) Que el flujo de Stacker News descrito en el README (`/signup` o `/login?type=nostr` → «Continue with Nostr» → *bunker*) siga siendo el vigente: procede de la observación de B4 y del análisis del código de Stacker News, no de una prueba nueva. (2) Que `docker compose up --build` reproduzca la imagen en un clon limpio: depende de que el repositorio publicado incluya todos los archivos del producto (hoy hay archivos sin rastrear; ver el informe de la tarea) y se comprobará en la prueba de clon limpio, **pendiente**. (3) Nada de D-18 se ha validado contra Stacker News.
+
+**Verificación de clon limpio (2026-11-22, fuera del alcance de D-18 pero relacionada).** Clon desde GitHub en un directorio temporal: instalación según el README sin errores, `python -m pytest` **1029 passed, 35 skipped, 0 failed**, construcción Docker con el perfil demo (incluida una **sin caché**) con recursos exclusivos de la prueba, inicio de sesión con las credenciales del README correcto, identidad temporal sin exposición de claves, sin conexiones externas del firmante. Los recursos de la prueba se eliminaron tras comprobar su pertenencia y el entorno B6.2 no cambió. **No** se probó el flujo con Stacker News. Detalle y hallazgos en `docs/NIGHTLY-REVIEW.md`. El supuesto (2) de D-18 («que `up --build` reproduzca la imagen en un clon limpio») queda **verificado** para el estado publicado en `70b4481`.

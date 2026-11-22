@@ -1,6 +1,6 @@
 # Fase 1.0B, B6.2 — plan operativo de la validación real con Stacker News
 
-> **Estado vigente (2026-11-22): ver §17.** La validación real B6.2 **sigue sin ejecutarse** y **no se hará con la imagen `manual-b61d`**: el propietario decidió validarla con Stacker News cuando el código final del modo continuo (D-17) esté implementado y probado en Docker. La primera ventana (T0 20:03) se suspendió sin ejecutar nada.
+> **Estado vigente (2026-11-22, actualizado): ver §17 y §17.6.** La validación real **no se hizo con la imagen `manual-b61d`** ni con el plan supervisado de este documento (una firma, ventana de 15 minutos): se ejecutó con la **versión final en modo continuo** (imagen `d17-continuous`, perfil `deploy/continuous.env`, `http://127.0.0.1:8001`) y el propietario **confirmó personalmente el PASS**. **No hay evidencia técnica capturada** de esa ejecución (ver §17.6); este documento conserva el plan original como referencia. La primera ventana (T0 20:03) se suspendió sin ejecutar nada.
 
 **Estado de la preparación original: PREPARADO, PRECONDICIONES VERIFICADAS (§14). NO AUTORIZADO TODAVÍA.** Este documento prepara y documenta B6.2. No se ha realizado ninguna conexión externa, no se ha usado la identidad privada de B4, no hay firmas reales y no hay commit ni push. La ejecución requiere la **autorización expresa del propietario** con el alcance de §2 y §13 (`AGENTS.md` §11).
 
@@ -341,3 +341,18 @@ Qué **no** se recopila: la URI, la contraseña, la clave privada, el JWT, las c
 | Imagen desactualizada respecto de `app/` | Comparación de hashes y, si difiere, reconstrucción con autorización (17.2, paso 2) |
 | `restart: unless-stopped` | El contenedor no inicia el firmante por sí solo (solo lo hace la API autenticada); un reinicio no abre conexiones |
 | `docker volume prune` | **Prohibido**: puede alcanzar volúmenes ajenos (`magento246_appdata`) |
+
+### 17.6 Resultado de la validación real (2026-11-22)
+**PASS declarado y confirmado personalmente por el propietario**: «la prueba real con Stacker News fue exitosa» y el firmante permitió «completar la autenticación real desde la interfaz web». Entorno: imagen `nostr-nip46-remote-signer:d17-continuous`, perfil `deploy/continuous.env` (modo continuo, relay `wss://relay.primal.net`, `RELAY_TLS_GROUPS=X25519`, origen `https://stacker.news`), proyecto `nostr-nip46-remote-signer`, volumen `nostr-nip46-remote-signer_app_data`. La contraseña del administrador de ese entorno se restableció antes de la prueba con autorización expresa (respaldo previo de la base; entrada 50 de `docs/ai-log.md`).
+
+| Criterio del plan (§2 a §9) | Estado |
+|---|---|
+| Autenticación efectiva en Stacker News | **Confirmada por el propietario** (sin captura ni evidencia técnica) |
+| Una sola firma `kind 27235` | **No verificado** (el modo continuo no tiene tope total de firmas; el límite lo ponía la persona) |
+| Aprobación manual individual de `connect` y `sign_event` | **No verificado en esta ejecución** (la política lo exige; hay pruebas automatizadas) |
+| Ventana máxima de 15 minutos, T0 y fin | **No verificado** (el plan supervisado no se aplicó tal cual) |
+| Identidad B4 (`c5a035bf…`) | **No verificado** (el agente no participó ni leyó la clave) |
+| Auditoría sanitizada y evidencia en `lab/results/` | **No capturada** |
+| Estado final del firmante | **No verificado**; una comprobación posterior mostró una conexión saliente abierta (probablemente seguía iniciado) |
+
+Para una evidencia sólida habría que repetir la prueba con captura de la auditoría sanitizada y una autorización nueva con alcance definido (`AGENTS.md` §11).

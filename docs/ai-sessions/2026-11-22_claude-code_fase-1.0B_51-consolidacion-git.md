@@ -9,7 +9,7 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T05:45:14.655Z |
+| Hasta (UTC) | 2026-11-22T05:45:49.152Z |
 | Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión.
@@ -154,3 +154,33 @@ Los 5 fallos son de trazabilidad y esperables: el manifiesto ya lista la 51 y su
 > *[Llamada a herramienta: PowerShell]*
 
 > *[Llamada a herramienta: PowerShell]*
+
+> *[Llamada a herramienta: PowerShell]*
+
+<!-- 2026-11-22T05:45:29.317Z -->
+El commit existe (`70b4481`) y el árbol quedó limpio (el «exit=1» viene del estado del pipeline, no del commit). Verifico que el remoto no avanzó y hago el push normal, sin force.
+
+> *[Llamada a herramienta: PowerShell]*
+
+<!-- 2026-11-22T05:45:49.152Z -->
+- **Commit:** `70b448173ab0683a1e77da95e44be48840efc693` (`70b4481`), con el mensaje pedido y la línea de atribución del entorno.
+- **Rama y push:** `main` → `origin/main`, `4b9e51e..70b4481`, sin force push. Antes del push el remoto no había avanzado. Después, HEAD y `origin/main` coinciden y el árbol está limpio.
+- **Archivos incorporados:** 126 (79 nuevos y 47 modificados, ninguno eliminado). Los añadí por carpetas revisadas, sin `git add -A` a ciegas.
+- **Pruebas:** `pytest` completo **1037 passed, 27 skipped, 0 failed** (26 de Docker sin `E2E_DOCKER` y 1 de permisos POSIX). Las 54 pruebas de trazabilidad pasan y `git diff --check` está limpio.
+- **Trazabilidad:** `python tools/ai_sessions.py check` dio «trazabilidad OK» justo antes del commit. Registré las entradas 50 (PASS confirmado por usted, sin detalles técnicos inventados) y 51, y las transcripciones 48 a 51 están como **PARCIAL** porque la sesión sigue abierta. Esta respuesta las deja desactualizadas en segundos: hay que reexportar al cerrar la sesión.
+- **Revisión de secretos:** la hice sobre los 126 archivos y sobre el contenido ya preparado para el commit.
+  - No hay contraseñas reales ni claves privadas Nostr.
+  - No hay JWT, cookies, URI `bunker://` con clave ni `.env` privados.
+  - No hay bases SQLite ni respaldos.
+  - La contraseña de `b62-admin` no aparece en ningún archivo.
+  - Quedan dos excepciones deliberadas: la contraseña de demostración **pública** de `deploy/demo.env` (D-18) y la clave **pública** de B4.
+  - Los demás avisos del escáner eran falsos positivos revisados.
+- **README:** no afirmaba que 8000 y 8001 fueran instancias de un mismo despliegue. Añadí la aclaración de que son proyectos Docker distintos y que no se ha decidido cuál es la instalación canónica. También corregí que decía que la validación real «no se había repetido».
+- **Entorno B6.2:** sin tocar (contenedor, volumen y SQLite intactos). No hubo conexiones a relays ni a Stacker News; solo `git fetch` y `git push` a GitHub.
+
+**Pendientes documentados en `docs/HANDOFF.md`:**
+- Detener el firmante, que probablemente sigue iniciado (hay 1 conexión saliente abierta), y cambiar la contraseña de `b62-admin`.
+- Capturar la evidencia sanitizada de la prueba real, antes de reiniciar el contenedor (la auditoría vive en memoria).
+- Completar el PASS en `docs/decisions.md` y en `docs/phase-1.0B-B6.2-plan.md`.
+- Hacer la prueba de clon limpio y sustituir `<URL-del-repositorio>` en el README.
+- Decidir P-47, P-48 y P-49, y cuál es el entorno canónico y los puertos 8000/8001.

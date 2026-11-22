@@ -2,6 +2,8 @@
 
 Para retomar el proyecto en una sesión nueva. Reemplaza en la práctica a [`handoff-2026-11-21.md`](handoff-2026-11-21.md), que describe el estado anterior (supervisado, B6.1D). **Este archivo no contiene credenciales ni secretos**; las referencias a contraseñas y claves son solo a *dónde* están.
 
+> **Actualización (jornada nocturna del 2026-11-22):** revisión autónoma sin push; ver [`NIGHTLY-REVIEW.md`](NIGHTLY-REVIEW.md) (clon limpio PASS, auditoría de seguridad, diagnóstico de los puertos 8000/8001 y propuestas). Los commits de esa jornada están **solo en local, sin push, a la espera de su revisión**.
+
 ## 1. Estado actual del proyecto
 
 - **Producto:** firmante remoto Nostr **NIP-46** (Python 3.12, FastAPI, SQLite, Docker Compose, pytest), **implementado y probado**. Modo por defecto `SIGNER_MODE=continuous`: sin ventana obligatoria, reconexión automática al relay, límites de frecuencia (30/min por conexión y 120/min globales), revocación individual de conexiones y **aprobación humana individual de cada `connect` y cada `sign_event`** (sin firma automática ni aprobaciones persistentes). El modo `supervised` (B6.2) se conserva intacto.
@@ -92,12 +94,12 @@ Conteo antes de la consolidación: **47 modificados** y **60 sin rastrear** (inc
 ## 9. Tareas restantes hasta la publicación
 
 1. Capturar y archivar la **evidencia sanitizada** de la validación real (auditoría, hora de inicio y fin, clave pública truncada a 8 caracteres, número de firmas y observación de la sesión) en `docs/evidence/`, **solo con lo que el propietario aporte**.
-2. `README.md` (§2 y §13) y `docs/ai-log.md` ya registran el PASS (declaración del propietario, sin evidencia técnica); **falta** `docs/decisions.md` (D-17.11 y el estado de B6.2) y `docs/phase-1.0B-B6.2-plan.md`.
+2. `README.md`, `docs/ai-log.md`, `docs/decisions.md` y `docs/phase-1.0B-B6.2-plan.md` ya registran el PASS como **declaración del propietario** (con lo no respaldado por evidencia señalado). *Hecho en la jornada nocturna.*
 3. Detener el firmante si sigue activo y **cambiar la contraseña de `b62-admin`**.
 4. Decidir el entorno canónico y los puertos 8000/8001 (§5).
 5. Confirmar que el commit de consolidación está en `origin/main` (`git fetch` y `git log origin/main -1`); en adelante, cada commit exige autorización explícita.
-6. **Prueba de clon limpio:** clonar en una carpeta nueva, `docker compose --env-file deploy/demo.env -p nip46-evaluacion up --build -d`, entrar con las credenciales del README, importar o crear una identidad y recorrer el flujo **sin** relays reales salvo autorización; comprobar `python -m pytest` y los 8 vectores NIP-44 omitidos si faltan `lab/vendor/`.
-7. Sustituir el marcador `<URL-del-repositorio>` del README por la URL real.
+6. ~~Prueba de clon limpio~~ **Hecha el 2026-11-22 para `70b4481`: PASS** (instalación, `pytest` 1029 passed / 35 skipped / 0 failed y Docker del perfil demo; sin Stacker News). Detalle en [`NIGHTLY-REVIEW.md`](NIGHTLY-REVIEW.md). Repetirla tras cambios relevantes y, con autorización, ampliarla al flujo real.
+7. ~~Sustituir el marcador `<URL-del-repositorio>`~~ **Hecho** (URL verificada con `git remote -v`).
 8. Decidir P-47, P-48 y P-49.
 9. Cierre de trazabilidad: reexportar las transcripciones al cerrar la sesión, `python tools/ai_sessions.py check` y `scan`, respaldo privado de historiales.
 10. **Autorizar la publicación** y hacer push (no antes).
