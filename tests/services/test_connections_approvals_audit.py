@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 
 import pytest
 
@@ -91,6 +92,76 @@ async def test_approve_resolves_the_waiter_once() -> None:
 
 
 @pytest.mark.anyio
+async def test_consume_spends_a_valid_human_approval_exactly_once() -> None:
+    reg = ApprovalRegistry(now=Clock())
+    req = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60, "b" * 64)
+    assert req.binding == "b" * 64 and req.consumed is False
+    reg.resolve(req.id, True)
+    assert reg.consume(req) is None and req.consumed is True
+    assert reg.consume(req) == "aprobacion_consumida"  # no se puede gastar dos veces
+
+
+@pytest.mark.anyio
+async def test_consume_refuses_anything_that_is_not_a_live_human_approval() -> None:
+    clock = Clock()
+    reg = ApprovalRegistry(now=clock)
+    pending = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    assert reg.consume(pending) == "aprobacion_no_vigente" and pending.consumed is True  # nunca decidida; igualmente queda gastada
+    denied = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    reg.resolve(denied.id, False)
+    assert reg.consume(denied) == "aprobacion_no_vigente"
+    cancelled = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    reg.cancel_all("cancelada")
+    assert reg.consume(cancelled) == "aprobacion_no_vigente"
+    forged = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    reg.resolve(forged.id, True)
+    forged.reason = "automatica"  # una aprobacion que no fue decision humana no sirve
+    assert reg.consume(forged) == "aprobacion_no_vigente"
+
+
+@pytest.mark.anyio
+async def test_consume_refuses_an_approval_whose_lifetime_ended_even_if_it_was_granted_in_time() -> None:
+    clock = Clock()
+    reg = ApprovalRegistry(now=clock)
+    req = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 10)
+    reg.resolve(req.id, True)
+    clock.advance(10)  # exactamente en el limite: ya no vale (igual criterio que `resolve`)
+    assert reg.consume(req) == "aprobacion_caducada"
+    other = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 10)
+    reg.resolve(other.id, True)
+    clock.advance(9)
+    assert reg.consume(other) is None
+
+
+@pytest.mark.anyio
+async def test_outcome_is_set_once_and_shown_in_the_public_view() -> None:
+    reg = ApprovalRegistry(now=Clock())
+    req = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    assert req.outcome is None
+    reg.resolve(req.id, True)
+    assert req.public(0)["outcome"] is None  # aprobada por el operador, AUN sin resultado de la firma
+    reg.set_outcome(req, "refused", "politica_incumplida")
+    reg.set_outcome(req, "signed")  # un resultado ya fijado no se sobrescribe
+    assert (req.outcome, req.outcome_reason) == ("refused", "politica_incumplida")
+    assert req.public(0)["outcome"] == "refused" and req.public(0)["outcome_reason"] == "politica_incumplida"
+
+
+@pytest.mark.anyio
+async def test_finalize_unresolved_fails_only_approved_signatures_without_outcome() -> None:
+    reg = ApprovalRegistry(now=Clock())
+    unresolved = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    done = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    denied = reg.create(RequestKind.SIGN_EVENT, "abcd1234", {}, [], 60)
+    connect = reg.create(RequestKind.CONNECT, "abcd1234", {}, [], 60)
+    for req, ok in ((unresolved, True), (done, True), (denied, False), (connect, True)):
+        reg.resolve(req.id, ok)
+    reg.set_outcome(done, "signed")
+    assert reg.finalize_unresolved("sesion_terminada") == 1
+    assert (unresolved.outcome, unresolved.outcome_reason) == ("failed", "sesion_terminada")
+    assert done.outcome == "signed" and denied.outcome is None and connect.outcome is None  # nada mas cambia
+
+
+@pytest.mark.anyio
 async def test_deny_and_unknown_id() -> None:
     reg = ApprovalRegistry(now=Clock())
     req = reg.create(RequestKind.CONNECT, "abcd1234", {}, [], 5)
@@ -145,7 +216,8 @@ async def test_pending_requests_are_capped_and_public_view_is_sanitized() -> Non
     clock.advance(10)
     view = req.public(clock())
     assert view["expires_in_s"] == 20 and view["client"] == "abcd1234" and set(view) == {
-        "id", "kind", "status", "client", "reason", "expires_in_s", "summary", "checks"}
+        "id", "kind", "status", "client", "reason", "expires_in_s", "summary", "checks", "outcome", "outcome_reason", "sign_expires_in_s"}  # campos NUEVOS, ninguno retirado
+    assert view["outcome"] is None and view["outcome_reason"] is None
     reg.cancel_all("x")
     assert req.public(clock())["expires_in_s"] == 0
 
@@ -187,9 +259,13 @@ def test_snapshot_shows_truncated_clients_states_and_remaining_time() -> None:
     m.deny("c" * 64)
     clock.advance(40)
     view = {c["client"]: c for c in m.snapshot()}
-    assert view["aaaaaaaa"] == {"client": "aaaaaaaa", "state": "pending", "expires_in_s": 0}
-    assert view["bbbbbbbb"] == {"client": "bbbbbbbb", "state": "active", "expires_in_s": 60}
-    assert view["cccccccc"]["state"] == "denied"
+    without_id = {name: {k: v for k, v in item.items() if k != "id"} for name, item in view.items()}  # el `id` opaco se comprueba aparte (contrato de la API, D-17)
+    assert without_id["aaaaaaaa"] == {"client": "aaaaaaaa", "state": "pending", "expires_in_s": 0}
+    assert without_id["bbbbbbbb"] == {"client": "bbbbbbbb", "state": "active", "expires_in_s": 60}
+    assert without_id["cccccccc"]["state"] == "denied"
+    ids = [item["id"] for item in view.values()]
+    assert all(re.fullmatch(r"[A-Za-z0-9_-]{12}", str(i)) for i in ids) and len(set(ids)) == 3  # todos tienen id (también los activados o denegados sin `begin`), único y URL-safe
+    assert not any(str(i).startswith(("aaaa", "bbbb", "cccc")) or "a" * 6 in str(i) for i in ids)  # sin relación con la clave del cliente
     clock.advance(61)
     assert {c["client"]: c["state"] for c in m.snapshot()}["bbbbbbbb"] == "revoked"
     assert all(len(str(v)) < 64 for c in m.snapshot() for v in c.values())

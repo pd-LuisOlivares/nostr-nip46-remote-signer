@@ -34,6 +34,15 @@ def challenge_hash(challenge: str) -> str:
     return hashlib.sha256(challenge.encode("utf-8")).hexdigest()
 
 
+def template_binding(identity_pubkey: str, template: "SignTemplate") -> str:
+    """Huella SHA-256 de EXACTAMENTE lo que se firmaria (identidad, `kind`, `created_at`, etiquetas y contenido).
+
+    Se calcula al ofrecer la solicitud al operador y se recalcula justo antes de firmar (P-38): si difieren, lo que se firmaria no es lo que se aprobo.
+    """
+    canonical = json.dumps([identity_pubkey, template.kind, template.created_at, template.tags, template.content], separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class PolicyConfig:
     origin: str  # valor EXACTO esperado de la etiqueta `u`

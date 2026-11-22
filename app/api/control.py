@@ -12,11 +12,12 @@ from app.nostr.errors import InvalidKeyError
 from app.nostr.keys import Keypair
 from app.schemas.control import AuditOut, BunkerOut, ConnectionOut, ErrorOut, IdentityImport, IdentityOut, RequestOut, StatusOut
 from app.services.approvals import AlreadyResolved, UnknownRequest
-from app.services.connections import TooManySecrets
+from app.services.connections import ConnectionNotActive, TooManySecrets, UnknownConnection
 from app.services.runtime import AlreadyRunning, NoIdentity, NotRunning, SignerRuntime, StartFailed
 from app.services.signer import NotReady, SignerState
 
 RequestId = Annotated[str, Path(pattern=r"^[A-Za-z0-9_-]{1,32}$")]
+ConnectionId = Annotated[str, Path(pattern=r"^[A-Za-z0-9_-]{1,32}$")]
 _ERRORS: dict[int | str, dict[str, Any]] = {401: {"model": ErrorOut}, 409: {"model": ErrorOut}}
 
 
@@ -108,7 +109,23 @@ def build_router(guard: JwtGuard) -> APIRouter:
     async def list_connections(runtime: Runtime) -> list[ConnectionOut]:
         """Clientes conocidos en la sesión actual (identificador truncado y estado); nunca secretos ni claves completas."""
         service = runtime.service
-        return [ConnectionOut(client=str(c["client"]), state=str(c["state"]), expires_in_s=int(c["expires_in_s"])) for c in (service.connections.snapshot() if service else [])]
+        return [ConnectionOut(id=str(c["id"]), client=str(c["client"]), state=str(c["state"]), expires_in_s=int(c["expires_in_s"]))
+                for c in (service.connections.snapshot() if service else [])]
+
+    @router.delete("/connections/{connection_id}", response_model=ConnectionOut, responses={**_ERRORS, 404: {"model": ErrorOut}})
+    async def revoke_connection(connection_id: ConnectionId, runtime: Runtime) -> ConnectionOut:
+        """Revoca UNA conexión activa por su id opaco: efecto inmediato y cancela sus solicitudes pendientes. 404 si el id no es de este runtime."""
+        try:
+            runtime.revoke_connection(connection_id)
+        except UnknownConnection:
+            raise HTTPException(404, "conexion desconocida") from None
+        except ConnectionNotActive:
+            raise HTTPException(409, "la conexion ya no esta activa") from None
+        service = runtime.service
+        view = next((c for c in (service.connections.snapshot() if service else []) if c["id"] == connection_id), None)
+        if view is None:  # no debería ocurrir: la conexión acaba de existir
+            raise HTTPException(404, "conexion desconocida")
+        return ConnectionOut(id=connection_id, client=str(view["client"]), state=str(view["state"]), expires_in_s=0)
 
     # ----------------------------------------------------------------------------- solicitudes
     @router.get("/requests", response_model=list[RequestOut])

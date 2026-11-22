@@ -1,0 +1,72 @@
+# B6.1D / B6.1D-R3: demostracion funcional LOCAL supervisada. Se usa SOBRE el compose.yaml del producto (no lo sustituye ni se incluye en su imagen):
+#   docker compose -p nip46-manual -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d
+#
+#   Pestana A  http://127.0.0.1:8000    firmante (aprobacion humana, SOLO aqui)
+#   Pestana B  http://127.0.0.1:18080   cliente NIP-46 de demostracion (NDK 2.12.2 real; no puede aprobar nada)
+#   Relay local ws://127.0.0.1:17777    (desde Docker: ws://relay:7777)
+#
+# Redes separadas: el relay esta en las dos, pero el cliente NO alcanza al firmante (ni su API) y el firmante NO alcanza al cliente. No hay relays publicos ni
+# Stacker News: `.invalid` es un TLD reservado que nunca resuelve. Parametros SOLO de la demostracion: ventana de firma 45 s y TTL de aprobacion 120 s.
+networks:
+  signer_net: {}
+  client_net: {}
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=16m"]
+  pids_limit: 256
+  mem_limit: 512m
+  init: true
+  restart: "no"
+
+services:
+  relay:
+    <<: *hardening
+    image: nip46-lab-py:1.0a
+    command: ["python", "-m", "lab_relay"]
+    environment: {LAB_ACTOR: relay, RELAY_PORT: "7777"}
+    ports: ["127.0.0.1:${MANUAL_RELAY_PORT:-17777}:7777"]
+    networks: [signer_net, client_net]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 7777), 2).close()"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  app:
+    networks: [signer_net]
+    environment:
+      RELAY_URL: ws://relay:7777
+      RELAY_ALLOW_INSECURE: "1"            # solo para este relay local en la red del proyecto
+      SERVICE_ORIGIN: https://sn.manual.invalid
+      SIGNER_WINDOW_S: "${MANUAL_SIGNER_WINDOW_S:-45}"      # ventana de FIRMA de la politica (la demostracion la hace visible en la tarjeta)
+      APPROVAL_TTL_S: "${MANUAL_APPROVAL_TTL_S:-120}"       # TTL de la aprobacion: mayor que la ventana, a proposito, para poder ver la revalidacion
+      MAX_SIGNATURES: "2"
+      MAX_REQUESTS: "60"
+    depends_on:
+      relay:
+        condition: service_healthy
+
+  # Cliente web de laboratorio: imagen Node EXISTENTE del laboratorio (NDK 2.12.2 real); el codigo se monta de solo lectura. No esta en el Dockerfile del producto.
+  client-web:
+    <<: *hardening
+    image: nip46-lab-node:1.0a
+    command: ["node", "web/server.mjs"]
+    environment:
+      LAB_PORT: "18080"
+      LAB_PUBLIC_PORT: "${MANUAL_CLIENT_PORT:-18080}"
+      LAB_ORIGIN: https://sn.manual.invalid
+      OP_TIMEOUT_MS: "${MANUAL_CLIENT_OP_TIMEOUT_MS:-150000}"
+    volumes: ["./lab/manual/client_web:/lab/node/web:ro"]
+    ports: ["127.0.0.1:${MANUAL_CLIENT_PORT:-18080}:18080"]
+    networks: [client_net]
+    depends_on:
+      relay:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:18080/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20

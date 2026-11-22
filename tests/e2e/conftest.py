@@ -2,7 +2,6 @@
 import json
 import os
 import queue
-import re
 import socket
 import subprocess
 import sys
@@ -23,7 +22,8 @@ from tests.support import NdkLikeClient
 
 ROOT = Path(__file__).resolve().parents[2]
 ORIGIN = "https://sn.e2e.invalid"
-CODE_RE = re.compile(r"ESTA ejecucion[^:]*: ([A-Za-z0-9_-]{20,})")
+USERNAME = "operador-e2e"
+PASSWORD = "contrasena-e2e-ficticia-1"  # FICTICIA: solo para las pruebas E2E con una base temporal; no es una credencial real
 
 
 def free_port() -> int:
@@ -75,9 +75,11 @@ def spawn(args: list[str], env: dict[str, str]) -> Proc:
 @dataclass
 class AppHandle:
     base: str
-    code: str
     relay_url: str
     proc: Proc
+    db_path: str
+    username: str = USERNAME
+    password: str = PASSWORD
 
     def log(self) -> str:
         return "\n".join(self.proc.lines)
@@ -96,24 +98,27 @@ def relay() -> Iterator[str]:
 
 
 @pytest.fixture
-def start_app(relay: str) -> Iterator[Callable[..., AppHandle]]:
+def start_app(relay: str, tmp_path: Path) -> Iterator[Callable[..., AppHandle]]:
+    """Arranca la aplicación real (Uvicorn) con una base SQLite TEMPORAL y un administrador ficticio. Los `env` sobrescriben cualquier variable
+    (p. ej. `DATABASE_PATH` para reiniciar sobre la misma base y `ADMIN_PASSWORD=""` para comprobar que ya no hace falta)."""
     started: list[Proc] = []
+    counter = [0]
 
     def factory(**env: str) -> AppHandle:
         port = free_port()
+        counter[0] += 1
+        expect_exit = env.pop("EXPECT_EXIT", "") == "1"  # el arranque debe ABORTAR (p. ej. sin administrador ni contraseña inicial)
+        db_path = env.get("DATABASE_PATH", str(tmp_path / f"admin-{counter[0]}.db"))
         proc = spawn([sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
-                     {"RELAY_URL": relay, "RELAY_ALLOW_INSECURE": "1", "SERVICE_ORIGIN": ORIGIN, "APPROVAL_TTL_S": "30", "MAX_SIGNATURES": "2", **env})
+                     {"RELAY_URL": relay, "RELAY_ALLOW_INSECURE": "1", "SERVICE_ORIGIN": ORIGIN, "APPROVAL_TTL_S": "30", "MAX_SIGNATURES": "2",
+                      "DATABASE_PATH": db_path, "ADMIN_USERNAME": USERNAME, "ADMIN_PASSWORD": PASSWORD, "ADMIN_PASSWORD_FILE": "", **env})
         started.append(proc)
         base = f"http://127.0.0.1:{port}"
+        if expect_exit:
+            proc.popen.wait(timeout=30)
+            return AppHandle(base, relay, proc, db_path)
         wait_http(base + "/health")
-        deadline = time.monotonic() + 10
-        code = None
-        while code is None and time.monotonic() < deadline:
-            match = next((CODE_RE.search(line) for line in proc.lines if CODE_RE.search(line)), None)
-            code = match.group(1) if match else None
-            time.sleep(0.05)
-        assert code, "la aplicacion no mostro el codigo de acceso"
-        return AppHandle(base, code, relay, proc)
+        return AppHandle(base, relay, proc, db_path)
 
     yield factory
     for proc in started:
@@ -140,8 +145,8 @@ def browser() -> Iterator[Any]:
 class RelayClient:
     """Cliente NIP-46 de prueba (hace de «Stacker News»): habla con el relay local y descifra lo que el firmante le responde."""
 
-    def __init__(self, relay_url: str, transport_pub: str) -> None:
-        self.ndk = NdkLikeClient(transport_pub, time.time)
+    def __init__(self, relay_url: str, transport_pub: str, ndk: NdkLikeClient | None = None) -> None:
+        self.ndk = ndk or NdkLikeClient(transport_pub, time.time)  # `ndk` permite reutilizar la clave del cliente (volver a suscribirse tras reiniciar el relay)
         self.ws: ClientConnection = connect(relay_url, open_timeout=5, legacy=True)
         self.inbox: queue.Queue[NostrEvent] = queue.Queue()
         self.ws.send(json.dumps(["REQ", "c1", {"kinds": [24133], "#p": [self.ndk.key.public_hex], "since": int(time.time()) - 5}]))

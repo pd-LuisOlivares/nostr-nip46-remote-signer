@@ -6,15 +6,15 @@ producto solo conoce `ws://relay:7777`; la interfaz se publica únicamente en 12
 import json
 import os
 import re
+import secrets
 import shutil
 import subprocess
-import time
 from collections.abc import Iterator
 from typing import Any
 
 import pytest
 
-from tests.e2e.conftest import CODE_RE, ROOT, free_port, wait_http
+from tests.e2e.conftest import ROOT, free_port, wait_http
 
 sync_api = pytest.importorskip("playwright.sync_api")
 expect = sync_api.expect
@@ -31,32 +31,26 @@ def stack() -> Iterator[tuple[str, str, dict[str, str]]]:
     if shutil.which("docker") is None:
         pytest.skip("docker no disponible")
     port = free_port()
-    env = {"E2E_PORT": str(port)}
+    password = secrets.token_urlsafe(24)  # administrador FICTICIO de esta ejecucion; solo vive en el entorno de compose y en el contenedor
+    env = {"E2E_PORT": str(port), "LAB_ADMIN_PASSWORD": password}
     compose("down", "-v", "--remove-orphans", env=env, timeout=120)
     up = compose("up", "-d", "relay", "app", env=env)
     assert up.returncode == 0, up.stderr[-400:]
     try:
         base = f"http://127.0.0.1:{port}"
         wait_http(base + "/health", timeout=40)
-        code = None
-        for _ in range(60):
-            match = CODE_RE.search(compose("logs", "--no-color", "--no-log-prefix", "app", env=env).stdout)
-            if match:
-                code = match.group(1)
-                break
-            time.sleep(0.5)
-        assert code
-        yield base, code, env
+        yield base, password, env
     finally:
         compose("down", "-v", "--remove-orphans", env=env, timeout=120)
 
 
 def test_browser_drives_the_containerised_signer_for_the_real_ndk_client(browser: Any, stack: tuple[str, str, dict[str, str]]) -> None:
-    base, code, env = stack
+    base, password, env = stack
     context = browser.new_context(base_url=base)
     page = context.new_page()
     page.goto("/")
-    page.fill("#login-code", code)
+    page.fill("#login-username", "e2e-operador")
+    page.fill("#login-password", password)
     page.click("#login-btn")
     expect(page.locator("#view-app")).to_be_visible()
     page.click("#identity-create")
@@ -96,13 +90,13 @@ def test_browser_drives_the_containerised_signer_for_the_real_ndk_client(browser
     assert login["all_ok"] is True and login["pubkey_is_identity"] is True and login["kind"] == 27235, login
     assert client.returncode == 0, err[-300:]
 
-    expect(page.locator("#signer-signatures")).to_contain_text("1 de 1")
+    expect(page.locator("#signer-signatures")).to_contain_text("1 (cada una aprobada por una persona)")  # modo continuo (por defecto de la imagen): sin tope total, cada firma aprobada por una persona
     page.click("#signer-stop")
     expect(page.locator("#signer-state")).to_have_text("Detenido")
     audit = page.inner_text("#audit-body")
     for expected in ("session_start", "sign_ok", "session_end"):
         assert expected in audit
     logs = compose("logs", "--no-color", "--no-log-prefix", "app", env=env).stdout
-    assert uri.split("secret=")[1] not in logs and uri not in logs and code in logs  # el código aparece una vez (por diseño) y nunca la URI
-    assert logs.count(code) == 1
+    assert uri.split("secret=")[1] not in logs and uri not in logs  # nunca la URI
+    assert password not in logs and "$argon2" not in logs and "event=login_ok" in logs  # el registro tiene el evento, nunca la contraseña ni el hash
     context.close()

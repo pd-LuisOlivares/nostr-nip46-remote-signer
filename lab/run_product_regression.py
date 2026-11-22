@@ -12,6 +12,7 @@ import datetime
 import json
 import os
 import re
+import secrets
 import subprocess
 import sys
 import time
@@ -46,20 +47,14 @@ def events(evs: list[dict[str, object]], name: str) -> list[dict[str, object]]:
     return [e for e in evs if e.get("ev") == name]
 
 
-def credential_from_logs(env: dict[str, str]) -> str:
-    """El codigo de acceso del operador solo existe en el registro del contenedor (se muestra una vez al arrancar)."""
-    for _ in range(60):
-        out = compose("logs", "--no-color", "--no-log-prefix", "app", env=env).stdout
-        match = re.search(r"ESTA ejecucion[^:]*: ([A-Za-z0-9_-]{20,})", out)
-        if match:
-            return match.group(1)
-        time.sleep(0.5)
-    return ""
-
-
 def run_api_scenario(scenario: str) -> dict[str, object]:
-    """P-33: Uvicorn + FastAPI + runtime + firmante + relay + NDK real, operados por la API HTTP (driver.py)."""
-    env = {**os.environ, "SCENARIO": scenario}
+    """P-33: Uvicorn + FastAPI + runtime + firmante + relay + NDK real, operados por la API HTTP (driver.py).
+
+    D-9: el administrador del laboratorio es FICTICIO y se genera al azar en cada ejecucion (`LAB_ADMIN_PASSWORD`, solo en el entorno de compose y del
+    contenedor, nunca en un archivo); el driver inicia sesion con ese usuario y contrasena dentro del contenedor.
+    """
+    password = secrets.token_urlsafe(24)
+    env = {**os.environ, "SCENARIO": scenario, "LAB_ADMIN_PASSWORD": password}
     run: dict[str, object] = {"scenario": scenario, "mode": "api", "errors": []}
     errors: list[str] = run["errors"]  # type: ignore[assignment]
     driver = None
@@ -69,11 +64,14 @@ def run_api_scenario(scenario: str) -> dict[str, object]:
         if up.returncode:
             errors.append("up fallo: " + up.stderr[-300:])
             return run
-        credential = credential_from_logs(env)
-        if not credential:
-            errors.append("no se encontro la credencial de operador en el registro de la aplicacion")
+        for _ in range(60):  # la aplicacion tarda en abrir la base, crear el administrador y escuchar
+            if compose("exec", "-T", "app", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=2)", env=env).returncode == 0:
+                break
+            time.sleep(0.5)
+        else:
+            errors.append("la aplicacion no llego a responder en /health")
             return run
-        driver = subprocess.Popen([*COMPOSE, "exec", "-T", "-e", f"API_TOKEN={credential}", "app", "python", "/lab-product/driver.py"], env=env,
+        driver = subprocess.Popen([*COMPOSE, "exec", "-T", "app", "python", "/lab-product/driver.py"], env=env,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
         time.sleep(0.2)
         cl = compose("run", "--rm", "-T", "client", env=env, timeout=180)
@@ -85,7 +83,7 @@ def run_api_scenario(scenario: str) -> dict[str, object]:
         if driver.returncode:
             errors.append(f"driver salio con codigo {driver.returncode}: {err[-200:]}")
         run["relay"] = compose("logs", "--no-color", "--no-log-prefix", "relay", env=env).stdout
-        run["app_log"] = compose("logs", "--no-color", "--no-log-prefix", "app", env=env).stdout.replace(credential, "[REDACTADO:credencial]")
+        run["app_log"] = compose("logs", "--no-color", "--no-log-prefix", "app", env=env).stdout.replace(password, "[REDACTADO:credencial]")
     except subprocess.TimeoutExpired as exc:
         errors.append(f"timeout del orquestador: {exc}")
         if driver:

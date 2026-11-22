@@ -231,3 +231,42 @@ lab/node/node_modules/
 # Artefactos descargados (tarballs, ruedas, datos de terceros): binarios verificables
 # por hash; los vectores NIP-44 ademas tienen licencia sin aclarar.
 lab/vendor/
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# B6.1A (P-36): secretos, identidades y datos locales. Reglas especificas: no ocultan archivos legitimos del proyecto (se comprobo con
+# `git ls-files -ci --exclude-standard` y `git ls-files -o -i --exclude-standard`). Un archivo legitimo con estas extensiones se fuerza con `git add -f`.
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Identidad y claves privadas Nostr (nunca versionar). La identidad de pruebas B4 vive FUERA del repositorio (~/.nip46-b4/identity.key).
+identity.key
+*.nsec
+*.key
+*.pem
+.nip46-b4/
+
+# Contrasena inicial del administrador y otros secretos locales
+secrets/
+*.secret
+admin_password*
+
+# Base SQLite local del administrador (hash Argon2id) y sus archivos auxiliares (diario, WAL y memoria compartida)
+/data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite3-journal
+
+# Configuracion privada local con valores reales (la plantilla .env.example SI se versiona)
+.env.*
+!.env.example
+
+# Evidencias sensibles o temporales: capturas de trafico (HAR/PCAP contienen cookies y tokens), evidencia sin sanear y carpetas temporales
+/evidence-private/
+/evidence-raw/
+*.har
+*.pcap
+*.pcapng
+*.tmp
+/tmp/

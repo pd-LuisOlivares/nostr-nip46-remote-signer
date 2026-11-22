@@ -17,6 +17,8 @@ dependencies = [
     "websockets==17.4",       # cliente de relay (se usa a partir del Bloque B2)
     # Autenticacion de la API local (decision D-8, reemplaza a D-4): JWT HS256 firmado por el servidor. Sin extra `crypto`.
     "PyJWT==2.15.1",
+    # Hash de contrasenas del administrador local (decision D-9): Argon2id (RFC 9106) con sal aleatoria. MIT; envuelve la implementacion de referencia en C.
+    "argon2-cffi==25.1.0",
 ]
 
 [project.optional-dependencies]

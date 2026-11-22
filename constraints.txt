@@ -5,6 +5,7 @@
 # Generado con `pip freeze --exclude-editable` en Windows (Python 3.12.10).
 # colorama solo se instala en Windows (dependencia condicional de click y pytest);
 # en Linux pip lo ignora. Procedimiento de actualizacion: README.md y docs/decisions.md.
+# Fase 1.0B, B6.1A (D-9, contrasenas del administrador): argon2-cffi==25.1.0 (MIT) y su binding argon2-cffi-bindings==26.2.0 (MIT; usa cffi, ya fijado).
 # Fase 1.0B, decision D-8 (JWT): se anade PyJWT==2.15.1 (MIT; publicado 2026-09-28; sin dependencias propias en HS256).
 # Fase 1.0B, B6 (E2E de navegador, solo desarrollo): playwright==1.64.1 (Apache-2.0; 2026-10-22) con sus transitivas greenlet==3.5.6 y pyee==14.0.0.
 # Fase 1.0B, Bloque B0 (D-1): se anaden coincurve, cryptography, websockets y las transitivas cffi y pycparser,
@@ -12,6 +13,8 @@
 annotated-doc==0.0.7
 annotated-types==0.8.0
 anyio==4.16.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.2.0
 certifi==2026.10.23
 cffi==2.1.1
 click==8.5.1

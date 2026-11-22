@@ -26,11 +26,14 @@
     <!-- Inicio de sesión del operador -->
     <section id="view-login" class="card narrow" hidden>
       <h2>Inicio de sesión</h2>
-      <p class="muted">Escriba el <strong>código de acceso</strong> que la aplicación mostró <em>una sola vez</em> en la terminal al arrancar. No hay credenciales fijas.</p>
-      <form id="login-form" autocomplete="off">
-        <label for="login-code">Código de acceso</label>
-        <input id="login-code" name="code" type="password" autocomplete="off" spellcheck="false" required minlength="8" maxlength="200">
-        <button id="login-btn" type="submit" class="btn primary">Entrar</button>
+      <p class="muted">Ingrese con el usuario y la contraseña del administrador local (los configuró en el primer arranque; ver el README).</p>
+      <form id="login-form" aria-describedby="login-error">
+        <label for="login-username">Usuario</label>
+        <input id="login-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="64">
+        <label for="login-password">Contraseña</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" spellcheck="false" required maxlength="128">
+        <button id="login-btn" type="submit" class="btn primary">Iniciar sesión</button>
+        <span id="login-status" class="muted" role="status" aria-live="polite" hidden>Verificando…</span>
       </form>
       <p id="login-error" class="error" role="alert" hidden></p>
     </section>

@@ -70,10 +70,30 @@ def test_the_api_layer_does_not_do_network_io_and_services_do_not_import_the_api
 
 
 def test_no_private_key_is_persisted_by_the_application():
-    """D-3: la clave solo vive en memoria. Ningun modulo de app/ escribe archivos ni usa bases de datos."""
+    """D-3: la clave Nostr solo vive en memoria. D-9: SQLite existe SOLO para la cuenta del administrador y SOLO en app/storage/."""
     for path in APP.rglob("*.py"):
         text = path.read_text(encoding="utf-8")
-        assert not re.search(r"sqlite3|\.write_text\(|\.write_bytes\(|open\([^)]*[\"']w", text), path.name
+        assert not re.search(r"\.write_text\(|\.write_bytes\(|open\([^)]*[\"']w", text), path.name
+        if path.parent.name != "storage":
+            assert "sqlite3" not in text, f"{path.name}: sqlite3 solo se admite en app/storage/"
+            assert not re.search(r"\b(SELECT|INSERT INTO|UPDATE|DELETE FROM|CREATE TABLE)\b.*\b(FROM|INTO|SET|WHERE|VALUES|\()", text), f"{path.name}: SQL fuera de app/storage/"
+
+
+def test_the_storage_layer_has_no_access_to_nostr_keys_tokens_or_the_http_layer():
+    storage = APP / "storage"
+    assert sorted(p.name for p in storage.glob("*.py")) == ["__init__.py", "admins.py", "database.py", "secret_file.py"]
+    for path in storage.glob("*.py"):
+        for module in imported_modules(path):
+            assert not module.startswith(("app.nostr", "app.api", "app.main", "app.schemas", "app.services", "app.security", "fastapi", "starlette", "jwt")), f"{path.name} importa {module}"
+
+
+def test_passwords_are_only_hashed_with_argon2id_never_with_a_plain_digest():
+    text = (APP / "security" / "passwords.py").read_text(encoding="utf-8")
+    assert "argon2" in text and "RFC_9106_LOW_MEMORY" in text
+    for forbidden in ("hashlib", "md5", "sha1", "sha256", "base64", "Fernet", "AES"):
+        assert forbidden not in text, forbidden
+    accounts = (APP / "services" / "admin_accounts.py").read_text(encoding="utf-8")
+    assert "hashlib" not in accounts and "PasswordService" in accounts  # el servicio de cuentas solo delega en PasswordService
 
 
 def test_no_personal_paths_or_addresses_in_versioned_sources():
@@ -96,10 +116,11 @@ def test_compose_publishes_only_on_loopback():
 def test_dependencies_are_pinned_and_present_in_constraints():
     pinned = {name.lower(): version for name, version in (line.split("==") for line in (ROOT / "constraints.txt").read_text(encoding="utf-8").split("\n")
                                                           if line and not line.startswith("#"))}
-    for name, version in (("pyjwt", "2.15.1"), ("coincurve", "21.0.0"), ("cryptography", "50.0.2"), ("websockets", "17.4"), ("cffi", "2.1.1"), ("pycparser", "3.12")):
+    for name, version in (("pyjwt", "2.15.1"), ("coincurve", "21.0.0"), ("cryptography", "50.0.2"), ("websockets", "17.4"), ("cffi", "2.1.1"), ("pycparser", "3.12"),
+                          ("argon2-cffi", "25.1.0"), ("argon2-cffi-bindings", "26.2.0")):
         assert pinned[name] == version
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    for dep in ("coincurve==21.0.0", "cryptography==50.0.2", "websockets==17.4"):
+    for dep in ("coincurve==21.0.0", "cryptography==50.0.2", "websockets==17.4", "argon2-cffi==25.1.0"):
         assert f'"{dep}"' in project
 
 

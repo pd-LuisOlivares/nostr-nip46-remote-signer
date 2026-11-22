@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Cliente NIP-46 de demostración</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Cliente NIP-46 de demostración <span class="tag">laboratorio · solo local</span></h1>
+    <p class="muted">Hace de «Stacker News» frente al firmante, con el cliente NDK real. <strong>Esta página no puede aprobar nada</strong>: las aprobaciones se hacen en la pestaña del firmante (<code>http://127.0.0.1:8000</code>).</p>
+  </header>
+
+  <main>
+    <section class="card" id="panel-session">
+      <h2>1. Sesión del cliente</h2>
+      <form id="session-form" autocomplete="off">
+        <label for="uri">URI <code>bunker://</code> (cópiela desde el firmante con «Emitir URI de un solo uso»)</label>
+        <input id="uri" name="uri" type="password" autocomplete="off" spellcheck="false" maxlength="2048" required>
+        <div class="row">
+          <button id="session-btn" type="submit" class="btn primary">Crear sesión</button>
+          <button id="close-btn" type="button" class="btn" hidden>Cerrar sesión del cliente</button>
+        </div>
+      </form>
+      <p class="hint">La URI y las claves efímeras de este cliente viven solo en memoria y se olvidan al cerrar la sesión. El campo se vacía al crearla. Solo se admiten relays locales.</p>
+      <p id="session-error" class="error" role="alert" hidden></p>
+      <dl id="session-info" class="kv" hidden>
+        <dt>Estado</dt><dd id="info-state">—</dd>
+        <dt>Identidad del firmante</dt><dd><code id="info-identity">— (conéctese primero)</code></dd>
+        <dt>Clave de transporte del firmante</dt><dd><code id="info-bunker">—</code></dd>
+        <dt>Clave efímera de este cliente</dt><dd><code id="info-client">—</code></dd>
+        <dt>Relay</dt><dd><code id="info-relay">—</code></dd>
+        <dt>Cliente NIP-46</dt><dd id="info-ndk">—</dd>
+      </dl>
+    </section>
+
+    <section class="card" id="panel-ops" hidden>
+      <h2>2. Operaciones</h2>
+      <div class="row">
+        <button id="op-connect" type="button" class="btn primary">Conectar (connect)</button>
+        <button id="op-pubkey" type="button" class="btn">get_public_key</button>
+        <button id="op-ping" type="button" class="btn">ping</button>
+        <button id="op-sign" type="button" class="btn primary">Firma válida</button>
+      </div>
+      <div class="row">
+        <label for="variant" class="inline">Firma inválida:</label>
+        <select id="variant"></select>
+        <button id="op-invalid" type="button" class="btn danger">Enviar firma inválida</button>
+      </div>
+      <p class="hint">Las operaciones <strong>connect</strong> y <strong>firma válida</strong> quedan «pendientes» hasta que una persona las apruebe en el firmante. Si el firmante tarda más que su ventana de firma, la aprobación se rechazará.</p>
+    </section>
+
+    <section class="card" id="panel-log" hidden>
+      <h2>3. Resultados</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Operación</th><th>Estado</th><th>Tiempo</th><th>Detalle y verificación</th></tr></thead>
+          <tbody id="ops-body"></tbody>
+        </table>
+      </div>
+      <p id="ops-empty" class="muted">Aún no hay operaciones.</p>
+    </section>
+  </main>
+  <footer class="foot muted">Solo laboratorio: no forma parte del producto ni de su imagen. Nada de lo que se ve aquí se guarda en el navegador.</footer>
+</body>
+</html>

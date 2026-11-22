@@ -54,6 +54,10 @@ services:
     image: nostr-nip46-remote-signer:dev
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
+      # D-9: administrador FICTICIO del arnes; la contrasena la genera al azar el controlador en cada ejecucion (LAB_ADMIN_PASSWORD). La base SQLite vive en
+      # el volumen anonimo /data de la imagen y se descarta con `down -v`.
+      ADMIN_USERNAME: lab-operador
+      ADMIN_PASSWORD: ${LAB_ADMIN_PASSWORD:-}
       RELAY_URL: ws://relay:7777
       RELAY_ALLOW_INSECURE: "1"
       SERVICE_ORIGIN: https://sn.lab.invalid

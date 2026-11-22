@@ -27,7 +27,7 @@ class SignerOut(BaseModel):
     state: str
     relay_host: str | None
     signatures: int
-    max_signatures: int
+    max_signatures: int | None  # None en modo continuo: no hay tope total (cada firma exige aprobación humana)
     end_reason: str | None
     pending: int
     connections_active: int
@@ -57,6 +57,9 @@ class RequestOut(BaseModel):
     expires_in_s: int
     summary: dict[str, Any]
     checks: list[dict[str, Any]]
+    outcome: str | None = None  # P-42: resultado real de una firma aprobada: signed, refused o failed (None = aun sin resultado)
+    outcome_reason: str | None = None  # codigo corto y fijo (p. ej. politica_incumplida, aprobacion_caducada)
+    sign_expires_in_s: int | None = None  # B6.1D-R3: segundos que quedan para poder FIRMAR (plazo real de la politica); solo en firmas pendientes
 
 
 class AuditOut(BaseModel):
@@ -68,21 +71,31 @@ class ErrorOut(BaseModel):
 
 
 class ConnectionOut(BaseModel):
+    id: str  # identificador OPACO de la conexión (aleatorio, sin relación con la clave del cliente): lo único que se usa para revocarla
     client: str
     state: str
     expires_in_s: int
 
 
 class LoginIn(StrictIn):
-    """Código de acceso mostrado una vez en la terminal al arrancar. Nunca se devuelve ni se registra."""
+    """Credenciales del administrador local (D-9). La contraseña no se devuelve ni se registra.
 
-    code: SecretStr = Field(min_length=8, max_length=200)
+    Las reglas de FORMATO del usuario se validan aquí; la longitud mínima de la contraseña NO (una contraseña corta debe llegar a la verificación y
+    dar el mismo 401 que cualquier otra incorrecta, sin diferenciar cuentas). `return_token` es solo para la línea de comandos (ver `LoginOut`).
+    """
+
+    username: str = Field(min_length=3, max_length=64, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+    password: SecretStr = Field(min_length=1, max_length=128)
+    return_token: bool = False
 
 
 class LoginOut(BaseModel):
-    token: str  # JWT (solo para la línea de comandos: la interfaz usa la cookie HttpOnly y NO lo guarda)
+    """Por defecto el JWT viaja SOLO en la cookie HttpOnly (el JavaScript de la interfaz nunca lo recibe). `token` aparece únicamente si el cliente de
+    línea de comandos lo pide con `return_token: true` (para usarlo como `Authorization: Bearer`)."""
+
     csrf_token: str
     expires_in_s: int
+    token: str | None = None
 
 
 class SessionOut(BaseModel):

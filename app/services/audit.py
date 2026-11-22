@@ -21,11 +21,16 @@ SCHEMA: Final[dict[str, frozenset[str]]] = {
     "pending_created": frozenset({"request_id", "kind", "client8", "ttl_s"}),
     "decision": frozenset({"request_id", "kind", "approved", "reason", "latency_ms"}),
     "policy": frozenset({"ok", "failed", "origin_seen", "content_ok", "challenge_sha16", "created_at_age_s"}),
+    "revalidation": frozenset({"request_id", "ok", "reason", "failed", "created_at_age_s"}),  # P-38: revision justo antes de firmar
     "sign_ok": frozenset({"event_id16", "self_verify"}),
     "response_published": frozenset({"method", "relay_ok", "relay_message"}),
     "relay_notice": frozenset({"kind", "message"}),
     "error": frozenset({"where", "error_type"}),
     "session_end": frozenset({"reason", "signatures"}),
+    "rate_limited": frozenset({"scope", "client8", "limit"}),  # modo continuo: una vez por ventana y clave (global o por conexión), nunca por solicitud
+    "relay_reconnect": frozenset({"attempt", "max_attempts", "delay_s"}),  # reconexión acotada (modo continuo): intento n de m y espera previa
+    "reconnect_exhausted": frozenset({"attempts"}),  # se agotaron los intentos: el firmante queda FAILED y las conexiones se conservan
+    "connection_revoked": frozenset({"conn8", "cancelled"}),  # revocación individual: id opaco truncado y nº de solicitudes pendientes canceladas
 }
 _FORBIDDEN_VALUES: Final = re.compile(r"bunker://|secret=|nsec1", re.IGNORECASE)
 

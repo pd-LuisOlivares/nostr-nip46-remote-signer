@@ -1,0 +1,85 @@
+# B6.1D-R3 - auditoria sanitizada de la demostracion LOCAL (2026-11-21).
+# Origen: API de lectura del firmante del laboratorio (proyecto Compose nip46-manual) tras la validacion manual del propietario.
+# Solo identificadores truncados (8/16 caracteres), hashes parciales y contadores. Sin claves, URI bunker, JWT, cookies, contrasenas ni retos completos.
+# Verificada con lab/tools/b4_check_evidence.py: 'Sin fugas'. El aviso 'mas de una firma real (el tope es 1)' es esperado: el laboratorio local usa max_signatures=2 y dos sesiones.
+# La segunda sesion seguia activa al volcar (sin session_end). Es validacion LOCAL (relay y cliente de laboratorio), NO Stacker News.
+
+ESTADO: {"state": "ready", "relay_host": "relay", "signatures": 1, "max_signatures": 2, "end_reason": null, "pending": 0, "connections_active": 1, "connections_pending": 0, "connections_unused_secrets": 0}
+
+AUDITORIA (71 entradas)
+  1 +     0.0s session_start       {"relay_host": "relay", "origin": "https://sn.manual.invalid", "max_signatures": 2, "window_s": 45, "tls_groups": "por_defecto"}
+  2 +     0.0s relay_ready         {}
+  3 +     1.6s bunker_issued       {"transport_pub8": "18af6eba", "ttl_s": 600}
+  4 +    15.4s request             {"method": "connect", "scheme": "nip04", "client8": "8a0aaad6"}
+  5 +    15.4s pending_created     {"request_id": "PuIA5UkIF1e_", "kind": "connect", "client8": "8a0aaad6", "ttl_s": 120}
+  6 +    18.3s decision            {"request_id": "PuIA5UkIF1e_", "kind": "connect", "approved": true, "reason": "humano", "latency_ms": 2964}
+  7 +    18.3s response_published  {"method": "connect", "relay_ok": true, "relay_message": ""}
+  8 +    18.3s request             {"method": "get_public_key", "scheme": "nip44", "client8": "8a0aaad6"}
+  9 +    18.3s response_published  {"method": "get_public_key", "relay_ok": true, "relay_message": ""}
+ 10 +    24.4s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 11 +    24.4s policy              {"ok": true, "failed": [], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "76614eab562e3118", "created_at_age_s": 0}
+ 12 +    24.4s pending_created     {"request_id": "l3jA1N-v9tHT", "kind": "sign_event", "client8": "8a0aaad6", "ttl_s": 120}
+ 13 +    27.2s decision            {"request_id": "l3jA1N-v9tHT", "kind": "sign_event", "approved": true, "reason": "humano", "latency_ms": 2819}
+ 14 +    27.2s revalidation        {"request_id": "l3jA1N-v9tHT", "ok": true, "reason": "ok", "failed": [], "created_at_age_s": 3}
+ 15 +    27.2s sign_ok             {"event_id16": "7bdcf24c4e19e217", "self_verify": true}
+ 16 +    27.2s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 17 +    30.8s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 18 +    30.8s policy              {"ok": false, "failed": ["origin"], "origin_seen": "https://evil.invalid", "content_ok": true, "challenge_sha16": "2882f38dbbeab7e3", "created_at_age_s": 0}
+ 19 +    30.8s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 20 +    46.1s request             {"method": "ping", "scheme": "nip44", "client8": "8a0aaad6"}
+ 21 +    46.1s response_published  {"method": "ping", "relay_ok": true, "relay_message": ""}
+ 22 +    48.0s request             {"method": "get_public_key", "scheme": "nip44", "client8": "8a0aaad6"}
+ 23 +    48.0s response_published  {"method": "get_public_key", "relay_ok": true, "relay_message": ""}
+ 24 +    52.3s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 25 +    52.3s policy              {"ok": false, "failed": ["kind"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "c4477b8719a89342", "created_at_age_s": 0}
+ 26 +    52.3s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 27 +    58.4s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 28 +    58.4s policy              {"ok": false, "failed": ["method"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "8cadf1e69dc6f924", "created_at_age_s": 0}
+ 29 +    58.4s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 30 +    60.9s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 31 +    60.9s policy              {"ok": false, "failed": ["method"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "ef80af74efe67be6", "created_at_age_s": 0}
+ 32 +    60.9s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 33 +    63.6s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 34 +    63.6s policy              {"ok": false, "failed": ["content"], "origin_seen": "https://sn.manual.invalid", "content_ok": false, "challenge_sha16": "6050c007cc4cb673", "created_at_age_s": 0}
+ 35 +    63.6s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 36 +    66.4s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 37 +    66.4s policy              {"ok": false, "failed": ["created_at"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "c7dd833749e2f62e", "created_at_age_s": 600}
+ 38 +    66.4s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 39 +    69.1s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 40 +    69.1s policy              {"ok": false, "failed": ["challenge", "replay"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": null, "created_at_age_s": 0}
+ 41 +    69.1s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 42 +    72.0s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 43 +    72.0s policy              {"ok": false, "failed": ["replay"], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "76614eab562e3118", "created_at_age_s": 0}
+ 44 +    72.0s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 45 +    74.2s request             {"method": "sign_event", "scheme": "nip44", "client8": "8a0aaad6"}
+ 46 +    74.2s policy              {"ok": true, "failed": [], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "008ada67ea262dea", "created_at_age_s": 0}
+ 47 +    74.2s pending_created     {"request_id": "FFnP934c-3hN", "kind": "sign_event", "client8": "8a0aaad6", "ttl_s": 120}
+ 48 +    77.5s decision            {"request_id": "FFnP934c-3hN", "kind": "sign_event", "approved": false, "reason": "humano", "latency_ms": 3295}
+ 49 +    77.5s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 50 +    94.0s session_end         {"reason": "detenido_por_el_operador", "signatures": 1}
+ 51 +    98.0s session_start       {"relay_host": "relay", "origin": "https://sn.manual.invalid", "max_signatures": 2, "window_s": 45, "tls_groups": "por_defecto"}
+ 52 +    98.0s relay_ready         {}
+ 53 +    99.1s bunker_issued       {"transport_pub8": "41ed428b", "ttl_s": 600}
+ 54 +   146.4s request             {"method": "connect", "scheme": "nip04", "client8": "f4ae0be3"}
+ 55 +   146.4s pending_created     {"request_id": "iKY8QDY7iJSh", "kind": "connect", "client8": "f4ae0be3", "ttl_s": 120}
+ 56 +   148.8s decision            {"request_id": "iKY8QDY7iJSh", "kind": "connect", "approved": true, "reason": "humano", "latency_ms": 2318}
+ 57 +   148.8s response_published  {"method": "connect", "relay_ok": true, "relay_message": ""}
+ 58 +   148.8s request             {"method": "get_public_key", "scheme": "nip44", "client8": "f4ae0be3"}
+ 59 +   148.8s response_published  {"method": "get_public_key", "relay_ok": true, "relay_message": ""}
+ 60 +   151.8s request             {"method": "sign_event", "scheme": "nip44", "client8": "f4ae0be3"}
+ 61 +   151.8s policy              {"ok": true, "failed": [], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "95aa288df7a9ccba", "created_at_age_s": 0}
+ 62 +   151.8s pending_created     {"request_id": "kvIGJ_Dj5i6p", "kind": "sign_event", "client8": "f4ae0be3", "ttl_s": 120}
+ 63 +   156.5s decision            {"request_id": "kvIGJ_Dj5i6p", "kind": "sign_event", "approved": true, "reason": "humano", "latency_ms": 4675}
+ 64 +   156.5s revalidation        {"request_id": "kvIGJ_Dj5i6p", "ok": true, "reason": "ok", "failed": [], "created_at_age_s": 4}
+ 65 +   156.5s sign_ok             {"event_id16": "22a8a69b25daeb6c", "self_verify": true}
+ 66 +   156.5s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+ 67 +   159.5s request             {"method": "sign_event", "scheme": "nip44", "client8": "f4ae0be3"}
+ 68 +   159.5s policy              {"ok": true, "failed": [], "origin_seen": "https://sn.manual.invalid", "content_ok": true, "challenge_sha16": "f2b3a9de56e7fa12", "created_at_age_s": 0}
+ 69 +   159.5s pending_created     {"request_id": "czIMi8DZ8liv", "kind": "sign_event", "client8": "f4ae0be3", "ttl_s": 120}
+ 70 +   161.4s decision            {"request_id": "czIMi8DZ8liv", "kind": "sign_event", "approved": false, "reason": "humano", "latency_ms": 1890}
+ 71 +   161.4s response_published  {"method": "sign_event", "relay_ok": true, "relay_message": ""}
+
+SOLICITUDES (3)
+  iKY8QD.. kind=connect    status=approved  reason=humano outcome=None outcome_reason=None checks_ok=-
+  kvIGJ_.. kind=sign_event status=approved  reason=humano outcome=signed outcome_reason=None checks_ok=True
+  czIMi8.. kind=sign_event status=denied    reason=humano outcome=None outcome_reason=None checks_ok=True

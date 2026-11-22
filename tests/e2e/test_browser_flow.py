@@ -35,7 +35,8 @@ def open_ui(browser: Any, app: AppHandle) -> tuple[Any, Any, list[str]]:
 
 
 def sign_in(page: Any, app: AppHandle) -> None:
-    page.fill("#login-code", app.code)
+    page.fill("#login-username", app.username)
+    page.fill("#login-password", app.password)
     page.click("#login-btn")
     expect(page.locator("#view-app")).to_be_visible()
 
@@ -57,11 +58,12 @@ def test_login_cookie_flags_and_no_browser_storage(browser: Any, start_app: Call
     context, page, problems = open_ui(browser, app)
     expect(page.locator("#view-login")).to_be_visible()
     expect(page.locator("#view-app")).to_be_hidden()
-    page.fill("#login-code", "codigo-incorrecto-123")
+    page.fill("#login-username", app.username)
+    page.fill("#login-password", "contrasena-incorrecta-123")
     page.click("#login-btn")
     expect(page.locator("#login-error")).to_be_visible()
     expect(page.locator("#view-app")).to_be_hidden()
-    assert page.input_value("#login-code") == ""  # el campo se vacía siempre
+    assert page.input_value("#login-password") == ""  # la contraseña se vacía siempre
     assert not [c for c in context.cookies() if c["name"] == "nip46_session"]
 
     sign_in(page, app)
@@ -69,7 +71,7 @@ def test_login_cookie_flags_and_no_browser_storage(browser: Any, start_app: Call
     assert cookie["httpOnly"] is True and cookie["sameSite"] == "Strict" and cookie["path"] == "/api"
     assert page.evaluate("document.cookie") == ""  # el JS no puede leer el JWT
     assert page.evaluate("[localStorage.length, sessionStorage.length]") == [0, 0]
-    assert cookie["value"] not in page.content() and app.code not in page.content()
+    assert cookie["value"] not in page.content() and app.password not in page.content() and page.input_value("#login-password") == ""
     page.reload()  # la sesión sobrevive a una recarga (cookie) sin guardar nada en el navegador
     expect(page.locator("#view-app")).to_be_visible()
     assert page.evaluate("[localStorage.length, sessionStorage.length]") == [0, 0]
@@ -190,7 +192,7 @@ def test_full_remote_signing_flow_from_the_ui(browser: Any, start_app: Callable[
         signed = parse_and_verify_event(json.loads(reply.result))
         original = json.loads(template)
         assert signed.pubkey == identity_pub and signed.kind == 27235 and signed.id == original["id"] and signed.content == original["content"]
-        expect(page.locator("#signer-signatures")).to_contain_text("1 de 2")
+        expect(page.locator("#signer-signatures")).to_contain_text("1 (cada una aprobada por una persona)")
 
         # 6) reutilizar el mismo reto se rechaza sin preguntar
         assert client.call("sign_event", [template]).error == "unauthorized"
@@ -248,4 +250,61 @@ def test_ui_restart_cycle_and_clean_state(browser: Any, start_app: Callable[...,
     expect(page.locator("#connections-empty")).to_be_visible()
     second_uri = issue_uri(page)
     assert parse_bunker_uri(first_uri, allow_insecure_relays=True).signer_pubkey != parse_bunker_uri(second_uri, allow_insecure_relays=True).signer_pubkey  # clave de transporte nueva por sesión
+    context.close()
+
+
+def pair_from_ui(page: Any, app: AppHandle) -> RelayClient:
+    """Empareja un cliente de prueba con la aprobación humana del `connect` desde la interfaz."""
+    uri = issue_uri(page)
+    client = RelayClient(app.relay_url, parse_bunker_uri(uri, allow_insecure_relays=True).signer_pubkey)
+    client.send("connect", ["", uri.split("secret=")[1]], scheme="nip04")
+    approve_card(page, "connect").locator("button.ok").click()
+    assert client.reply().result == "ack"
+    page.click("#bunker-hide")
+    return client
+
+
+def test_the_revoke_button_revokes_a_single_connection_and_cancels_its_pending_signature(browser: Any, start_app: Callable[..., AppHandle]) -> None:
+    app = start_app()
+    context, page, problems = open_ui(browser, app)
+    sign_in(page, app)
+    page.click("#identity-create")
+    expect(page.locator("#identity-pub")).to_have_text(HEX64)
+    identity_pub = page.inner_text("#identity-pub").strip()
+    page.click("#signer-start")
+    expect(page.locator("#signer-state")).to_have_text("Listo")
+    first, second = pair_from_ui(page, app), pair_from_ui(page, app)
+    try:
+        expect(page.locator("#connections-list .revoke-btn")).to_have_count(2)
+        first8, second8 = first.ndk.key.public_hex[:8], second.ndk.key.public_hex[:8]
+
+        # una firma pendiente de la primera conexión (la persona todavía no decide)
+        first.send("sign_event", [login_template(identity_pub, now=int(time.time()), origin=ORIGIN)])
+        card = approve_card(page, "sign_event")
+        expect(card).to_be_visible()
+
+        # revocar SOLO la primera desde la interfaz
+        row = page.locator("#connections-list li", has_text=first8)
+        row.locator(".revoke-btn").click()
+        expect(page.locator("#connections-list li", has_text=first8)).to_contain_text("revoked")
+        expect(page.locator("#connections-list li", has_text=first8).locator(".revoke-btn")).to_have_count(0)
+        expect(page.locator("#connections-list li", has_text=second8).locator(".revoke-btn")).to_have_count(1)
+        expect(page.locator("#pending-list .kind-sign_event")).to_have_count(0)  # su solicitud pendiente se canceló
+        assert first.reply().error == "unauthorized"  # el cliente revocado recibe la denegación
+        assert first.call("get_public_key", []).error == "unauthorized"  # y ya no puede pedir nada
+        assert second.call("get_public_key", []).result == identity_pub  # la otra conexión sigue activa
+
+        # la firma de la segunda sigue exigiendo la aprobación humana en la interfaz
+        second.send("sign_event", [login_template(identity_pub, now=int(time.time()), origin=ORIGIN, challenge="cd" * 32)])
+        assert second.silent(0.5)  # nada se firma solo
+        card = approve_card(page, "sign_event")
+        card.locator("button.ok").click()
+        assert second.reply().error is None
+        expect(page.locator("#audit-body")).to_contain_text("connection_revoked")
+        visible = page.content() + page.inner_text("body") + app.log()
+        assert first.ndk.key.public_hex not in visible and second.ndk.key.public_hex not in visible  # solo prefijos de 8 caracteres
+    finally:
+        first.close()
+        second.close()
+    assert problems == [], problems
     context.close()

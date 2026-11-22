@@ -1,3 +1,5 @@
+# Nombre del proyecto Compose por defecto. Para tener otra copia del repositorio en paralelo sin compartir contenedor, red ni VOLUMEN (la base del
+# administrador), use un nombre distinto: `docker compose -p mi-copia up --build -d` o `COMPOSE_PROJECT_NAME=mi-copia` (tienen prioridad sobre `name`).
 name: nostr-nip46-remote-signer
 
 services:
@@ -8,9 +10,15 @@ services:
       # Imagen base: vacio = etiqueta por defecto del Dockerfile; ver el comentario del Dockerfile para fijar un digest.
       args:
         PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim}
-    image: nostr-nip46-remote-signer:dev
+    # Etiqueta de la imagen local; APP_IMAGE permite otra distinta (p. ej. para una segunda copia). Por defecto no cambia nada.
+    image: ${APP_IMAGE:-nostr-nip46-remote-signer:dev}
     # Configuracion del firmante (decision D-2). Vacio = valor por defecto de app/config.py. Se definen en el entorno o en `.env`.
     environment:
+      # Administrador local (decision D-9). ADMIN_PASSWORD solo se usa en el PRIMER arranque (base sin administrador) y despues puede quitarse.
+      # No hay contrasena por defecto: sin ella, en una instalacion nueva el contenedor se detiene con instrucciones (docker compose logs app).
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      DATABASE_PATH: /data/nip46.db
       RELAY_URL: ${RELAY_URL:-}
       RELAY_TLS_GROUPS: ${RELAY_TLS_GROUPS:-}
       SERVICE_ORIGIN: ${SERVICE_ORIGIN:-}
@@ -19,10 +27,24 @@ services:
       SESSION_TTL_S: ${SESSION_TTL_S:-}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
       JWT_TTL_S: ${JWT_TTL_S:-}
+      # Limites del firmante (D-16). Vacio = valor por defecto de app/config.py. Se reenvian para poder fijar el perfil de validacion deploy/b62.env.
+      SIGNER_WINDOW_S: ${SIGNER_WINDOW_S:-}
+      SECRET_TTL_S: ${SECRET_TTL_S:-}
+      CONNECTION_TTL_S: ${CONNECTION_TTL_S:-}
+      MAX_REQUESTS: ${MAX_REQUESTS:-}
+      MAX_PENDING: ${MAX_PENDING:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
+      # Modo del firmante (D-17). Vacio = `continuous`, el modo principal; `supervised` conserva el comportamiento de validacion de B6.2 (deploy/b62.env).
+      SIGNER_MODE: ${SIGNER_MODE:-}
+      REQUESTS_PER_MIN: ${REQUESTS_PER_MIN:-}
+      # A PROPOSITO no se reenvian RELAY_ALLOW_INSECURE (ws:// solo para laboratorios con su propio compose) ni ADMIN_PASSWORD_FILE.
     # Puerto del host configurable con APP_PORT (por defecto 8000).
     # Se publica solo en loopback; el contenedor escucha siempre en 8000.
     ports:
       - "127.0.0.1:${APP_PORT:-8000}:8000"
+    # Unico lugar escribible: el volumen /data (SQLite con el hash Argon2id del administrador). Sobrevive a `docker compose down`; se borra con `down -v`.
+    volumes:
+      - app_data:/data
     restart: unless-stopped
     init: true
     stop_grace_period: 10s
@@ -43,3 +65,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+volumes:
+  app_data:

@@ -5,8 +5,10 @@ import json
 import os
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
+from argon2 import PasswordHasher
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -17,12 +19,31 @@ from app.nostr.event import NostrEvent, sign_event
 from app.nostr.keys import Keypair
 from app.nostr.nip46 import NIP46_KIND, Nip46Response, parse_response
 from app.nostr.relay import RelayEose, RelayMessage, RelayOk
+from app.security.passwords import PasswordService
 from app.services.approvals import ApprovalRegistry
 from app.services.audit import AuditLog
 from app.services.connections import ConnectionManager
 from app.services.signer import SignerService, SignerState
 
 NOW = 1_800_000_000
+# El runtime actual (pasos 1 de D-17) solo implementa el comportamiento SUPERVISADO: el arnes lo fija de forma explicita con los plazos de antes de D-17.
+SUPERVISED_TTLS = {"signer_mode": "supervised", "secret_ttl_s": 600, "connection_ttl_s": 1800}
+USERNAME = "operador"
+PASSWORD = "contrasena-ficticia-de-prueba-1"  # FICTICIA, solo para pruebas: no es una credencial real ni se usa fuera de ellas
+WRONG_PASSWORD = "otra-contrasena-ficticia-2"
+
+
+def fast_passwords() -> PasswordService:
+    """Argon2id con coste mínimo SOLO para que la suite sea rápida; la configuración de producción se prueba aparte (tests/security/test_passwords.py)."""
+    return PasswordService(PasswordHasher(time_cost=1, memory_cost=8, parallelism=1))
+
+
+def make_settings(tmp_path: Path, **overrides: Any) -> Settings:
+    """Ajustes de prueba con una base SQLite temporal y un administrador inicial ficticio."""
+    values: dict[str, Any] = {"database_path": str(tmp_path / "admin.db"), "admin_username": USERNAME, "admin_password": PASSWORD}
+    return Settings(**{**values, **overrides})
+
+
 ORIGIN = "https://stacker.news"
 CHALLENGE = "ab" * 32
 CONTENT = "Stacker News Authentication"
@@ -181,7 +202,7 @@ class Rig:
 
 async def make_rig(*, settings: Settings | None = None, relay: FakeRelay | None = None, start: bool = True, **overrides: Any) -> Rig:
     clock = Clock()
-    cfg = settings or Settings(**{"approval_ttl_s": 5, "max_signatures": 2, **overrides})
+    cfg = settings or Settings(**{**SUPERVISED_TTLS, "approval_ttl_s": 5, "max_signatures": 2, **overrides})
     identity = Keypair.generate()
     relay = relay or FakeRelay()
     audit = AuditLog(now=clock)

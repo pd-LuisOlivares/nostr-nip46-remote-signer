@@ -202,6 +202,336 @@ async def test_policy_violations_never_reach_the_operator_nor_sign(kwargs: dict[
     await rig.stop()
 
 
+# ------------------------------------------------------------------------------------------------ P-38: revalidacion justo antes de firmar
+async def begin_sign(rig: Rig, client, template: str | None = None):  # type: ignore[no-untyped-def]
+    """Envia un `sign_event` y espera a que aparezca la solicitud pendiente (aun sin decidir)."""
+    await rig.send(client.request("sign_event", [template or login_template(rig.identity.public_hex, now=int(rig.clock()))]))
+    return await rig.pending_request("sign_event")
+
+
+async def next_response(rig: Rig, client, before: int):  # type: ignore[no-untyped-def]
+    await rig.wait_for(lambda: len(rig.relay.published) > before)
+    return client.decode(rig.relay.published[-1])
+
+
+def revalidation(rig: Rig) -> dict[str, object]:
+    return next(e for e in reversed(rig.audit.entries()) if e["event"] == "revalidation")
+
+
+def assert_refused_without_signature(rig: Rig, response, reason: str, req=None) -> None:  # type: ignore[no-untyped-def]
+    """Rechazo: error generico, ninguna firma, ningun evento firmado por la identidad publicado, y el motivo queda en la auditoria sin secretos."""
+    assert response.error == "unauthorized" and response.result in (None, "", "error")  # convencion NIP-46: `result` = "error" y el texto en `error`
+    assert rig.service.signatures == 0 and not [e for e in rig.audit.entries() if e["event"] == "sign_ok"]
+    assert all(ev.pubkey != rig.identity.public_hex for ev in rig.relay.published)  # solo respuestas firmadas con la clave de TRANSPORTE
+    entry = revalidation(rig)
+    assert entry["ok"] is False and entry["reason"] == reason
+    assert any(e["event"] == "decision" and e["reason"] == f"revalidacion_{reason}" and e["approved"] is False for e in rig.audit.entries())
+    assert rig.approvals.pending() == []  # nunca se pide ni se da por hecha una aprobacion nueva
+    if req is not None:  # P-42: el resultado REAL queda registrado (la interfaz no puede presentarlo como firma exitosa)
+        assert (req.status, req.outcome, req.outcome_reason) == (RequestStatus.APPROVED, "refused", reason)
+        assert req.public(0)["outcome"] == "refused" and req.public(0)["outcome_reason"] == reason
+
+
+async def test_valid_when_requested_and_still_valid_when_signing_keeps_the_manual_flow() -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=120)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    assert rig.service.signatures == 0 and rig.approvals.pending() == [req]  # sin aprobacion humana no hay firma (nada es automatico)
+    rig.clock.advance(30)  # el operador tarda 30 s: dentro de la ventana de 120 s
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    response = await next_response(rig, client, before)
+    assert response.error is None and parse_and_verify_event(json.loads(response.result or "")).pubkey == rig.identity.public_hex
+    entry = revalidation(rig)
+    assert entry["ok"] is True and entry["reason"] == "ok" and entry["failed"] == [] and entry["created_at_age_s"] == 30
+    assert rig.service.signatures == 1 and req.consumed is True
+    await rig.stop()
+
+
+async def test_approval_given_after_the_policy_window_elapsed_must_not_sign() -> None:
+    """Regresion P-38 (antes xfail estricto): el operador aprueba cuando la plantilla ya es mas vieja que la ventana."""
+    rig = await make_rig(approval_ttl_s=600, window_s=120)  # la solicitud sigue pendiente aunque la plantilla ya sea mas vieja que la ventana
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)  # created_at = ahora: la politica la acepta (edad 0)
+    rig.clock.advance(300)  # el operador tarda 5 minutos: la plantilla tiene ya 300 s (> ventana de 120 s)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    response = await next_response(rig, client, before)
+    assert_refused_without_signature(rig, response, "politica_incumplida", req)
+    entry = revalidation(rig)
+    assert entry["failed"] == ["created_at"] and entry["created_at_age_s"] == 300
+    await rig.stop()
+
+
+async def test_the_event_is_valid_up_to_the_exact_window_and_not_one_second_later() -> None:
+    for waited, expect_signature in ((120, True), (121, False)):  # limite exacto de SIGNER_WINDOW_S
+        rig = await make_rig(approval_ttl_s=600, window_s=120)
+        client = await rig.connect_client()
+        req = await begin_sign(rig, client)
+        rig.clock.advance(waited)
+        before = len(rig.relay.published)
+        rig.approvals.resolve(req.id, True)
+        response = await next_response(rig, client, before)
+        assert (response.error is None) is expect_signature, waited
+        await rig.stop()
+
+
+async def test_expired_session_window_of_the_signer_prevents_signing() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    rig.service._end("vida_maxima_de_sesion")  # el vigilante de la sesion vencio justo despues de la decision (sin ceder el control)
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "firmante_no_activo", req)
+    await rig.stop()
+
+
+async def test_a_connection_that_expired_while_waiting_for_approval_cannot_get_a_signature() -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=300, connection_ttl_s=60)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    rig.clock.advance(100)  # la conexion (60 s) vencio; la politica (ventana 300 s) y la aprobacion (600 s) seguirian vigentes
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "cliente_no_activo", req)
+    await rig.stop()
+
+
+async def test_an_approval_that_expired_before_signing_is_refused() -> None:
+    rig = await make_rig(approval_ttl_s=5)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)  # aprobada a tiempo...
+    rig.clock.advance(10)  # ...pero la vigencia termino antes de que el firmante use la clave
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "aprobacion_caducada", req)
+    await rig.stop()
+
+
+async def test_an_approval_that_was_already_consumed_cannot_be_used_again() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert rig.approvals.consume(req) is None  # alguien ya la gasto (p. ej. un segundo intento) antes de que el firmante firme
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "aprobacion_consumida", req)
+    await rig.stop()
+
+
+async def test_a_request_altered_after_approval_is_refused() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    assert req.binding is not None and len(req.binding) == 64
+    req.binding = "0" * 64  # lo aprobado ya no corresponde a lo que se firmaria
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "solicitud_alterada", req)
+    await rig.stop()
+
+
+async def test_a_rejected_revalidation_signs_nothing_and_a_new_request_needs_a_new_human_approval() -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=120, max_signatures=1)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    rig.clock.advance(300)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "politica_incumplida", req)
+    assert rig.service.signatures == 0 and len(rig.service._seen_challenges) == 0  # el reto NO se gasta: el cliente puede reintentar
+    retry = await begin_sign(rig, client)  # mismo reto, plantilla fresca: vuelve a pedir una aprobacion humana (no hay aprobacion implicita)
+    assert retry.id != req.id and retry.status is RequestStatus.PENDING and rig.service.signatures == 0
+    before = len(rig.relay.published)
+    rig.approvals.resolve(retry.id, True)
+    assert (await next_response(rig, client, before)).error is None and rig.service.signatures == 1
+    await rig.stop()
+
+
+async def test_a_denied_request_never_reaches_the_revalidation_or_the_key() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, False)
+    assert (await next_response(rig, client, before)).error == "unauthorized"
+    assert rig.service.signatures == 0 and req.consumed is False and not [e for e in rig.audit.entries() if e["event"] == "revalidation"]
+    await rig.stop()
+
+
+async def test_revalidation_audit_never_contains_secrets_or_the_template(caplog: pytest.LogCaptureFixture) -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=120)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    rig.clock.advance(300)
+    before = len(rig.relay.published)
+    with caplog.at_level(logging.DEBUG):
+        rig.approvals.resolve(req.id, True)
+        await next_response(rig, client, before)
+    blob = json.dumps(rig.audit.entries()) + caplog.text
+    assert CHALLENGE not in blob and req.binding not in blob and rig.identity.public_hex not in blob  # type: ignore[operator]
+    assert set(revalidation(rig)) == {"seq", "ts", "event", "request_id", "ok", "reason", "failed", "created_at_age_s"}
+    await rig.stop()
+
+
+async def test_the_signature_is_made_over_exactly_the_approved_template_after_revalidation() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    template = login_template(rig.identity.public_hex, now=int(rig.clock()))
+    req = await begin_sign(rig, client, template)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    signed = parse_and_verify_event(json.loads((await next_response(rig, client, before)).result or ""))
+    original = json.loads(template)
+    assert (signed.kind, signed.created_at, signed.content, [list(t) for t in signed.tags]) == (original["kind"], original["created_at"], original["content"], original["tags"])
+    assert signed.id == original["id"]
+    await rig.stop()
+
+
+# ------------------------------------------------------------------------------------------------ P-42: resultado real de la firma
+async def test_outcome_lifecycle_pending_approved_signed() -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    assert (req.status, req.outcome) == (RequestStatus.PENDING, None)  # pendiente de aprobacion
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert (req.status, req.outcome) == (RequestStatus.APPROVED, None)  # aprobada por el operador, AUN sin resultado: no es una firma
+    assert (await next_response(rig, client, before)).error is None
+    assert (req.status, req.outcome, req.outcome_reason) == (RequestStatus.APPROVED, "signed", None)  # firmada y autoverificada
+    assert req.public(0)["outcome"] == "signed" and rig.service.signatures == 1
+    await rig.stop()
+
+
+async def test_states_that_are_not_a_signature_never_get_a_signed_outcome() -> None:
+    rig = await make_rig(approval_ttl_s=5)
+    client = await rig.connect_client()
+    denied = await begin_sign(rig, client)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(denied.id, False)
+    await next_response(rig, client, before)
+    assert (denied.status, denied.outcome) == (RequestStatus.DENIED, None)
+    expired = await begin_sign(rig, client, login_template(rig.identity.public_hex, now=int(rig.clock()), challenge="cd" * 32))
+    await rig.wait_for(lambda: expired.status is RequestStatus.EXPIRED, timeout=8)  # sin decision: caduca (real: approval_ttl_s = 5)
+    assert (expired.status, expired.outcome) == (RequestStatus.EXPIRED, None)
+    assert rig.service.signatures == 0
+    await rig.stop()
+
+
+async def test_a_second_approved_signature_over_the_cap_is_reported_as_refused_not_as_signed() -> None:
+    rig = await make_rig(approval_ttl_s=600, max_signatures=1)
+    client = await rig.connect_client()
+    first = await begin_sign(rig, client)
+    await rig.send(client.request("sign_event", [login_template(rig.identity.public_hex, now=int(rig.clock()), challenge="ef" * 32)]))
+    await rig.wait_for(lambda: len(rig.approvals.pending()) == 2)
+    second = next(r for r in rig.approvals.pending() if r is not first)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(first.id, True)
+    rig.approvals.resolve(second.id, True)  # las dos aprobadas por el operador, pero el tope es una firma
+    await rig.wait_for(lambda: len(rig.relay.published) >= before + 2)
+    assert (first.outcome, second.outcome, second.outcome_reason) == ("signed", "refused", "reutilizacion_o_tope")
+    assert rig.service.signatures == 1
+    await rig.stop()
+
+
+async def test_a_self_verification_failure_is_a_failed_outcome(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.nostr.errors import InvalidEventError
+
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+
+    def broken(_event: object) -> None:
+        raise InvalidEventError("firma invalida")
+
+    monkeypatch.setattr("app.services.signer.verify_event", broken)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert (await next_response(rig, client, before)).error == "internal error"
+    assert (req.outcome, req.outcome_reason) == ("failed", "autoverificacion")
+    await rig.stop()
+
+
+async def test_an_approved_signature_without_result_when_the_session_ends_becomes_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    rig = await make_rig(approval_ttl_s=600)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+
+    def crash(*_a: object) -> None:
+        raise RuntimeError("el manejador se rompio antes de fijar el resultado")
+
+    monkeypatch.setattr(rig.service, "_revalidate_and_sign", crash)
+    rig.approvals.resolve(req.id, True)
+    await rig.wait_for(lambda: any(e["event"] == "error" and e["where"] == "manejador" for e in rig.audit.entries()))
+    assert req.status is RequestStatus.APPROVED and req.outcome is None  # aun «pendiente de resultado»
+    await rig.stop()
+    assert (req.outcome, req.outcome_reason) == ("failed", "sesion_terminada")  # nunca queda eternamente pendiente
+
+
+async def test_pending_signature_reports_the_effective_signing_deadline_which_is_not_the_approval_ttl() -> None:
+    """B6.1D-R3: el plazo REAL para firmar es la ventana de la politica menos la antiguedad de la plantilla, aunque el TTL de la aprobacion sea mayor."""
+    rig = await make_rig(approval_ttl_s=600, window_s=120)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)  # created_at = NOW: la politica acepta hasta int(ahora) - created_at == 120
+    view = req.public(rig.clock())
+    assert view["expires_in_s"] == 600 and view["sign_expires_in_s"] == 121 and req.sign_deadline == float(NOW + 121)
+    rig.clock.advance(100)
+    view = req.public(rig.clock())
+    assert (view["expires_in_s"], view["sign_expires_in_s"]) == (500, 21)  # la cuenta de firma baja igual, pero esta mas cerca que la del TTL
+    rig.clock.advance(20)
+    assert req.public(rig.clock())["sign_expires_in_s"] == 1  # el ultimo segundo en que todavia se puede firmar (limite exacto probado arriba: 120 s firma)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    assert (await next_response(rig, client, before)).error is None and req.public(rig.clock())["sign_expires_in_s"] is None  # ya no esta pendiente
+    await rig.stop()
+
+
+async def test_the_reported_deadline_reaches_zero_exactly_when_the_policy_stops_accepting_the_signature() -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=120)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    rig.clock.advance(121)  # un segundo despues del limite
+    assert req.public(rig.clock())["sign_expires_in_s"] == 0 and req.public(rig.clock())["expires_in_s"] == 479
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)  # la aprobacion aun es valida (TTL 600), pero la politica ya no acepta la plantilla
+    assert_refused_without_signature(rig, await next_response(rig, client, before), "politica_incumplida", req)
+    await rig.stop()
+
+
+async def test_connect_requests_have_no_signing_deadline() -> None:
+    rig = await make_rig()
+    secret = rig.service.issue_bunker_uri().split("secret=")[1]
+    client = rig.client()
+    await rig.send(client.request("connect", ["", secret], scheme="nip04"))
+    req = await rig.pending_request("connect")
+    assert req.public(rig.clock())["sign_expires_in_s"] is None and req.sign_deadline is None
+    rig.approvals.resolve(req.id, True)
+    await rig.stop()
+
+
+async def test_connect_requests_keep_their_existing_lifecycle() -> None:
+    rig = await make_rig()
+    await rig.connect_client()
+    connect = rig.approvals.recent()[-1]
+    assert connect.kind.value == "connect" and connect.status is RequestStatus.APPROVED and connect.outcome is None
+    await rig.stop()
+
+
+async def test_the_public_outcome_view_never_contains_the_template_the_challenge_or_keys() -> None:
+    rig = await make_rig(approval_ttl_s=600, window_s=120)
+    client = await rig.connect_client()
+    req = await begin_sign(rig, client)
+    rig.clock.advance(300)
+    before = len(rig.relay.published)
+    rig.approvals.resolve(req.id, True)
+    await next_response(rig, client, before)
+    blob = json.dumps(req.public(rig.clock()))
+    assert CHALLENGE not in blob and rig.identity.public_hex not in blob and (req.binding or "x") not in blob and "sig" not in req.public(0)
+    assert req.public(0)["outcome_reason"] == "politica_incumplida"  # un codigo fijo, nunca texto libre
+    await rig.stop()
+
+
 async def test_wrong_param_count_is_invalid_params() -> None:
     rig = await make_rig()
     client = await rig.connect_client()

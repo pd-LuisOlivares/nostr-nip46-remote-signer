@@ -3,7 +3,7 @@ import json
 import pytest
 
 from app.nostr.keys import Keypair
-from app.services.policy import CHECK_ORDER, KIND_AUTH, PolicyConfig, challenge_hash, evaluate, safe_text
+from app.services.policy import CHECK_ORDER, KIND_AUTH, PolicyConfig, SignTemplate, challenge_hash, evaluate, safe_text, template_binding
 from tests.support import CHALLENGE, NOW, ORIGIN, login_template
 
 CFG = PolicyConfig(ORIGIN)
@@ -105,3 +105,26 @@ def test_safe_text_bounds_and_redacts() -> None:
     assert safe_text("x" * 100, 10) == "x" * 10 + "..."
     for risky in ("ab" * 32, "bunker://x", "secret=abc", "nsec1qqq"):
         assert safe_text(risky) == "<redactado>"
+
+
+# ------------------------------------------------------------------------------------------------ P-38: vinculo solicitud <-> firma
+def test_template_binding_is_deterministic_and_changes_with_every_signed_field() -> None:
+    base = SignTemplate(27235, NOW, (("challenge", CHALLENGE), ("u", ORIGIN), ("method", "GET")), "Stacker News Authentication")
+    pub = "a" * 64
+    digest = template_binding(pub, base)
+    assert digest == template_binding(pub, base) and len(digest) == 64 and int(digest, 16) >= 0
+    variants = [
+        template_binding("b" * 64, base),
+        template_binding(pub, SignTemplate(1, base.created_at, base.tags, base.content)),
+        template_binding(pub, SignTemplate(base.kind, NOW + 1, base.tags, base.content)),
+        template_binding(pub, SignTemplate(base.kind, base.created_at, (*base.tags, ("x", "y")), base.content)),
+        template_binding(pub, SignTemplate(base.kind, base.created_at, base.tags[::-1], base.content)),
+        template_binding(pub, SignTemplate(base.kind, base.created_at, base.tags, base.content + " ")),
+    ]
+    assert len({digest, *variants}) == 7  # cualquier cambio en lo que se firmaria cambia la huella
+
+
+def test_the_binding_of_a_reevaluated_template_matches_the_original() -> None:
+    first, second = run(tpl()), run(tpl())  # type: ignore[attr-defined]
+    assert first.template is not None and second.template is not None  # type: ignore[attr-defined]
+    assert template_binding("a" * 64, first.template) == template_binding("a" * 64, second.template)  # type: ignore[attr-defined]

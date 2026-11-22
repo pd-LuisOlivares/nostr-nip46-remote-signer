@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "descripcion": "Manifiesto de transcripciones de IA exportadas por tools/ai_sessions.py. Cada interacción empieza en el prompt del propietario cuya marca de hora (UTC) se indica y llega hasta el inicio de la siguiente (orden del archivo de sesión). Criterio: una interacción es un bloque de trabajo autorizado por el propietario. Las 36 transcripciones anteriores (interacciones 01 a 31) se exportaron con un script puntual y no figuran aquí: `legacy_until_utc` marca hasta dónde llegan.",
+  "open_window_minutes": 120,
+  "legacy_until_utc": {
+    "96de96c9-d28a-40e0-a5c0-11daf0fd66a4": "9999-12-31T00:00:00.000Z",
+    "35f0f3c1-13e9-47b9-832f-f6252cd2166f": "2026-11-21T03:12:49.029Z"
+  },
+  "interactions": [
+    {
+      "n": "32",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T03:12:49.029Z",
+      "phase": "1.0B",
+      "slug": "cierre-jornada",
+      "title": "Cierre de la jornada del 2026-11-21 (consolidación, trazabilidad y publicación)"
+    },
+    {
+      "n": "33",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T19:25:21.227Z",
+      "phase": "1.0B",
+      "slug": "b6-etapa1-reproducibilidad",
+      "title": "B6 etapa 1: reproducibilidad desde un clon limpio"
+    },
+    {
+      "n": "34",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T19:41:35.482Z",
+      "phase": "1.0B",
+      "slug": "b61a-ingreso-sqlite-jwt",
+      "title": "B6.1A: ingreso con usuario y contraseña (SQLite + Argon2id + JWT) y correcciones P-35, P-36 y P-37"
+    },
+    {
+      "n": "35",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T20:14:46.310Z",
+      "phase": "1.0B",
+      "slug": "b61b-cierre-seguridad",
+      "title": "B6.1B: cierre de seguridad antes de la validación real (P-38 y P-41)"
+    },
+    {
+      "n": "36",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T20:35:45.498Z",
+      "phase": "1.0B",
+      "slug": "b61c-p41-p42",
+      "title": "B6.1C: cierre de P-41 (compuerta Argon2id) y P-42 (resultado real de la firma)"
+    },
+    {
+      "n": "37",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T21:05:15.021Z",
+      "phase": "1.0B",
+      "slug": "b61d-validacion-local-r2",
+      "title": "B6.1D y B6.1D-R2: validación manual local, diagnóstico y propuesta de cliente de demostración en el navegador"
+    },
+    {
+      "n": "38",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T21:32:23.474Z",
+      "phase": "1.0B",
+      "slug": "b61d-r3-cliente-web",
+      "title": "B6.1D-R3: cliente web local NIP-46 (NDK real) y contador del plazo efectivo de firma"
+    },
+    {
+      "n": "39",
+      "session": "35f0f3c1-13e9-47b9-832f-f6252cd2166f",
+      "start_utc": "2026-11-21T22:35:22.563Z",
+      "phase": "1.0B",
+      "slug": "b62-preparacion-ventana-1",
+      "title": "B6.2 (preparación): cierre documental de B6.1D, plan de la validación real, autorización y ventana 1 suspendida"
+    },
+    {
+      "n": "40",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T01:43:04.892Z",
+      "phase": "1.0B",
+      "slug": "b62-docker-etapa1",
+      "title": "B6.2: reanudación, Docker Compose como entorno principal y etapa 1 (configuración, documentación y pruebas)"
+    },
+    {
+      "n": "41",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T02:06:15.915Z",
+      "phase": "1.0B",
+      "slug": "b62-transicion-docker",
+      "title": "B6.2: transición a Docker (detención de B6.1D, comprobación de la imagen, importación de la base y arranque; subpasos 1 a 3.4)"
+    },
+    {
+      "n": "42",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T02:30:47.948Z",
+      "phase": "1.0B",
+      "slug": "firmante-continuo-diseno",
+      "title": "Firmante continuo: análisis, diseño y alcance"
+    },
+    {
+      "n": "43",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T02:35:58.839Z",
+      "phase": "1.0B",
+      "slug": "modo-continuo-paso1",
+      "title": "Modo continuo, Paso 1: configuración (SIGNER_MODE, REQUESTS_PER_MIN y AUTO_SIGN_PER_HOUR)"
+    },
+    {
+      "n": "44",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T02:47:08.522Z",
+      "phase": "1.0B",
+      "slug": "correccion-alcance-paso1b",
+      "title": "Corrección de alcance (sin firma automática), análisis de impacto y Paso 1b"
+    },
+    {
+      "n": "45",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T03:26:22.057Z",
+      "phase": "1.0B",
+      "slug": "modo-continuo-paso2",
+      "title": "Modo continuo, Paso 2: estado y ciclo de vida del firmante"
+    },
+    {
+      "n": "46",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T03:34:40.508Z",
+      "phase": "1.0B",
+      "slug": "pasos-3-5-inicio",
+      "title": "Modo continuo, Pasos 3 a 5: inicio de la implementación (revocación individual, a medias)"
+    },
+    {
+      "n": "47",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T03:38:23.663Z",
+      "phase": "1.0B",
+      "slug": "regularizacion-trazabilidad",
+      "title": "Auditoría y regularización de la trazabilidad de sesiones de IA"
+    },
+    {
+      "n": "48",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T04:03:24.589Z",
+      "phase": "1.0B",
+      "slug": "pasos-3-5-completados",
+      "title": "Modo continuo, Pasos 3 a 5: revocación individual, reconexión acotada y límites de frecuencia (retomados y completados)"
+    },
+    {
+      "n": "49",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T04:50:29.829Z",
+      "phase": "1.0B",
+      "slug": "paso7-demo-evaluadores",
+      "title": "Paso 7 (preparación), experiencia de evaluación y perfil de demostración (D-18)"
+    },
+    {
+      "n": "50",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T05:18:05.134Z",
+      "phase": "1.0B",
+      "slug": "validacion-real-continuo",
+      "title": "Validación real con Stacker News (modo continuo): entorno B6.2, restablecimiento de contraseña y cierre de jornada"
+    },
+    {
+      "n": "51",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T05:38:11.018Z",
+      "phase": "1.0B",
+      "slug": "consolidacion-git",
+      "title": "Cierre B6.2: consolidación en Git y push a origin/main"
+    }
+  ]
+}

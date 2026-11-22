@@ -589,3 +589,338 @@ Sin conexiones a `relay.primal.net` ni a Stacker News sin autorización expresa 
 ### Qué falta para cerrar B6
 
 Reproducibilidad desde un clon limpio; revisión final de README; nueva compuerta operativa para repetir el inicio de sesión real desde la interfaz con la misma identidad (con comprobación de persistencia); cierre documental y exportación de las transcripciones pendientes (ver `ai-log.md`).
+
+## Fase 1.0B, B6 etapa 1: reproducibilidad desde un clon limpio (2026-11-21)
+
+Detalle, comandos y evidencia: [`phase-1.0B-B6-stage1-reproducibility.md`](phase-1.0B-B6-stage1-reproducibility.md). **Veredicto: PASS con observaciones.** Sin conexión a Stacker News ni a relays públicos; sin usar la identidad privada de B4; sin cambios de código; sin commit ni push.
+
+### Autorización y alcance
+
+El propietario autorizó: clonar `origin/main` (`4b9e51e`) en una carpeta temporal, instalar y ejecutar siguiendo el README, Docker Compose, pruebas (incluida la E2E local), comprobación de la interfaz y revisión de portabilidad, `.gitignore` y la prueba de navegador con una comprobación en rojo (P-34); acceso a GitHub y a registros de paquetes solo para clonar e instalar. **No** autorizó cambios de criptografía, NIP-46, JWT, autorizaciones ni flujo de firma sin consulta: no se hicieron.
+
+### Hallazgos verificados
+
+- Un clon limpio instala con el README y da `613 passed, 9 skipped` (8 vectores NIP-44 sin archivo y el E2E de Docker); `622 passed` con los vectores y `E2E_DOCKER=1`, igual que el equipo original. **Esos 8 tests y las imágenes de laboratorio dependían de archivos del equipo original** (no versionados).
+- Docker Compose: construcción con la etiqueta mutable por defecto, contenedor `healthy`, publicado solo en `127.0.0.1`, usuario no root, sistema de archivos de solo lectura, `cap_drop: ALL`. Interfaz y operador en Chrome 158: 19/19 comprobaciones.
+- El 429 al iniciar sesión se debió a peticiones 401 con la forma del sondeo de la UI recibidas antes de cualquier prueba (pestaña antigua del navegador, **inferido** del registro de acceso). Cada petición sin credenciales válidas cuenta como fallo.
+- Sonda de la UI con tarjetas manipuladas: «Aprobar» queda desactivado con una comprobación en `false`; el HTML hostil se muestra como texto sin ejecutarse; un clic real o el teclado no envían nada, pero un `click` sintético de JS sobre el botón desactivado sí llega a `decide()`.
+
+### Supuestos y límites
+
+Una ejecución en un único equipo (Windows 11) no demuestra compatibilidad universal. Inferidos, no ejecutados: Linux/macOS fuera de Docker, equipos sin Chrome/Edge, Firefox, arm64, construcción sin caché, reconstrucción del laboratorio desde cero.
+
+### Propuestas nuevas o actualizadas (pendientes de decisión del propietario)
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-34 | Prueba de navegador **versionada** con tarjeta manipulada y en Firefox. La sonda de esta etapa dio el resultado de arriba; falta incorporarla como prueba. | Parcial: verificada con un script desechable; **sin prueba versionada** |
+| P-35 | No contar como fallo la ausencia de credenciales (sonda de sesión) o no bloquear el inicio de sesión por fallos de otras rutas. Afecta a D-8. | **Pendiente de decisión** |
+| P-36 | Reglas de `.gitignore` para `identity.key`, `*.key`, `*.pem`, `*.nsec`, `.nip46-b4/` y `.env.*` (con `!.env.example`); probadas en un clon descartable sin ignorar nada versionado. Texto exacto en el documento de la etapa. | **Pendiente de decisión** (`.gitignore` no se modificó) |
+| P-37 | `decide()` debe ignorar `approve` si alguna comprobación es `false` (defensa en profundidad) y prueba E2E. Afecta al flujo de aprobación. | **Pendiente de decisión** |
+
+## Fase 1.0B, B6.1A: ingreso del administrador con SQLite + Argon2id + JWT (2026-11-21)
+
+Detalle, pruebas y resultados: [`phase-1.0B-B6.1A-local-auth.md`](phase-1.0B-B6.1A-local-auth.md). **Veredicto: PASS con observaciones.** Sin conexión a Stacker News ni a relays públicos, sin firmar eventos reales, sin usar la identidad de B4, sin commit ni push.
+
+### Decisión del propietario (alcance de esta iteración)
+
+Sustituir **solo** el ingreso por código temporal de la terminal por usuario y contraseña en SQLite, con JWT HS256 emitido por el backend; corregir P-35, P-36 y P-37; mantener intactos NIP-46, la criptografía Nostr y la política de firma. Autorizó instalar dependencias necesarias desde fuentes oficiales. **No** autorizó commit, push, servicios externos ni cambios sustanciales del flujo de firma («si la corrección requiere modificar el comportamiento de autorización del backend, documenta el hallazgo y detente»).
+
+### D-9: decisiones de diseño (reemplaza **solo** el mecanismo de ingreso de D-8; el resto de D-8 se conserva)
+
+| # | Decisión | Por qué / alternativas descartadas |
+|---|---|---|
+| D-9.1 | SQLite con el módulo `sqlite3` de la biblioteca estándar, confinado a `app/storage/` (consultas parametrizadas, una conexión por operación, `BEGIN IMMEDIATE` en escrituras). Se crea sola; esquema versionado con `PRAGMA user_version` | Sin dependencias nuevas para persistir. Descartado: ORM (sobreingeniería), archivo plano con hash (sin integridad ni atomicidad) |
+| D-9.2 | **Argon2id** con `argon2-cffi` y el perfil RFC 9106 «low memory» (t=3, m=64 MiB, p=4, sal de 16 bytes). Hash de señuelo para igualar el costo con usuarios inexistentes | Requisito del alcance. Descartado: `hashlib.scrypt` (estándar, pero se pidió Argon2id), bcrypt (límite de 72 bytes), PBKDF2 (no memoria-dura) |
+| D-9.3 | Un único administrador (`id` fijo = 1 con `CHECK`), usuario único sin distinguir mayúsculas, `password_hash` con `CHECK` de prefijo `$argon2id$` (la base rechaza texto plano) | Alcance inicial pedido. Ampliarlo exige una migración y una decisión nueva |
+| D-9.4 | Administrador inicial desde `ADMIN_USERNAME` (por defecto `admin`, no secreto) y `ADMIN_PASSWORD` o `ADMIN_PASSWORD_FILE` (excluyentes). **Sin contraseña por defecto.** Sin contraseña válida y sin administrador el arranque **falla** con instrucciones. Con administrador existente no se sobrescribe ni se recrea, y la contraseña de entorno **ni se lee**. Alta atómica (`INSERT … WHERE NOT EXISTS`) | Evita cuentas débiles o silenciosas y carreras entre procesos. Descartado: pantalla pública de registro (prohibida), contraseña generada e impresa (reintroduciría el secreto en la terminal) |
+| D-9.5 | El JWT conserva el formato y la semántica de D-8; lo emite el backend tras verificar credenciales. La clave HS256 sigue siendo aleatoria y en memoria (independiente de la contraseña). **El cuerpo de la respuesta de login ya no incluye el JWT** salvo `return_token: true` (clientes de línea de comandos) | Cumple «no exponer el JWT al JavaScript del navegador». Cambio de contrato de la API: se actualizaron el arnés del laboratorio y el README |
+| D-9.6 | Límites **globales** y separados: intentos de login (5 en 5 min; el intento cuenta antes de verificar y se descuenta solo si tiene éxito) y tokens inválidos (20 por minuto; un token válido nunca se frena). Sin credenciales = 401 sin contar | Resuelve P-35 sin debilitar la fuerza bruta y sin depender de cabeceras del cliente. Compromiso: bloqueo del ingreso por un tercero local (P-40). Descartado: límite por IP (tras Docker todas las IP son la puerta de enlace; no confiable) |
+| D-9.7 | Registro operacional mínimo en el logger `nip46.auth` (eventos y prefijos de `jti`; nunca contraseñas, hashes, usuarios, tokens ni cookies). La auditoría NIP-46 en memoria no se tocó | Distingue operacional, autenticación, auditoría NIP-46 y registros de IA |
+| D-9.8 | Docker: volumen con nombre `app_data` en `/data` (único escribible; raíz de solo lectura, usuario `uid 10001`), `DATABASE_PATH=/data/nip46.db`, sin credenciales en la imagen. Etiqueta de imagen `${APP_IMAGE:-…:dev}` y documentación de `-p` para otra copia (observación de B6 etapa 1) | Corrección mínima y compatible. Descartado: renombrar el proyecto por defecto (cambio mayor; lo usan README, laboratorio y pruebas) |
+| D-9.9 | `.gitignore`/`.dockerignore` con reglas específicas para identidad, secretos, SQLite y auxiliares, configuración privada y evidencias sensibles (P-36), verificadas contra los archivos rastreados y no rastreados | Sin exclusiones amplias que oculten archivos legítimos |
+| D-9.10 | P-37: `decide()` rechaza `approve` si alguna comprobación está en rojo o la tarjeta es desconocida. El backend no se modificó (ver P-38) | Defensa en profundidad; el servidor sigue siendo la autoridad |
+
+### Dependencia nueva (AGENTS.md §8; autorizada por el alcance)
+
+| Paquete | Propósito | Alternativa estándar | Licencia | Mantenimiento | Seguridad |
+|---|---|---|---|---|---|
+| `argon2-cffi==25.1.0` + `argon2-cffi-bindings==26.2.0` | Hash Argon2id de la contraseña | `hashlib.scrypt` (descartada: se pidió Argon2id) | MIT (ambas) | Versiones vigentes servidas por PyPI el 2026-11-21; **no se verificó** más allá de eso | Implementación de referencia en C vía `cffi` (ya presente); fijadas en `pyproject.toml` y `constraints.txt` (sin *hashes*, como el resto) |
+
+### Hallazgos verificados
+
+- Antes no existía ni SQLite ni registro con `logging` en el producto; solo la auditoría NIP-46 en memoria.
+- **P-35 corregido** y probado (unitarias, API y navegador). **P-36 corregido:** `git ls-files -ci --exclude-standard` vacío y todos los archivos nuevos visibles.
+- **P-37 corregido en la interfaz** (prueba E2E de mutación: falla sin la guardia). En el backend: una firma que incumple la política nunca llega a la cola del operador ni se puede aprobar por la API.
+- **Hallazgo P-38 (abierto):** el backend **no revalida la ventana temporal** de la política tras la aprobación humana (solo repetición y tope). Demostrado con una prueba `xfail` estricta. **No se corrigió** por tocar el flujo de firma; decisión del propietario.
+- Regresión NIP-46 con NDK 2.12.2 real (servicio y API): E1, E2, E3 y E8 en PASS. Suite: 762 passed, 1 skipped, 1 xfailed (con `E2E_DOCKER=1`); copia limpia: 751 passed, 12 skipped, 1 xfailed; `mypy --strict app` limpio; cobertura 99 % (módulos de B6.1A al 100 %).
+
+### Supuestos y límites (no verificados o aceptados)
+
+- Probado en Windows 11 + Docker Desktop y Chrome; **no** en Linux/macOS sin Docker, Firefox ni arm64. En Windows el modo 0600 de la base no se aplica.
+- La verificación «copia limpia» fue una exportación del árbol de trabajo (los cambios no están en un commit); debe repetirse con un `git clone` real.
+- `ADMIN_PASSWORD` en el entorno del contenedor es visible con `docker inspect` mientras exista; se recomienda retirarla tras el primer arranque.
+- Argon2id con 64 MiB por verificación no se probó en equipos con poca memoria.
+
+### Propuestas nuevas o actualizadas
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-34 | Prueba de navegador con tarjeta manipulada (Chrome) | **Cumplida** (`tests/e2e/test_browser_login.py`); Firefox **pendiente** (opcional) |
+| P-35 | Bloqueo por solicitudes sin credenciales | **Corregida** (D-9.6) |
+| P-36 | Reglas de `.gitignore` para identidad y secretos | **Corregida** (D-9.9; reglas ampliadas) |
+| P-37 | `decide()` y aprobaciones bloqueadas por política | **Corregida en la interfaz**; backend: ver P-38 |
+| P-38 | Revalidar la política completa (ventana temporal) justo antes de firmar y alinear `APPROVAL_TTL_S` ≤ `SIGNER_WINDOW_S`. Más estricto; puede denegar aprobaciones lentas | **Pendiente de decisión** (afecta al flujo de firma) |
+| P-39 | Herramienta de cambio o recuperación de contraseña sin borrar la base | Pendiente (opcional; hoy se recupera borrando la base) |
+| P-40 | Límite de login por origen real (exigiría un proxy de confianza) para que un tercero local no pueda bloquear el ingreso | Pendiente (opcional) |
+| P-41 | Probar Argon2id en equipos con poca memoria y re-hash automático al cambiar parámetros | Pendiente (opcional) |
+
+## Fase 1.0B, B6.1B: cierre de seguridad antes de la validación real (2026-11-21)
+
+Detalle, pruebas y resultados: [`phase-1.0B-B6.1B-security-closure.md`](phase-1.0B-B6.1B-security-closure.md). **Veredicto: PASS con observaciones.** Sin conexión a Stacker News ni a relays públicos, sin usar la identidad de B4, sin firmas reales, sin commit ni push.
+
+### Decisión del propietario (alcance)
+
+Resolver P-38 revalidando la política inmediatamente antes de firmar, sin cambiar la autorización humana ni el comportamiento existente; verificar P-41 con Argon2id bajo un límite de memoria; **no** implementar P-39 ni rediseñar P-40; no cambiar parámetros de seguridad sin evidencia.
+
+### D-10: revalidación obligatoria justo antes de usar la clave privada (cierra P-38)
+
+| # | Decisión | Por qué / alternativas descartadas |
+|---|---|---|
+| D-10.1 | Tras la decisión humana, `_revalidate_and_sign` (síncrono, **sin `await`**) comprueba con el reloj de ahora: aprobación vigente y **consumida en ese instante**, firmante activo, cliente activo, **política completa** (vigencia temporal, ventana, repetición y las demás) y **vínculo** solicitud-firma. Si algo falla: `unauthorized`, ninguna firma ni evento firmado, reto sin gastar, registro seguro | Causa raíz: la política se evaluaba solo antes de pedir la aprobación y se firmaba ese resultado antiguo. Síncrono para evitar carreras. Descartado: solo repetir la comprobación de la ventana (dejaría sin cubrir aprobación vencida/consumida, firmante y cliente, y alteración) |
+| D-10.2 | Vínculo `template_binding` (SHA-256 de identidad, `kind`, `created_at`, etiquetas y contenido) calculado al **ofrecer** la solicitud y comparado al firmar; se firma la plantilla re-evaluada ahora | Garantiza que lo firmado es exactamente lo aprobado |
+| D-10.3 | `ApprovalRegistry.consume`: una aprobación se gasta una sola vez y **también si se rechaza** (falla de forma segura) | No se reintenta con la misma decisión; los reintentos del cliente exigen otra aprobación humana (sin aprobaciones implícitas) |
+| D-10.4 | Evento de auditoría `revalidation` en la lista blanca (sin plantilla, reto, huella ni claves) | Trazabilidad sin secretos; no se tocó el resto de la auditoría |
+| D-10.5 | **No** se modificó ningún límite (`SIGNER_WINDOW_S`, `APPROVAL_TTL_S`, topes) ni la política | La revalidación solo puede denegar más; la ventana efectiva de aprobación pasa a ser `SIGNER_WINDOW_S` menos la antigüedad de la plantilla |
+
+### Hallazgos verificados
+
+- **P-38 corregido** y probado (regresión normal + 12 pruebas de escenarios + unitarias; verificación por mutación: las 5 comprobaciones esenciales se detectan; la sexta es equivalente por redundancia).
+- **P-41 verificado:** Argon2id (64 MiB) funciona con un login a la vez desde **128 MiB**, hasta 3 simultáneos desde 256 MiB y la ráfaga máxima del limitador (5) desde **384 MiB**; con 256 a 352 MiB una ráfaga de 5 verificaciones simultáneas provoca **OOM-kill** del contenedor (`exit 137`). Memoria en reposo 43 MiB. **Parámetros sin cambios.**
+- Regresión: suite 783 passed, 1 skipped, 1 xfailed (con `E2E_DOCKER=1`); NDK 2.12.2 real (servicio y API) E1/E2/E3/E8 en PASS; `mypy --strict app` limpio; SQLite, JWT, cookies, CSRF y login sin regresiones.
+
+### Supuestos y límites
+
+- La medición de P-41 se hizo en un solo anfitrión (Docker Desktop, cgroup v2); otros pueden diferir en la memoria base.
+- La verificación en copia limpia es una exportación del árbol de trabajo (no hay commit).
+- Sin cambios en plataformas no probadas (Linux/macOS sin Docker, Firefox, arm64).
+
+### Propuestas nuevas o actualizadas
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-38 | Revalidar la política completa justo antes de firmar | **Corregida** (D-10) |
+| P-41 | Argon2id con memoria limitada | **Verificada con hallazgo abierto**: la ráfaga de 5 verificaciones falla con 256 a 352 MiB. Alternativas **sin implementar**: A (recomendada) limitar a 1 o 2 las verificaciones Argon2id concurrentes; B documentar el mínimo de 384 MiB y fijar `mem_limit`; C bajar el costo de memoria (reduce el margen RFC 9106). Pendiente de su decisión |
+| P-42 | La interfaz muestra «aprobada» en Recientes aunque la revalidación rechazara la firma (el motivo solo está en la auditoría) y su cuenta atrás usa `APPROVAL_TTL_S`, no la ventana real. Mostrar el rechazo y la ventana efectiva | Pendiente (opcional; no implementado para no ampliar funcionalidades) |
+| P-39, P-40 | Sin cambios (no se implementaron en esta iteración) | Pendientes |
+
+## Fase 1.0B, B6.1C: cierre de P-41 y P-42 (2026-11-21)
+
+Detalle, pruebas y resultados: [`phase-1.0B-B6.1C-p41-p42.md`](phase-1.0B-B6.1C-p41-p42.md). **Veredicto: PASS** (P-41 y P-42 se cierran). Sin conexión a Stacker News ni a relays públicos, sin la identidad de B4, sin firmas reales, sin commit ni push.
+
+### Decisión del propietario (alcance)
+
+Evitar el OOM por verificaciones Argon2id concurrentes (una verificación activa por proceso, con espera acotada) sin cambiar los parámetros ni la fuerza bruta; y que la interfaz represente el resultado real de la firma, con una corrección mínima que reutilice el estado y la auditoría. No ampliar funcionalidades ni cambiar políticas para aprobar pruebas.
+
+### D-11 (cierra P-41): compuerta de verificaciones Argon2id
+
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-11.1 | `VerificationGate`: un `Semaphore(1)` por proceso, cola de hasta 4 esperando, espera máxima de 3 s; superado, `Busy` → 503 `servicio ocupado` con `Retry-After: 2`. La verificación corre en un hilo; el cupo se libera al terminar el hilo (no al cancelarse quien espera) | Corresponde a la alternativa A de B6.1B. Descartado: bajar el costo de memoria de Argon2id (C: reduce el margen RFC 9106 sin necesidad) y solo documentar 384 MiB (B: deja el OOM posible) |
+| D-11.2 | Cubre toda verificación (usuario existente o no, mismo costo); un rechazo por capacidad **libera** su reserva del limitador de intentos (no es un fallo de credenciales ni da ventaja de fuerza bruta) | Los 5 fallos reales siguen bloqueando con 429 |
+| D-11.3 | **Parámetros de Argon2id sin cambios** (t=3, m=64 MiB, p=4) | No hay evidencia que lo justifique: con la compuerta no hay OOM desde 128 MiB |
+| D-11.4 | Un solo proceso soportado (el semáforo es por proceso; clave JWT, sesiones y limitadores también son por proceso). Verificado: ni `Dockerfile`, ni `compose.yaml`, ni el laboratorio, ni el README usan `--workers` | Un límite global exigiría un almacén compartido (fuera de alcance) |
+
+### D-12 (cierra P-42): resultado real de la firma
+
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-12.1 | `PendingRequest.outcome` (`None`/`signed`/`refused`/`failed`) y `outcome_reason` (código fijo); `status` **no cambia** y la API añade ambos campos (aditivo) | Compatibilidad. Descartado: un sistema nuevo de seguimiento o nuevos estados en `status` |
+| D-12.2 | `signed` = firma producida y autoverificada; `refused` = revalidación o reto/tope; `failed` = autoverificación o sesión terminada (`finalize_unresolved`) | La entrega al relay ya se audita (`response_published`); no se añade seguimiento |
+| D-12.3 | La interfaz muestra el resultado del servidor, anuncia cada transición (no el historial previo al ingreso) y el mensaje tras «Aprobar» ya no sugiere éxito. Solo códigos fijos, nunca datos de la plantilla | Corrección mínima sobre el estado y la auditoría existentes |
+
+### Hallazgos verificados
+
+- **P-41:** sin la compuerta, 5 verificaciones simultáneas con 256 a 352 MiB provocaban OOM-kill; con ella no hay OOM desde **128 MiB** con 1, 5 y 8 intentos simultáneos (3 rondas), y con 192, 256, 384 y 512 MiB. Pruebas de mutación: las 5 mutaciones de la compuerta se detectan.
+- **P-42:** la interfaz mostraba «aprobada» aunque la revalidación rechazara la firma; ahora muestra cinco estados distintos con el motivo. 6 de 6 mutaciones (backend e interfaz) detectadas.
+- Regresión: suite 815 passed, 1 skipped, 0 xfailed (con `E2E_DOCKER=1`); NDK 2.12.2 real (servicio y API) E1/E2/E3/E8 PASS; `mypy --strict app` limpio (36 archivos); cobertura 99 %.
+
+### Supuestos y límites
+
+«Firmada» no incluye la entrega al relay; solo un proceso; medición de memoria en un anfitrión (Docker Desktop); E2E de navegador solo en Chrome.
+
+### Propuestas
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-41 | Argon2id con memoria limitada | **Cerrada** (D-11) |
+| P-42 | Mostrar el resultado real de la firma | **Cerrada** (D-12) |
+| P-39, P-40 | Cambio de contraseña guiado; límite de login por origen | Pendientes (opcionales; no se tocaron) |
+
+## Fase 1.0B, B6.1D-R3: cliente web local NIP-46 y plazo efectivo de firma (2026-11-21)
+
+Detalle, pruebas y resultados: [`phase-1.0B-B6.1D-R3-web-client.md`](phase-1.0B-B6.1D-R3-web-client.md). Diagnóstico previo: [`phase-1.0B-B6.1D-diagnosis-and-proposal.md`](phase-1.0B-B6.1D-diagnosis-and-proposal.md). Sin conexión a Stacker News ni a relays públicos, sin la identidad de B4, sin commit ni push.
+
+### Decisiones aprobadas por el propietario
+
+1. Cliente **NDK 2.12.2 real en Node**, reutilizando la imagen de laboratorio existente. 2. El firmante muestra el **plazo efectivo** restante para firmar, distinto del TTL de aprobación. 3. Demostración con **ventana de firma 45 s y TTL de aprobación 120 s**, solo en local. 4. `lab/manual/local_client.py` se **conserva** como herramienta técnica. 5. Limpieza de las pruebas Docker **sin borrar volúmenes preexistentes**.
+
+### D-13: cliente web de laboratorio
+
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-13.1 | Servicio Node (`lab/manual/client_web/`) en `nip46-lab-node:1.0a` con NDK real; la página no hace criptografía. Las operaciones usan `rpc.sendRequest` de NDK (el atajo `event.sign()` solo devuelve la firma y no permite verificar el evento completo) | Descartado: cliente propio en Python (probaría nuestro protocolo contra sí mismo) y bundle de NDK para el navegador (build nuevo, dependencias nuevas) |
+| D-13.2 | «Firmada» solo tras verificar: id, BIP-340, identidad declarada en `get_public_key`, plantilla y reto idénticos; una respuesta tardía nunca es éxito | Cumple «no aceptar una respuesta sin comprobar su contenido» |
+| D-13.3 | El cliente **no puede aprobar** y **no alcanza al firmante**: dos redes (`signer_net`, `client_net`) con el relay en ambas; sin credenciales, cookies ni rutas del firmante | La aprobación humana existe solo en el panel del firmante |
+| D-13.4 | Solo relays locales, Host/Origin/cabecera propia/token por sesión, sin CORS, CSP estricta, URI y claves solo en memoria, registro redactado | Aislamiento y no fuga de secretos |
+| D-13.5 | Fuera del producto: vive en `lab/manual/` (Compose de laboratorio); no está en `Dockerfile`, `compose.yaml` ni `.dockerignore` | Prueba estática |
+
+### D-14: plazo efectivo de firma en el firmante
+
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-14.1 | `sign_deadline = created_at + SIGNER_WINDOW_S + 1` (instante exclusivo desde el que la política rechaza) y `sign_expires_in_s` (floor, no sobreestima) en `/api/requests`, solo en firmas pendientes. Solo lectura: no cambia política, revalidación, límites ni autorización | La política acepta mientras `int(ahora) − created_at ≤ ventana` |
+| D-14.2 | La tarjeta muestra «Plazo efectivo para firmar» = el menor entre ventana y aprobación, ambos datos y, al vencer, «Ya no puede firmarse» con el botón rotulado «Aprobar (ya no firmará)». **El botón no se desactiva** | El servidor es la autoridad y la revalidación P-38 debe poder demostrarse (aprobar fuera de plazo → «Rechazada al firmar»); desactivarlo podría bloquear algo que el servidor aún acepta por redondeo de reloj. Descartado: desactivarlo |
+| D-14.3 | Demostración: ventana 45 s, TTL 120 s (variables `MANUAL_*` en el Compose de laboratorio); el producto conserva sus valores por defecto | No se amplía ninguna ventana del producto |
+
+### Limpieza Docker (decisión 5)
+La única fuga (`docker rm -f` en `test_docker_argon2_memory.py`) pasó a `docker rm -fv`. No se ejecutó `docker volume prune` ni se borró ningún volumen; los 55 volúmenes anónimos antiguos de pruebas anteriores quedan a la espera de su decisión.
+
+### Hallazgos verificados
+- 842 passed, 1 skipped con `E2E_DOCKER=1`; 818 passed, 25 skipped sin Docker (estable en 3 ejecuciones); regresión NDK real E1/E2/E3/E8 en PASS; `mypy --strict app` limpio; cobertura 99 %.
+- 14 de 14 mutaciones detectadas (verificador, servidor, contador).
+- Dos pruebas propias corregidas: `test_the_deployment_runs_a_single_process` (no contemplaba la advertencia del README sobre `--workers`) y la aprobación tardía real del navegador (ventana de 2 s intermitente → 5 s).
+
+### Supuestos y límites
+Cliente de laboratorio, no cliente general; Chrome y Docker Desktop en Windows; el cliente ve un `unauthorized` genérico (el motivo está en el firmante); la validación manual del propietario está **pendiente**.
+
+### Propuestas
+| # | Propuesta | Estado |
+|---|---|---|
+| P-43 | Listado de solo lectura de los volúmenes anónimos antiguos que contengan únicamente `nip46.db` con usuarios de prueba, para que el propietario decida su borrado | Pendiente (opcional) |
+| P-39, P-40 | Sin cambios | Pendientes (opcionales) |
+
+## Fase 1.0B, B6.1D cierre y preparación de B6.2 (2026-11-21)
+
+Detalle: [`phase-1.0B-B6.1D-closure.md`](phase-1.0B-B6.1D-closure.md) y [`phase-1.0B-B6.2-plan.md`](phase-1.0B-B6.2-plan.md). Solo documentación: sin cambios de código, sin conexiones externas, sin uso de la identidad de B4, sin commit ni push.
+
+### Decisión del propietario
+La validación local B6.1D-R3 **se conserva permanentemente** (no se reemplaza ni se elimina el cliente web local) y se añade una segunda validación de interoperabilidad real con Stacker News (B6.2). El propietario declaró **7 de 7 comprobaciones manuales en PASS**.
+
+### D-15: documentación de B6.1D y B6.2
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-15.1 | **Dos matrices independientes**: A (local, B6.1D: PASS) y B (externa, B6.2: pendiente). Los resultados externos se distinguen en conexión, solicitud recibida, aprobación humana, firma producida y verificada, respuesta publicada en el relay y autenticación aceptada por Stacker News | Evita presentar una prueba local o un `relay_ok` como validación real |
+| D-15.2 | **B6.2 no es PASS porque el firmante genere una firma**: exige además la observación del propietario en Stacker News y la persistencia al recargar | Lección de B4 (relay OK ≠ sesión aceptada) |
+| D-15.3 | El PASS manual local es una **declaración del propietario**; la auditoría sanitizada (`docs/evidence/b6.1d-r3-manual-audit-2026-11-21.txt`) es evidencia **corroborante**, no sustituta. La correspondencia de A1–A7 con los siete puntos del propietario es del agente y se marca como tal | No atribuir al propietario detalles que no transcribió |
+| D-15.4 | B6.2 se propone con `python -m uvicorn` en `127.0.0.1:8001` abierto como `localhost`, base `data/b62.db` y cuenta propia, con los límites de B4 (ventana ≤ 15 min, 1 firma, `SESSION_TTL_S`/`CONNECTION_TTL_S` 720, `MAX_REQUESTS` 30) | El `compose.yaml` no reenvía `CONNECTION_TTL_S`, `MAX_REQUESTS` ni `SIGNER_WINDOW_S`; la cookie es por host, no por puerto, y así no se pisa la demostración local |
+
+### Decisiones posteriores del propietario (2026-11-21) y precondiciones
+1. Ejecutar B6.2 en `localhost:8001` con Uvicorn, siempre que no afecte la base, las credenciales, los volúmenes ni las sesiones de B6.1D (**verificado**, plan §14). 2. El agente puede hacer consultas de **solo lectura** para diagnosticar; no puede aprobar solicitudes, firmar ni manipular credenciales (por eso **no** consulta `/api/audit`, que exige la contraseña de B6.2: la auditoría la exporta el propietario). 3. Se autoriza **preparar** una captura redactada del resultado en Stacker News. 4. La validación local B6.1D y sus herramientas se conservan íntegras. 5. La validación en Ubuntu queda **para el final**, tras completar B6.2, cerrar pruebas, documentar y publicar.
+Precondiciones comprobadas en local, sin red externa y sin código nuevo (plan §14): base, contraseña y JWT de B6.2 separados de los de la demostración; variables efectivas correctas; política compatible con una firma `kind` 27235; ventanas suficientes (B4: 13,4 s y 7,8 s de aprobación frente a 120 s); sin cambios de código ni permisos. Pendiente de verificar solo por el propietario: sincronización del reloj y el valor de `u` en `/login`.
+
+### Estado de la autorización
+**B6.2 NO está autorizada.** Faltan, entre otros, la confirmación del propietario de servicios, relay exacto, identidad, operaciones, duración, restricciones, destino y fecha de inicio (formulario de §13 del plan). No se autorizó: conexiones externas, uso de la identidad privada de B4, firmas reales, commit, push.
+
+### Supuestos no verificados
+- El destino `https://stacker.news/login` (B4 usó `/signup`) y que el flujo «Continue with Nostr» con bunker siga igual: lo confirma el propietario al abrirlo; si no, se detiene la prueba.
+- Que la comprobación de `Host` del firmante acepte `localhost:8001` (puerto distinto): se verifica en el arranque local previo, sin red externa.
+- La cuenta de Stacker News asociada a la identidad de B4 sigue existiendo.
+
+### Propuestas
+| # | Propuesta | Estado |
+|---|---|---|
+| P-43, P-39, P-40 | Sin cambios | Pendientes (opcionales) |
+
+## Fase 1.0B, B6.2: Docker Compose como entorno principal (2026-11-21)
+
+Detalle operativo: [`phase-1.0B-B6.2-plan.md`](phase-1.0B-B6.2-plan.md) §17. Etapa 1 de la transición: **solo configuración, documentación y pruebas**; sin cambios en `app/`, sin detener contenedores, sin migrar la base, sin reconstruir imágenes, sin commit ni push, sin T0 y sin conexiones externas.
+
+### D-16: Docker Compose es el entorno principal y obligatorio de ejecución del producto
+| # | Decisión | Por qué / alternativas |
+|---|---|---|
+| D-16.1 | **Docker Compose** es el entorno principal de desarrollo, validación e integración y de despliegue final. **Sustituye** la decisión del propietario del 2026-11-21 de ejecutar B6.2 con Uvicorn en `localhost:8001` (D-15.4) | Un único código fuente y **una única instancia activa** del producto, sin un laboratorio paralelo permanente. Alternativa descartada: Uvicorn en Windows como entorno principal (más rápido de editar, pero distinto del entregable y sin el aislamiento del contenedor) |
+| D-16.2 | `compose.yaml` reenvía `SIGNER_WINDOW_S`, `SECRET_TTL_S`, `CONNECTION_TTL_S`, `MAX_REQUESTS`, `MAX_PENDING` y `COOKIE_SECURE` (vacío = valor por defecto). **No** reenvía `RELAY_ALLOW_INSECURE` ni `ADMIN_PASSWORD_FILE` | Sin reenvío, Docker habría validado límites distintos de los del plan (1800 s y 60 solicitudes en lugar de 720 s y 30). `ws://` queda imposible en el producto en Docker; el archivo de contraseña no se monta |
+| D-16.3 | `deploy/b62.env` es un **perfil específico de validación**, no la configuración definitiva; se aplica con `--env-file` (sustituye al `.env` local) y no contiene secretos | Reproducibilidad de la prueba sin depender de un `.env` personal. Alternativa descartada: editar los valores por defecto del producto |
+| D-16.4 | La base se reutiliza con `deploy/import_admin_db.py`: origen de solo lectura, destino creado con `O_EXCL` (sin sobrescritura ni opción de forzar), copia con la API de respaldo de SQLite, comprobación de integridad, esquema, administradores, propietario (`uid 10001`) y permisos (`0600`/`0700`), SHA-256 del origen antes y después, sin red, sin leer ni imprimir credenciales | Evita exponer la contraseña (`ADMIN_PASSWORD` sería visible con `docker inspect`) y conserva el administrador. Alternativas descartadas: montaje *bind* de `data/` (permisos y bloqueo de SQLite distintos entre Windows y Ubuntu) y copia de archivo (no consistente) |
+| D-16.5 | Puerto **8001** durante B6.2; el 8000 será el predeterminado del producto después | Coherencia con el plan y con las cookies por nombre de host |
+| D-16.6 | La demostración B6.1D se detiene con `stop` (reversible; nunca `down`, `-v` ni `prune`) **solo cuando el propietario lo confirme en la etapa siguiente**; sus evidencias y las de la primera ventana de B6.2 se conservan | `docker volume prune` podría alcanzar volúmenes ajenos (`magento246_appdata`) |
+| D-16.7 | Antes de T0 se comprueban, solo en lectura, los valores efectivos y de seguridad **dentro** del contenedor, la ausencia de sockets salientes y de eventos del relay, y el reloj del contenedor | El arranque no abre conexiones externas por construcción (el relay solo se contacta desde `runtime.start()` por la API autenticada), y además se verifica |
+
+### Supuestos no verificados (D-16)
+- Que el contenedor alcance el relay público con TLS (`X25519`) desde Docker Desktop: **no verificable sin red externa**; el propietario no autorizó una prueba de conectividad previa.
+- Que la imagen que se use coincida con el código actual de `app/`: se comprobará por hash; si difiere, la reconstrucción exige autorización (contacta Docker Hub y PyPI).
+- Que el reloj de la VM de Docker coincida con el de Windows: se comprueba antes de T0.
+- Que la validación en Ubuntu reproduzca los mismos resultados: pendiente (el volumen con nombre, el digest multiarquitectura y los comandos en bash están previstos).
+
+### Resultado de esta etapa (automatizado, no es validación de B6.2)
+`pytest -m "not e2e"`: 808 passed, 1 skipped, 50 deselected; E2E Docker nueva (`tests/e2e/test_docker_b62_profile.py`, con la imagen local existente, sin construir ni descargar): 1 passed. `mypy` no está instalado en el entorno (P-30): **no se ejecutó**. No se ejecutaron `tests/e2e/test_docker_persistence.py`, `test_docker_argon2_memory.py` ni `test_docker_ndk.py` (construyen imágenes: requieren acceso a Docker Hub o PyPI, sin autorizar).
+
+| # | Propuesta | Estado |
+|---|---|---|
+| P-44 | Reconstruir la imagen del producto desde el árbol actual si el hash de `app/` difiere de la imagen local | Pendiente de autorización (acceso a Docker Hub y PyPI) |
+| P-45 | Fijar `PYTHON_IMAGE` por digest multiarquitectura (D-6) para la entrega final y la validación en Ubuntu | Pendiente de decisión |
+| P-46 | Pasar el puerto predeterminado del producto a 8000 y retirar la demostración B6.1D tras B6.2 | Pendiente (después de B6.2) |
+
+## Fase 1.0B: modo continuo del firmante y trazabilidad de IA (2026-11-22)
+
+Detalle de las interacciones: `docs/ai-log.md`, entradas 42 a 47. **Requerimiento del propietario (definitivo):** que el evaluador pueda usar el firmante NIP-46 **desde la interfaz web**, sin comandos de terminal para abrir ventanas de trabajo ni para gestionar sesiones, conexiones o aprobaciones (la terminal solo sirve para la configuración inicial y el arranque de Docker). **Se mantiene la aprobación humana individual de cada `connect` y de cada `sign_event`, incluido `kind 27235`. No existe ni existirá firma automática, concesión `auto_sign` ni aprobación implícita.** Todas las operaciones del evaluador (crear o importar identidad, iniciar y detener el firmante, emitir la URI bunker, aprobar o rechazar) **ya existían en la interfaz web**; lo que obligaba a repetir pasos eran los límites automáticos del firmante.
+
+### D-17: decisiones aprobadas por el propietario
+| # | Decisión | Estado |
+|---|---|---|
+| D-17.1 | `SIGNER_MODE=continuous` es el valor **predeterminado**, de forma coherente en `Settings()`, `Settings.from_env()` y Docker Compose | **Aprobada e implementada** (Paso 1) |
+| D-17.2 | `deploy/b62.env` fija explícitamente `SIGNER_MODE=supervised`; el modo `supervised` conserva su comportamiento y sus límites (`MAX_SIGNATURES=1`, `SESSION_TTL_S`, `MAX_REQUESTS`, sin reintentos) | **Aprobada e implementada** (Pasos 1 y 2; sin regresiones) |
+| D-17.3 | **Sin firma automática**: se retiró la propuesta de concesiones por conexión y la variable `AUTO_SIGN_PER_HOUR` (corrección de alcance del propietario) | **Aprobada e implementada** (Paso 1b; una prueba garantiza que no existe ningún campo ni variable de firma automática) |
+| D-17.4 | Plazos por defecto del modo continuo: `SECRET_TTL_S=300`, `CONNECTION_TTL_S=28800`, `APPROVAL_TTL_S=300` (supervisado: 600, 1800 y 120); una variable explícita siempre los reemplaza | **Aprobada e implementada** (configuración) |
+| D-17.5 | Ciclo de vida continuo: el runtime conserva clave de transporte, conexiones y registros anti-replay (acotados en tamaño y vigencia); sin parada por `SESSION_TTL_S`; un fallo **recuperable** del relay conserva las conexiones; detención manual o cualquier otro fin las revoca y limpia el estado; los retos firmados se recuerdan tras una detención manual mientras no cambie la identidad (cambiarla lo descarta todo); reiniciar el proceso no recupera nada | **Aprobada e implementada** (Paso 2) |
+| D-17.6 | **Opción A**: en modo continuo **no hay tope total de firmas por sesión** (cada firma exige aprobación humana). `MAX_REQUESTS`, `MAX_SIGNATURES` y `SESSION_TTL_S` solo se aplicarán en supervisado, **en el mismo paso** en que estén implementados y probados sus sustitutos: `REQUESTS_PER_MIN=30` por conexión y un límite global de 120 solicitudes por minuto, ambos sin detener el firmante ni revocar | **Aprobada e implementada** (Componente 3, 2026-11-22): `REQUESTS_PER_MIN` por conexión (ventana móvil de 60 s, solo clientes ACTIVOS identificados por la firma) y 120 globales por minuto (antes de verificar la firma o descifrar, a todo mensaje); al superarlos se descarta sin detener ni revocar; `MAX_REQUESTS`, `MAX_SIGNATURES` y `SESSION_TTL_S` solo rigen en supervisado |
+| D-17.7 | Reconexión automática acotada al relay, solo en modo continuo, con esperas de 2, 5, 10, 20 y 40 s, conservando conexiones, clave de transporte y registros anti-replay; sin reconexión tras detención manual ni ante errores permanentes (AUTH, suscripción cerrada, configuración TLS); un supervisor único en `SignerRuntime` | **Aprobada e implementada** (Componente 2): supervisor único en `SignerRuntime`, transporte nuevo por intento, 5 intentos con esperas de 2, 5, 10, 20 y 40 s, `FAILED` con `reconexion_agotada` y conexiones conservadas |
+| D-17.8 | Revocación individual de conexiones con identificadores opacos y aleatorios (`DELETE /api/connections/{id}`, JWT y CSRF, 404 si el id no es del runtime activo) y botón «Revocar» en la interfaz. **La renovación de conexiones queda fuera de alcance**: al caducar, se empareja de nuevo desde la interfaz | **Aprobada e implementada** (Componente 1): `DELETE /api/connections/{id}` con 200, 404, 409 y 422, cancelación de pendientes, auditoría `connection_revoked` y botón «Revocar» |
+| D-17.9 | No se persisten claves privadas ni conexiones: reiniciar el proceso exige volver a cargar la identidad (debe quedar documentado) | **Aprobada**; documentación en el Paso 6 |
+| D-17.10 | La experiencia del evaluador por la interfaz web (identidad temporal como camino principal del README, importación como alternativa) y Docker como mecanismo principal | **Aprobada**; README en el Paso 6 |
+| D-17.11 | La validación real con Stacker News se hará con la **versión final** en Docker y **no** con la imagen `manual-b61d` (que queda obsoleta para ello) | **Aprobada** |
+| D-17.12 | **Trazabilidad de IA**: las transcripciones se exportan al cierre de cada Paso o bloque autorizado (no solo de cada fase) y se verifican antes de cada commit y de la publicación final con un **comando explícito** (`python tools/ai_sessions.py check`); **no se instalan hooks de Git**. Se modificaron de forma mínima y solo documental `AGENTS.md` §9 y `CLAUDE.md` | **Aprobada e implementada** (interacción 47) |
+
+### Estado real de la implementación (2026-11-22)
+| Bloque | Estado |
+|---|---|
+| Paso 1 (configuración) y Paso 1b (retiro de `AUTO_SIGN_PER_HOUR`) | **Completos y probados** |
+| Paso 2 (estado y ciclo de vida) | **Completo y probado** (40 pruebas nuevas y 10 mutaciones detectadas) |
+| Pasos 3 a 5, componente 1 (revocación individual) | **Completo y probado** |
+| Pasos 3 a 5, componente 2 (reconexión) | **Completo y probado** (con relays y esperas simulados y un E2E de navegador con un relay local que se mata y se reinicia) |
+| Pasos 3 a 5, componente 3 (límites de frecuencia y continuidad) | **Completo y probado** |
+| Paso 6 (reconstrucción y validación local de Docker, ampliación de autorización) | **Completo y probado en local** (no es validación real con Stacker News): imagen `nostr-nip46-remote-signer:d17-continuous`, perfil `deploy/continuous.env`, contenedor local sustituido conservando el volumen y la imagen `manual-b61d` (vía de recuperación: `deploy/b62.env`); detalle y evidencias en la entrada 48 de `docs/ai-log.md` |
+| README y perfiles de despliegue para el evaluador | **Implementados** el 2026-11-22 (D-18: `deploy/demo.env` y «Inicio rápido» del README); **pendiente** la prueba de clon limpio |
+
+### Propuestas y decisiones de implementación de la IA **sin aprobación expresa** (siguen pendientes)
+| # | Propuesta | Estado |
+|---|---|---|
+| P-47 | En modo continuo, un cliente **revocado o caducado** podría emparejarse de nuevo con su **misma** clave de cliente (con una URI nueva y la aprobación humana de siempre; nunca recuperaría automáticamente la autorización anterior). El propietario considera aceptable ese criterio, pero **no** la ha aprobado formalmente | **Pendiente; NO implementada** (la regla estaba escrita en el código del componente 1 y se **retiró**; hoy un cliente revocado o caducado solo se empareja con una clave de cliente nueva; una prueba lo fija) |
+| P-48 | Control contra abuso para remitentes **no autorizados** o desconocidos (límite propio de 10 solicitudes por minuto por remitente, con almacenamiento acotado), además del global de 120 y el de 30 por conexión | **Pendiente; NO implementada**. Cubierto en parte por el límite global (antes de descifrar y a todo mensaje, válido o no). **Riesgo conocido**: sin ella, un remitente desconocido puede agotar el presupuesto global y retrasar a los clientes legítimos hasta que avance la ventana (no revoca ni detiene nada; hay una prueba que lo documenta) |
+| P-49 | Mostrar en el panel el estado de reconexión («Reconectando, intento n de 5») y el motivo de agotamiento | **Parcial**: implementada solo la parte necesaria y ya autorizada (estado «Reconectando» con «Detener» habilitado y aviso al agotar los intentos); el contador «intento n de 5» **no** se implementó |
+
+### Supuestos no verificados (D-17)
+- Que Stacker News reutilice su clave de cliente NIP-46 en inicios de sesión posteriores; si crea una nueva cada vez, cada inicio de sesión exigirá emitir otra URI y aprobar otro `connect`. Solo se observó **un** inicio de sesión real (B4).
+- Que el contenedor alcance el relay público con TLS desde Docker Desktop (no verificable sin red externa; no se autorizó una prueba previa).
+- Que el reloj de la máquina virtual de Docker coincida con el de Windows (subpaso 3.5, no ejecutado).
+- Nada de D-17 ha sido validado contra Stacker News: **las pruebas son automatizadas (con dobles y relays locales), no validación real**.
+
+## Fase 1.0B: perfil de demostración para evaluadores (2026-11-22)
+
+### D-18: perfil `deploy/demo.env` con credenciales de demostración públicas (excepción acotada a D-9)
+Autorizada expresamente por el propietario el 2026-11-22. El proyecto será evaluado por terceros a partir de un repositorio público y el evaluador debe poder levantarlo con Docker Compose y usarlo **completamente desde la interfaz web**, sin PowerShell, sin scripts auxiliares y sin un asistente de IA. D-9 (sin contraseña por defecto) obligaba a definir `ADMIN_PASSWORD` por la terminal antes del primer arranque, y sin ella el contenedor se detenía y se reiniciaba en bucle.
+
+| # | Decisión | Estado |
+|---|---|---|
+| D-18.1 | Se versiona `deploy/demo.env` con `ADMIN_USERNAME=evaluador` y una contraseña de **demostración pública a propósito** (27 caracteres, generada con `secrets`, **sin relación** con ninguna contraseña personal, de otro servicio ni con la del entorno B6.2; cumple la política de la aplicación). Es la **única** excepción a D-9 y **no** a `AGENTS.md` §7 en sus demás reglas: no hay claves privadas Nostr, JWT, tokens ni secretos reales en el repositorio | **Aprobada e implementada** |
+| D-18.2 | **La excepción se limita al perfil.** El código no tiene ningún valor por defecto de contraseña (`Settings`, `compose.yaml`, `.env.example` y los demás perfiles siguen sin contraseña) y el perfil solo se activa cuando el evaluador lo selecciona con `--env-file deploy/demo.env`. Una prueba comprueba que la contraseña no aparece en ningún otro archivo de configuración | **Aprobada e implementada** |
+| D-18.3 | Contenido del perfil: imagen `nostr-nip46-remote-signer:evaluation` (etiqueta propia, no pisa `dev`, `manual-b61d` ni `d17-continuous`), `APP_PORT=8000` (publicado solo en `127.0.0.1`), `JWT_TTL_S=3600` (máximo permitido, para no pedir el ingreso cada 15 minutos con un firmante continuo), `SIGNER_MODE=continuous`, relay `wss://relay.primal.net`, **`RELAY_TLS_GROUPS=X25519`** (el mismo ajuste que usaron B4 y la validación continua para el relay real; no estaba en la lista de la autorización, se añadió por necesidad técnica) y origen `https://stacker.news` | **Aprobada e implementada** |
+| D-18.4 | **Aislamiento:** el comando documentado usa el proyecto Docker propio `nip46-evaluacion` (volumen `nip46-evaluacion_app_data`), distinto del de B6.2 (`nostr-nip46-remote-signer`, volumen `nostr-nip46-remote-signer_app_data`), que no se toca | **Aprobada e implementada** |
+| D-18.5 | **Restablecer desde cero** (`down -v`) se documenta solo como operación **destructiva y excepcional**, con proyecto y volumen identificados explícitamente, nunca como paso rutinario | **Aprobada e implementada** |
+| D-18.6 | Advertencias obligatorias (README y el propio perfil): solo para evaluación local; no usar en producción; no exponer el puerto a otras máquinas ni a Internet con estas credenciales; usar otra contraseña en cualquier otro despliegue | **Aprobada e implementada** |
+| D-18.7 | La clave privada Nostr sigue viviendo solo en memoria (D-3): tras reiniciar el contenedor el evaluador crea o importa la identidad de nuevo. No se usa la identidad de B4 como identidad del evaluador. **No se persisten claves** | **Aprobada** (sin cambios de código) |
+
+**Riesgos y mitigaciones.** (1) *Credencial pública:* el puerto se publica solo en loopback, la aplicación comprueba `Host` y el `Origin` del login, la cookie es `HttpOnly` + `SameSite=Strict`, hay límite de intentos (5 por 5 minutos) y, sobre todo, **cada `connect` y cada `sign_event` siguen exigiendo la aprobación humana individual en la interfaz**: conocer la contraseña no permite firmar sin una persona. (2) *Uso fuera de la demostración:* avisos en el perfil, el README y `.env.example`. (3) *Volumen preexistente:* si ya existe un volumen del proyecto, la contraseña del perfil se **ignora** (D-9: no se sobrescribe la cuenta existente). **No se modificó código funcional.**
+
+**Supuestos no verificados (D-18).** (1) Que el flujo de Stacker News descrito en el README (`/signup` o `/login?type=nostr` → «Continue with Nostr» → *bunker*) siga siendo el vigente: procede de la observación de B4 y del análisis del código de Stacker News, no de una prueba nueva. (2) Que `docker compose up --build` reproduzca la imagen en un clon limpio: depende de que el repositorio publicado incluya todos los archivos del producto (hoy hay archivos sin rastrear; ver el informe de la tarea) y se comprobará en la prueba de clon limpio, **pendiente**. (3) Nada de D-18 se ha validado contra Stacker News.

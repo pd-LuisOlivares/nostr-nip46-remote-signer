@@ -15,7 +15,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
-from app.security.operator_auth import FAILURE_WINDOW_S, AuthError, OperatorAuth, Session
+from app.security.operator_auth import AuthError, OperatorAuth, Session
 
 COOKIE_NAME: Final = "nip46_session"
 CSRF_HEADER: Final = "x-csrf-token"
@@ -55,14 +55,17 @@ class JwtGuard:
 
     async def __call__(self, request: Request) -> Session:
         header = request.headers.get("authorization")
+        cookie = request.cookies.get(COOKIE_NAME)
+        if header is None and cookie is None:
+            raise self._reject(401, "no autorizado")  # sin credenciales (p. ej. la sonda de sesion de la interfaz): 401, pero NO cuenta como fallo (P-35)
         from_cookie = header is None
         match = _BEARER.match(header) if header is not None else None
-        token = request.cookies.get(COOKIE_NAME) if from_cookie else (match.group(1) if match else None)
+        token = cookie if from_cookie else (match.group(1) if match else None)
         try:
             session = self.auth.verify(token)
         except AuthError:
-            if self.auth.limited():  # un token valido sigue funcionando; solo se frena a quien falla repetidamente
-                raise HTTPException(status_code=429, detail="demasiados intentos", headers={"Retry-After": str(int(FAILURE_WINDOW_S))}) from None
+            if self.auth.token_limited():  # un token valido nunca se frena; solo a quien envia tokens invalidos repetidamente
+                raise HTTPException(status_code=429, detail="demasiados intentos", headers={"Retry-After": str(self.auth.token_retry_after_s())}) from None
             raise self._reject(401, "no autorizado") from None
         if from_cookie and request.method not in _SAFE_METHODS:
             sent = request.headers.get(CSRF_HEADER, "")
