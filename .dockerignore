@@ -56,3 +56,11 @@ web/
 Dockerfile
 compose.yaml
 .dockerignore
+
+# Contexto de construccion minimo (defensa en profundidad): la imagen solo copia pyproject.toml, README.md, constraints.txt y app/ (ver Dockerfile).
+# Asi ni los perfiles de deploy/ (con la credencial de demostracion publica), ni las transcripciones de docs/, ni el laboratorio, las pruebas o las herramientas entran en el contexto.
+deploy/
+docs/
+lab/
+tests/
+tools/

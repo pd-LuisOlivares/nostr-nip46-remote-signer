@@ -386,3 +386,10 @@ def test_the_lab_client_docs_point_to_the_lab_signer_port_not_to_the_evaluation_
     assert "127.0.0.1:18000" in (ROOT / "lab" / "manual" / "client_web" / "index.html").read_text(encoding="utf-8")
     assert "127.0.0.1:8000" not in MANUAL_COMPOSE.read_text(encoding="utf-8").split("services:")[0]  # el encabezado del compose de laboratorio ya no anuncia el 8000
     assert '"18000"' in (ROOT / "lab" / "manual" / "check_live.py").read_text(encoding="utf-8")
+
+
+def test_the_docker_build_context_excludes_profiles_docs_lab_tests_and_tools_and_the_image_copies_only_what_it_needs() -> None:
+    ignored = {line.strip() for line in (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines() if line.strip() and not line.startswith("#")}
+    assert {"deploy/", "docs/", "lab/", "tests/", "tools/", "**/.env", "**/*.db", "**/*.key"} <= ignored  # la credencial de demostracion y las transcripciones no viajan al daemon
+    copies = [line.split(maxsplit=1)[1] for line in (ROOT / "Dockerfile").read_text(encoding="utf-8").splitlines() if line.startswith("COPY ") and "--from" not in line]
+    assert copies == ["pyproject.toml README.md constraints.txt ./", "app ./app"]  # nada de lo excluido se copia a la imagen: el Dockerfile y .dockerignore son coherentes
