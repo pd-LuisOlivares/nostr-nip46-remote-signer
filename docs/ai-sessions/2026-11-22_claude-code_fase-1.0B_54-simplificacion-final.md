@@ -9,7 +9,7 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T13:01:11.805Z |
+| Hasta (UTC) | 2026-11-22T13:03:32.487Z |
 | Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión. Se omiten 8 notificaciones automáticas de tareas en segundo plano y 1 resumen(es) de continuación generado(s) por la compactación del contexto: no son mensajes del propietario ni del asistente.
@@ -513,6 +513,97 @@ Todavía no terminó; el monitor me avisará.
 
 <!-- 2026-11-22T13:01:02.330Z -->
 Exportadas las transcripciones (parciales, redactadas). Verifico con `scan`, `check` y la guarda de la contraseña de B6.2.
+
+> *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+<!-- 2026-11-22T13:01:14.157Z -->
+Trazabilidad OK y sin hallazgos. Hago el commit local de documentación y trazabilidad.
+
+> *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+<!-- 2026-11-22T13:01:37.302Z -->
+**Veredicto: LISTO PARA PUSH (técnicamente), a la espera de tu autorización. No hice push, pull request, rebase ni force push.** `origin/main` sigue en `70b4481` y hay 9 commits locales por delante; el último es `1a44810`. El árbol de trabajo está limpio.
+
+El mensaje con las fases de la simplificación llegó **truncado** («El README debe…»). Apliqué los 13 puntos de README que enumerabas, pero conviene que revises si faltaba algo en la parte cortada.
+
+## Instalación oficial
+- **Instalación única:** `docker compose --env-file deploy/demo.env -p nip46-evaluacion up --build -d` abre el firmante en `http://127.0.0.1:8000` con el usuario `evaluador`. Corre en modo continuo y cada `connect` y `sign_event` sigue requiriendo aprobación manual.
+- **README:** reescrito con los 13 pasos y con el procedimiento seguro para el caso de una base con otro administrador.
+- **Retirado del árbol:** `deploy/b62.env`, `deploy/continuous.env`, `deploy/import_admin_db.py` y `tests/e2e/test_docker_b62_profile.py`.
+  - Siguen en el historial (`git show 70b4481:deploy/b62.env`).
+  - Motivos en `docs/decisions.md` D-20.
+- **Se conserva:** el código (incluido el modo `supervised`), el cliente de laboratorio, la trazabilidad de IA, las decisiones y la evidencia de la validación real.
+- **Cliente de laboratorio:** aislado y opcional, sin competir por el 8000. Mantiene su propio firmante porque el oficial solo admite relays `wss://` y el relay local es `ws://`.
+- **`app/`:** sin cambios.
+
+## Verificación obligatoria de `evaluador`
+Ejecutada en Docker aislado (puertos 18095–18097, recursos nuevos, build sin caché). Resultado: **36 comprobaciones, 0 fallidas**, tanto sobre el índice previo al commit como desde un clon limpio del commit.
+
+| Comprobación | Resultado |
+|---|---|
+| Base y volumen | `/data/nip46.db`, permisos `0600`, volumen del proyecto aislado (no el de B6.2) |
+| Usuario | 1 fila: `evaluador`, activo, hash Argon2id (`m=65536,t=3,p=4`), sin la contraseña dentro |
+| Login con las credenciales del README | HTTP 200 |
+| Contraseña errónea o usuario inexistente | HTTP 401 |
+| Reinicio del contenedor aislado | misma fila, login 200 |
+| Idempotencia | repetir `up` no recrea nada; recrear con otra `ADMIN_PASSWORD` en el entorno deja la fila idéntica y esa otra contraseña da 401 |
+| Base con otro administrador | arranca sin error, **no** crea `evaluador` (401), la fila preexistente queda idéntica y sigue entrando |
+| Procedimiento documentado (`-p nip46-evaluacion-2`, otro puerto) | `evaluador` se crea y entra (200); la base anterior queda intacta |
+
+No encontré defectos de aprovisionamiento. El esquema admite un solo administrador (D-9), así que una base con otro administrador nunca recibirá `evaluador`. No hay restablecimiento automático de contraseñas. Agregué pruebas de regresión para todo esto en `tests/test_deploy_profile.py`.
+
+Evidencia en `docs/evidence/evaluador-instalacion-oficial-2026-11-22.md`. La herramienta reutilizable es `tools/validate_official_install.py`.
+
+## Pruebas
+- **Suite completa del árbol:** 1033 passed, 26 skipped, 0 failed. Sin e2e: 1006 passed, 1 skipped.
+- **Clon limpio del commit:** `pip check` sin errores y 1025 passed, 34 skipped, 0 failed. Los omitidos son 8 vectores NIP-44 que el clon no trae, 1 prueba de permisos POSIX y 25 de Docker.
+- **Higiene:** `git diff --check` limpio y `git status` limpio. Todo lo que cree en Docker y en `%TEMP%` quedó eliminado.
+- **Qué no es esto:** son pruebas automatizadas y locales. No se contactó con Stacker News ni con relays y el firmante no se inició.
+
+## Seguridad
+- La contraseña de `b62-admin` no está en el árbol ni en la historia (17 commits).
+- Sin patrones de secretos en lo añadido. Los avisos del escáner eran contraseñas de juguete de las pruebas.
+- **B6.2 intacto:** mismo contenedor, mismo arranque (`04:47:20Z`), 0 reinicios, sano. No toqué su base, volumen ni credenciales.
+
+## Trazabilidad
+Las transcripciones 50–54 son **parciales** porque la sesión sigue abierta. `check` dio «OK» justo antes del commit y volverá a marcar la 54 como desactualizada con cada mensaje nuevo. Hay que reexportarlas al cerrar la sesión.
+
+## Decisiones tuyas
+1. **Push:** autorizarlo o no.
+2. **B6.2:** detener su firmante y cambiar la contraseña de `b62-admin`. Está en el historial local de esta sesión, fuera del repositorio. También decidir qué hacer con su contenedor, volumen e imagen.
+3. **Historia pública:** el correo de autoría (M-1) y la publicación de las transcripciones (B-8).
+4. **Pendientes de siempre:** P-47 y P-48, dependencias sin hashes y base de imagen mutable (D-6). También la evidencia técnica de la validación real, que solo tú puedes aportar.
+
+## Prompt del propietario (2026-11-22T13:03:09.118Z)
+
+# PUBLICACIÓN FINAL — NIP-46
+
+Autorizo realizar el push de los 9 commits locales pendientes hasta `1a44810` a `origin/main`, únicamente si se cumplen todas las condiciones siguientes.
+
+1. Verifica que `HEAD` sea `1a44810` o un commit posterior creado exclusivamente para cerrar documentación y trazabilidad.
+2. Confirma que el árbol de trabajo esté limpio y que el remoto no haya avanzado.
+3. Revisa el diff acumulado y los archivos incluidos para confirmar ausencia de secretos privados.
+4. Comprueba que la instalación oficial del README utiliza `evaluador`, puerto 8000 y SQLite persistente.
+5. Conserva las evidencias de las 36 validaciones del administrador y del clon limpio.
+6. Actualiza las transcripciones de IA hasta donde permita la sesión actual, redactando secretos. Mantén PARCIAL cuando corresponda y no declares completa una sesión abierta.
+7. Ejecuta `python tools/ai_sessions.py check` y `git diff --check`.
+8. Si las verificaciones pasan, realiza un push normal a `origin/main`, sin force push.
+9. Confirma que `HEAD` y `origin/main` coinciden.
+
+No implementes nuevas funcionalidades, no modifiques B6.2 y no alteres bases de datos ni volúmenes existentes.
+
+Si detectas secretos, conflictos de Git o fallas de integridad, detente sin hacer push.
+
+Entrega el SHA publicado, el resultado de las verificaciones y cualquier pendiente de trazabilidad.
+
+<!-- 2026-11-22T13:03:15.171Z -->
+Verifico primero las condiciones (HEAD, árbol limpio, remoto sin avanzar, secretos, README) y no hago push hasta que todas pasen.
+
+> *[Llamada a herramienta: Bash]*
 
 > *[Llamada a herramienta: Bash]*
 
