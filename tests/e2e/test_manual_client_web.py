@@ -3,6 +3,8 @@
 
 IMPORTANTE (qué es cada cosa): los clics de «Aprobar» de estas pruebas los hace PLAYWRIGHT: son aprobaciones AUTOMATIZADAS de prueba, distintas de las que realiza el
 propietario en la validación manual (que nadie automatiza ni sustituye). Credenciales ficticias y aleatorias; proyecto, imagen y puertos propios; sin Internet.
+El firmante se ejecuta aquí en modo `supervised` de forma EXPLÍCITA (D-19): son las expectativas de B6.1D-R3 (tope de firmas, sin reconexión silenciosa); el modo `continuous`
+por defecto del producto se verifica con NDK real en test_docker_ndk.py y con un relay local en test_docker_continuous.py.
 Parámetros de ESTAS pruebas (más cortos que los de la demostración: ventana 10 s, TTL de aprobación 25 s, el cliente deja de esperar a los 14 s).
 """
 import http.client
@@ -47,7 +49,8 @@ class Stack:
     def env(self) -> dict[str, str]:
         return {**os.environ, "APP_PORT": str(self.app_port), "APP_IMAGE": IMAGE, "ADMIN_USERNAME": USER, "ADMIN_PASSWORD": self.password,
                 "MANUAL_RELAY_PORT": str(self.relay_port), "MANUAL_CLIENT_PORT": str(self.client_port), "MANUAL_SIGNER_WINDOW_S": str(WINDOW_S),
-                "MANUAL_APPROVAL_TTL_S": str(TTL_S), "MANUAL_CLIENT_OP_TIMEOUT_MS": str(CLIENT_TIMEOUT_MS)}
+                "MANUAL_APPROVAL_TTL_S": str(TTL_S), "MANUAL_CLIENT_OP_TIMEOUT_MS": str(CLIENT_TIMEOUT_MS),
+                "SIGNER_MODE": "supervised"}  # D-17/D-19: estas pruebas verifican la semantica SUPERVISADA (tope de firmas «N de M», sesion que termina sin reconectar); el modo continuo con NDK real y relay local lo cubren test_docker_ndk.py y test_docker_continuous.py
 
     def dc(self, *args: str, timeout: int = 400) -> subprocess.CompletedProcess[str]:
         return subprocess.run(["docker", "compose", "--env-file", str(self.empty_env), "-p", self.project, "-f", "compose.yaml", "-f", "lab/manual/compose.manual.yaml", *args],
@@ -215,7 +218,7 @@ def test_full_nip46_flow_through_two_browser_tabs_with_the_real_ndk_client(brows
     expect(signed.locator("ul.checks li.fail")).to_have_count(0)
     expect(signed).to_contain_text("Firma recibida y VERIFICADA")
     expect(a.locator("#recent-list")).to_contain_text("Firmada correctamente")
-    expect(a.locator("#signer-signatures")).to_contain_text("1 (cada una aprobada por una persona)")
+    expect(a.locator("#signer-signatures")).to_contain_text("1 de 2")  # supervisado (fijado en Stack.env): una firma de las 2 permitidas
 
     audit = audit_rows(a)  # la decision HUMANA de esa solicitud precede a la firma
     sign_seq = next(seq for seq, event, _ in audit if event == "sign_ok")
