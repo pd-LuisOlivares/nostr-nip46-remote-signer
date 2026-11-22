@@ -2,3 +2,4 @@ tests/nostr/fixtures/bip340_official_test_vectors.csv -text whitespace=cr-at-eol
 
 # Las transcripciones de IA son literales (citan prompts del propietario con saltos de línea de Markdown al final): no se tratan como error los espacios finales.
 docs/ai-sessions/*.md whitespace=-trailing-space
+docs/chatgpt-decisions-synthesis-2026-11-22.md whitespace=-trailing-space

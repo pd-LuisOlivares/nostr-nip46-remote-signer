@@ -33,7 +33,7 @@ from typing import Any, Final
 
 AGENT: Final = "Claude Code (extensión de VS Code"
 STATUS_COMPLETE: Final = "COMPLETA (contenido visible)"
-STATUS_PARTIAL: Final = "PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla)"
+STATUS_PARTIAL: Final = "PARCIAL (la sesión de origen permanecía abierta al momento de la exportación)"
 DEFAULT_OPEN_MINUTES: Final = 120  # una sesión cuyo último registro es más reciente que esto se considera ABIERTA
 
 # --------------------------------------------------------------------------------------------------------- limpieza de mensajes

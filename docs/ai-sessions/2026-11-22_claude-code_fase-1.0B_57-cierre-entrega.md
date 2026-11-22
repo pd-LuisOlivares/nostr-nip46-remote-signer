@@ -9,8 +9,8 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T13:50:57.375Z |
-| Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
+| Hasta (UTC) | 2026-11-22T13:51:23.138Z |
+| Estado | PARCIAL (la sesión de origen permanecía abierta al momento de la exportación) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión.
 
@@ -90,3 +90,37 @@ No enviar el correo a Hacienda. Ese envío lo realizaremos por separado.
 Ahora registro la interacción 57 y ejecuto todo el flujo (exportar, verificar con compuertas reales, commit, push y comprobación de sincronía) en una sola pasada.
 
 > *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+<!-- 2026-11-22T13:51:23.138Z -->
+## Cierre de entrega
+
+**SHA publicado en GitHub:** `e8270f0bbf276dc2203eeab2d8a41afa373ab961`.
+
+El push fue normal, sin force: `a2197bf..e8270f0` en `origin/main`. `HEAD`, `origin/main` y el remoto (`git ls-remote`) coinciden en ese SHA, con 0 commits de diferencia y el árbol de trabajo limpio. El commit es solo documental: `docs/ai-log.md`, la transcripción 56, la transcripción 57 nueva y el manifiesto.
+
+### Verificaciones, todas satisfactorias
+- **`python tools/ai_sessions.py check`:** «trazabilidad OK». Lo ejecuté justo después de exportar y antes del commit.
+- **Pruebas documentales:** 81 passed.
+- **Enlaces relativos:** los del README y los del `ai-log` están completos, sin rotos ni inexistentes.
+- **Secretos:** el escaneo no encontró nada, y la contraseña de B6.2 no aparece en el árbol ni en la historia (21 commits).
+- **`git diff --check`:** limpio, tanto sobre lo que iba a commitear como sobre el rango completo hasta `origin/main`.
+- **Cambios funcionales:** ninguno. No toqué código, pruebas, dependencias ni Docker.
+- **B6.2:** sin tocar; sigue sano, con el mismo arranque (`04:47:20Z`) y 0 reinicios. No hubo conexiones con Stacker News ni con relays.
+
+### Estado real de las transcripciones
+- **Las transcripciones 40 a 57 siguen PARCIAL, y no forcé ni declaré completa ninguna.** El motivo es que la sesión sigue activa, no una pérdida de mensajes.
+- Añadí a `docs/ai-log.md` una nota que explica esa diferencia. También registré la interacción 57 y exporté lo disponible, con la contraseña de B6.2 redactada.
+- Las conversaciones antiguas de ChatGPT siguen como «no recuperadas».
+- Cuando la sesión lleve más de 120 minutos sin actividad, el script de apoyo fuera del repo las pasará a «Completa» (donde la herramienta lo permita). El script está en `%USERPROFILE%\.nip46-trazabilidad\cerrar_trazabilidad.py`; ya probé sus modos de verificar y simular.
+
+### Riesgos residuales
+1. **Transcripciones PARCIAL:** lo que ocurra después de la última exportación (incluido este mensaje) no está en ellas. Reexportarlas requerirá un commit posterior con tu autorización.
+2. **Evidencia de Stacker News:** la autenticación real sigue observada solo por ti, sin captura ni comprobación de persistencia al recargar.
+3. **B6.2:** su contenedor sigue activo en tu máquina, con su contraseña en el historial local de la sesión. Conviene detenerlo y cambiar la contraseña antes de enviar.
+4. **Historia pública:** tu correo de autoría figura en ella.
+5. **ChatGPT:** las conversaciones de la Fase 0.1 nunca estarán en el repositorio.
+
+### ¿Está listo para enviar?
+**Sí, técnicamente.** El código y la instalación oficial están publicados y verificados, y la documentación es coherente. Lo que queda por conocer son los riesgos de arriba, sobre todo los puntos 2 y 3. No envié ningún correo; ese paso lo harán ustedes por separado.

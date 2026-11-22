@@ -115,7 +115,7 @@ Requiere decisión del propietario (cambia puertos y organización de `deploy/`)
 
 ## 9. Próximas acciones recomendadas
 1. Detener el firmante de B6.2, cambiar la contraseña de `b62-admin` y, si se quiere evidencia, repetir la prueba real con captura sanitizada de la auditoría (autorización nueva).
-2. Revisar este informe y los commits locales; decidir M-1 y B-8 antes de publicar más.
+2. Revisar este informe y los commits locales; decidir M-1 y B-8 antes de publicar más. *(Histórico de esa jornada; superado por la entrega congelada.)*
 3. Decidir la propuesta de §6 (puertos y organización de `deploy/`).
 4. Decidir P-47, P-48 y P-49.
 5. Valorar el digest de la imagen base y los hashes de dependencias (B-2).
@@ -127,7 +127,7 @@ Requiere decisión del propietario (cambia puertos y organización de `deploy/`)
 ## 11. Trazabilidad (Fase 5) y verificaciones finales
 
 - **`docs/ai-log.md`:** entradas 50 (PASS real confirmado por el propietario, restablecimiento de contraseña y cierre de jornada), 51 (consolidación y push de `70b4481`) y 52 (esta jornada); manifiesto con las interacciones 50 a 52.
-- **Transcripciones 50, 51 y 52: PARCIAL.** La sesión de origen (`97ea8763…`) sigue abierta, así que los archivos crecen y **deben reexportarse al cerrarla**; su cabecera indica hasta qué instante llegan. No son reconstrucciones. La contraseña administrativa de B6.2 se **redactó** al exportar y no aparece en ningún archivo del repositorio (comprobado con búsqueda literal y del fragmento final).
+- **Transcripciones 50, 51 y 52: PARCIAL.** La sesión de origen (`97ea8763…`) permanecía abierta al exportar; su cabecera indica hasta qué instante llegan (estado final en `docs/ai-log.md`, «Estado final de la trazabilidad»). No son reconstrucciones. La contraseña administrativa de B6.2 se **redactó** al exportar y no aparece en ningún archivo del repositorio (comprobado con búsqueda literal y del fragmento final).
 - **`python tools/ai_sessions.py check`:** ejecutado justo tras la exportación final (resultado en el informe de entrega). Como la sesión sigue abierta, vuelve a marcar desfase en cuanto se añade un mensaje nuevo; es el comportamiento esperado de una interacción parcial.
 - **Pruebas del árbol principal tras los cambios de documentación:** `python -m pytest` → **1037 passed, 27 skipped, 0 failed** (26 de Docker sin `E2E_DOCKER`, 1 de permisos POSIX); `tests/test_ai_traceability.py` y `tests/test_deploy_profile.py`: 78 passed; `git diff --check` limpio.
 - **Escaneo de secretos de los archivos modificados o nuevos:** sin contraseñas reales, claves privadas, JWT, cookies ni URI `bunker://`; los 3 avisos del escáner son marcadores `Read-Host` del README y el único hexadecimal de 64 caracteres es la clave **pública** de B4.

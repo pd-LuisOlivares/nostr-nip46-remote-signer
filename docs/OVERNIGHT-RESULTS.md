@@ -80,7 +80,7 @@ Clon desde el repositorio local en un directorio temporal, con los commits candi
 ## 8. Estado de trazabilidad
 
 - `docs/ai-log.md`: entrada **53** (esta jornada); manifiesto con la interacción 53.
-- Transcripciones **50 a 53: PARCIAL** (la sesión `97ea8763…` sigue abierta; deben reexportarse al cerrarla). La contraseña administrativa de B6.2 se redacta al exportar y no aparece en ningún archivo.
+- Transcripciones **50 a 53: PARCIAL** (la sesión `97ea8763…` permanecía abierta al exportar; estado final en `docs/ai-log.md`, «Estado final de la trazabilidad»). La contraseña administrativa de B6.2 se redacta al exportar y no aparece en ningún archivo.
 - `python tools/ai_sessions.py check`: «trazabilidad OK» tras la última exportación (se desfasa en cuanto se añade un mensaje).
 
 ## 9. Commits locales creados (sin push)
@@ -103,6 +103,6 @@ Clon desde el repositorio local en un directorio temporal, con los commits candi
 1. Leer [`HANDOFF.md`](HANDOFF.md), este archivo y [`NIGHTLY-REVIEW.md`](NIGHTLY-REVIEW.md); comprobar `git status`, `git log origin/main..HEAD`, `docker ps`.
 2. Revisar los commits locales: `git log --stat origin/main..HEAD`.
 3. Si todo es correcto y se autoriza: `git fetch origin && git push origin main` (no hay conflictos esperados: `origin/main` no avanzó).
-4. Antes de publicar más, reexportar las transcripciones (`python tools/ai_sessions.py export --history-dir <historial> ...` con las redacciones locales) y ejecutar `check` y `scan`.
+4. *(Superado: la trazabilidad quedó en su versión definitiva; ver `docs/ai-log.md`, «Estado final de la trazabilidad».)*
 5. Resolver los puntos del §10 por orden de riesgo (2, 3, 4, 5).
 6. Para probar el cliente de laboratorio: `docker compose --env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d` (contraseña inicial por entrada oculta; requiere las imágenes `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a`) y abrir `http://127.0.0.1:18000` (firmante) y `http://127.0.0.1:18080` (cliente).
