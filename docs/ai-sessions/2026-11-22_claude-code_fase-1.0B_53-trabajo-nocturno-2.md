@@ -9,7 +9,7 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T06:27:59.681Z |
+| Hasta (UTC) | 2026-11-22T06:28:23.690Z |
 | Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión.
@@ -304,3 +304,35 @@ Ahora el entregable final: `docs/OVERNIGHT-RESULTS.md`, actualización de `HANDO
 > *[Llamada a herramienta: Write — C:\Users\[REDACTADO:usuario-local]\AppData\Local\Temp\claude\b79ef0bdbf584b14\97ea8763-694e-4b53-8496-52b85c37bc64\scratchpad\entry53_handoff.py]*
 
 > *[Llamada a herramienta: PowerShell]*
+
+> *[Llamada a herramienta: PowerShell]*
+
+<!-- 2026-11-22T06:28:23.690Z -->
+**No se hizo push, ni pull request, ni se publicó nada.** `origin/main` sigue en `70b4481` y hay 7 commits locales por delante; el último es `9d8635b`. El entorno B6.2 no cambió: mismo contenedor, mismo arranque, 0 reinicios y la base con el mismo resumen lógico.
+
+**Trabajo completado**
+- **Puertos:** el firmante de la demostración de laboratorio pasó del 8000 al **18000** con el perfil propio `lab/manual/manual.env`.
+  - Puertos definitivos: 8000 evaluación, 8001 validación real de B6.2, 18000 firmante de laboratorio, 18080 cliente NIP-46 de laboratorio y 17777 relay local.
+  - Una prueba impide repetir un puerto entre perfiles.
+- **P-49:** implementado. El panel muestra «Reconectando, intento n de 5». Es de solo lectura y no toca esperas, límites ni aprobaciones.
+- **P-47 y P-48:** no los implementé. No bloquean la entrega y el análisis y el riesgo aceptado están en D-19.
+  - P-48 no resuelve el riesgo, porque el límite global se cuenta antes de saber quién envía.
+  - P-47 cambia el emparejamiento y depende de si Stacker News reutiliza su clave de cliente, algo sin verificar.
+- **Seguridad:** `.dockerignore` ahora saca `deploy/`, `docs/`, `lab/`, `tests/` y `tools/` del contexto de construcción. La imagen no cambia. No encontré hallazgos nuevos críticos ni altos.
+- **Pruebas Docker del laboratorio:** cuatro fallaban porque esperaban el comportamiento supervisado. No eran defectos del producto. Fijé `SIGNER_MODE=supervised` en ellas y ahora dan 14 passed.
+
+**Pruebas**
+- **Árbol:** 1044 passed, 27 skipped, 0 failed.
+- **Docker contra una imagen temporal del código actual:** 5 passed.
+- **Clon limpio de los commits candidatos:** PASS.
+  - Pruebas: 1036 passed, 35 skipped (26 de Docker, 8 vectores NIP-44 ausentes del clon, 1 de permisos POSIX).
+  - Docker: perfil demo con recursos exclusivos (`nip46-nightclone`, puerto 18091), una construcción sin caché, login correcto y 0 conexiones salientes.
+- El clon salió del repositorio **local**, no de GitHub, porque estos commits no se publican.
+- No se ejecutó `test_docker_argon2_memory.py`: usa la imagen `:dev`, anterior al código actual.
+
+**Trazabilidad:** `python tools/ai_sessions.py check` dio «trazabilidad OK» tras la última exportación. Las transcripciones 50 a 53 siguen **PARCIAL**, así que hay que reexportarlas al cerrar la sesión. La contraseña de B6.2 no aparece en ningún archivo.
+
+**Qué revisar al volver** (`docs/OVERNIGHT-RESULTS.md`, `docs/HANDOFF.md` §11 y `docs/NIGHTLY-REVIEW.md`):
+1. Revisar los 7 commits (`git log --stat origin/main..HEAD`) y decidir el push.
+2. Detener el firmante de B6.2 y cambiar la contraseña de `b62-admin`.
+3. Decidir sobre el correo de autoría público, P-47, P-48 y la organización de `deploy/`.

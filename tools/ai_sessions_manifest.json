@@ -182,6 +182,14 @@
       "phase": "1.0B",
       "slug": "trabajo-nocturno-2",
       "title": "Trabajo nocturno autónomo II: puertos del laboratorio, P-47/P-48/P-49, validación integral y clon limpio de los commits candidatos"
+    },
+    {
+      "n": "54",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T12:39:42.263Z",
+      "phase": "1.0B",
+      "slug": "simplificacion-final",
+      "title": "Revisión final de los commits locales y simplificación final de la instalación oficial (D-20), con verificación del usuario evaluador en SQLite"
     }
   ]
 }
