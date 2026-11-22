@@ -361,3 +361,28 @@ def test_the_readme_quick_start_matches_the_demo_profile_and_never_presents_down
 def test_the_env_example_points_to_the_demo_profile_without_copying_its_password() -> None:
     text = (ROOT / ".env.example").read_text(encoding="utf-8")
     assert "deploy/demo.env" in text and read_env(DEMO)["ADMIN_PASSWORD"] not in text
+
+
+# ------------------------------------------------------------------------------------------------ puertos de los entornos documentados (sin choques)
+MANUAL = ROOT / "lab" / "manual" / "manual.env"
+MANUAL_COMPOSE = ROOT / "lab" / "manual" / "compose.manual.yaml"
+
+
+def test_no_documented_environment_shares_a_host_port_and_the_lab_signer_is_not_on_8000_or_8001() -> None:
+    manual = read_env(MANUAL)
+    assert manual == {"APP_PORT": "18000", "ADMIN_USERNAME": "admin-manual"}  # el firmante del laboratorio tiene perfil propio; sin contrasenas ni secretos
+    assert not re.search(r"PASSWORD|SECRET|TOKEN|nsec|bunker://", "\n".join(manual), re.IGNORECASE)
+    assert read_env(CONTINUOUS)["APP_PORT"] == read_profile()["APP_PORT"] == "8001"  # misma instancia de validacion real (perfiles alternativos, no simultaneos)
+    lab_ports = re.findall(r"127\.0\.0\.1:\$\{MANUAL_\w+:-(\d+)\}:", MANUAL_COMPOSE.read_text(encoding="utf-8"))
+    assert lab_ports == ["17777", "18080"]  # relay y cliente de laboratorio
+    published = [read_env(DEMO)["APP_PORT"], read_profile()["APP_PORT"], manual["APP_PORT"], *lab_ports]
+    assert len(set(published)) == len(published) == 5, published  # evaluacion 8000, validacion 8001, firmante de laboratorio 18000, relay 17777, cliente 18080
+
+
+def test_the_lab_client_docs_point_to_the_lab_signer_port_not_to_the_evaluation_one() -> None:
+    readme = README.read_text(encoding="utf-8")
+    assert "--env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d" in readme
+    assert "<http://127.0.0.1:18000>" in readme and "**Pestaña A (firmante):** <http://127.0.0.1:8000>" not in readme
+    assert "127.0.0.1:18000" in (ROOT / "lab" / "manual" / "client_web" / "index.html").read_text(encoding="utf-8")
+    assert "127.0.0.1:8000" not in MANUAL_COMPOSE.read_text(encoding="utf-8").split("services:")[0]  # el encabezado del compose de laboratorio ya no anuncia el 8000
+    assert '"18000"' in (ROOT / "lab" / "manual" / "check_live.py").read_text(encoding="utf-8")

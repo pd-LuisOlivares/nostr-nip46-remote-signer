@@ -456,7 +456,17 @@ Tras `docker compose up`, abra <http://127.0.0.1:8000> e ingrese con su usuario 
 docker compose --env-file deploy/b62.env -p nostr-nip46-remote-signer up -d      # Linux/macOS/PowerShell (desde la raíz del repositorio)
 ```
 
-**Puertos 8000 y 8001 (aclaración).** El `8000` es el valor por defecto de `compose.yaml` y el del perfil de evaluación `deploy/demo.env` (proyecto Docker `nip46-evaluacion`); el `8001` es el de los perfiles de validación real `deploy/continuous.env` y `deploy/b62.env` (proyecto `nostr-nip46-remote-signer`). Son **proyectos Docker distintos, con contenedor, red y volumen propios**, pensados para no interferir entre sí; **no son dos instancias de un mismo despliegue ni se ha verificado o decidido** cuál será la instalación canónica del entregable final ni si deben coexistir (pendiente; ver [`docs/HANDOFF.md`](docs/HANDOFF.md) §5). Un solo proceso del firmante por proyecto.
+**Servicios y puertos definitivos.** Cada fila es un **proyecto Docker independiente** (contenedor, red y volumen propios, y por tanto **su propia base SQLite**); no hay bases compartidas y el cliente de laboratorio **no** forma parte de `compose.yaml`. Pueden estar levantados **a la vez** porque ya no comparten ningún puerto:
+
+| Puerto del host | Servicio | Cómo se levanta | Para qué |
+|---|---|---|---|
+| `8000` | **Firmante** (interfaz web `/` + API `/api`) | `deploy/demo.env`, proyecto `nip46-evaluacion` | **Evaluación** (camino principal; es también el valor por defecto de `compose.yaml`) |
+| `8001` | **Firmante** | `deploy/continuous.env` o `deploy/b62.env`, proyecto `nostr-nip46-remote-signer` | Validación real del propietario (B6.2); no hace falta para evaluar |
+| `18000` | **Firmante** de la demostración de laboratorio (pestaña A) | `lab/manual/manual.env`, proyecto `nip46-demo` | Probar el cliente NIP-46 de laboratorio (ver más abajo) |
+| `18080` | **Cliente NIP-46 de laboratorio** (pestaña B, NDK real) | `lab/manual/compose.manual.yaml` | Hace de «Stacker News» local; no puede aprobar nada |
+| `17777` | **Relay local de laboratorio** | `lab/manual/compose.manual.yaml` | Sin conexión a relays públicos |
+
+La interfaz del **firmante** (donde se aprueba) está en `app/static/` y la sirve el propio firmante; el **cliente de laboratorio** vive en `lab/manual/client_web/` y es otra aplicación. Un solo proceso del firmante por proyecto. `tests/test_deploy_profile.py` comprueba que ningún perfil documentado repite puerto.
 
 Arrancar el contenedor **no abre ninguna conexión externa**: el relay solo se contacta cuando la persona pulsa «Iniciar firmante» en el panel. **Reutilizar una base SQLite existente** (p. ej. `data/b62.db`) sin exponer la contraseña ni sobrescribir nada: cree antes el volumen con `docker compose --env-file deploy/b62.env -p nostr-nip46-remote-signer create --no-build --pull never` y ejecute `python deploy/import_admin_db.py --source data/b62.db --volume nostr-nip46-remote-signer_app_data --image <imagen-del-proyecto>`. **Indique siempre `--image` con la misma imagen que usa el proyecto** (`APP_IMAGE`; en la validación B6.2, `nostr-nip46-remote-signer:manual-b61d`): su valor por defecto es `nostr-nip46-remote-signer:dev`, que puede no coincidir con el código actual. La herramienta monta el origen **solo de lectura** en un contenedor efímero sin red, **nunca sobrescribe** un destino existente, comprueba integridad, esquema, número de administradores, propietario (`uid 10001`) y permisos (`0600`, directorio `0700`), y comprueba que el archivo de origen no cambió (SHA-256). No imprime contraseñas, hashes ni usuarios. Con la base importada no se necesita `ADMIN_PASSWORD`. Procedimiento completo: plan B6.2 §17.
 
@@ -472,12 +482,12 @@ Permite probar **todo el protocolo NIP-46 con dos pestañas del navegador**, sin
 # Una vez (PowerShell 7, raiz del repositorio). Contrasena inicial por entrada oculta, solo la primera vez en un volumen nuevo:
 $env:ADMIN_USERNAME = "admin-manual"; $env:ADMIN_PASSWORD = Read-Host "Contraseña inicial de prueba" -MaskInput
 $env:APP_IMAGE = "nostr-nip46-remote-signer:demo"
-docker compose -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d
+docker compose --env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d
 Remove-Item Env:ADMIN_PASSWORD        # la cuenta persiste en el volumen: ya no hace falta
-# Detener: docker compose -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml down      (down -v borra tambien la base de prueba)
+# Detener: docker compose --env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml down      (down -v borra tambien la base de prueba)
 ```
 
-- **Pestaña A (firmante):** <http://127.0.0.1:8000>. **Pestaña B (cliente):** <http://127.0.0.1:18080>. **Relay local:** `ws://127.0.0.1:17777` (desde Docker, `ws://relay:7777`). Todo se publica solo en `127.0.0.1`.
+- **Pestaña A (firmante):** <http://127.0.0.1:18000> (`lab/manual/manual.env` fija `APP_PORT=18000`, para no chocar con el 8000 de la evaluación ni el 8001 de la validación real). **Pestaña B (cliente):** <http://127.0.0.1:18080>. **Relay local:** `ws://127.0.0.1:17777` (desde Docker, `ws://relay:7777`). Todo se publica solo en `127.0.0.1`.
 - **Parámetros solo de la demostración:** ventana de firma **45 s** y TTL de aprobación **120 s** (variables `MANUAL_SIGNER_WINDOW_S` y `MANUAL_APPROVAL_TTL_S`). El firmante muestra en cada solicitud de firma el **plazo efectivo restante** («Plazo efectivo para firmar: N s»), que es el **menor** entre la ventana de la política y la caducidad de la aprobación; al llegar a cero indica «Ya no puede firmarse» y el botón pasa a «Aprobar (ya no firmará)».
 - **Recorrido:** A: ingresar → «Crear identidad temporal» → «Iniciar firmante» → «Emitir URI de un solo uso» → «Copiar». B: pegar la URI → «Crear sesión» → «Conectar (connect)» → en A **Aprobar** → «get_public_key» y «ping» → «Firma válida» → en A **Aprobar** (B muestra «Firmada y verificada» con 7 comprobaciones ✓) → «Enviar firma inválida» (cada variante: se rechaza sin tarjeta) → «Firma válida» y esperar más de 45 s antes de aprobar (B: «Rechazada»; A: «Rechazada al firmar: la política dejó de cumplirse»). Una URI es de un solo uso: repetirla en una sesión nueva también se rechaza.
 - **Qué no es:** no sustituye la validación real con Stacker News; «Firmada» en la pestaña B solo se muestra tras **verificar criptográficamente** la respuesta (id, firma BIP-340, identidad, contenido y reto).

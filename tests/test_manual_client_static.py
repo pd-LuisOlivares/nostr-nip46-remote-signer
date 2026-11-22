@@ -9,7 +9,7 @@ FILES = {name: (WEB / name).read_text(encoding="utf-8") for name in ("server.mjs
 
 def test_the_client_has_no_way_to_approve_or_to_reach_the_signer_api():
     code = "\n".join(FILES[n] for n in ("server.mjs", "verify.mjs", "app.js"))
-    for forbidden in ("/approve", "/deny", "/api/requests", "/api/identity", "/api/signer", "/api/auth", ":8000", "nip46_session", "X-CSRF-Token", "ADMIN_PASSWORD"):
+    for forbidden in ("/approve", "/deny", "/api/requests", "/api/identity", "/api/signer", "/api/auth", ":8000", ":18000", "nip46_session", "X-CSRF-Token", "ADMIN_PASSWORD"):
         assert forbidden not in code, forbidden
     # el HTML solo MENCIONA, como texto para la persona, la direccion del firmante (no hay enlaces ni formularios hacia el)
     assert re.findall(r'href="([^"]+)"', FILES["index.html"]) == ["/app.css"] and "action=" not in FILES["index.html"]  # solo la hoja de estilos propia
@@ -23,7 +23,7 @@ def test_the_web_page_has_no_unsafe_patterns_and_no_browser_storage():
                       "location.search", "location.hash", "history.pushState"):
         assert forbidden not in js, forbidden
     assert not re.search(r"<script(?![^>]*src=)", html) and not re.search(r"\son[a-z]+\s*=|style\s*=|javascript:", html, re.IGNORECASE)
-    assert not re.search(r"https?://", html.replace("http://127.0.0.1:8000", "") + js + FILES["app.css"])  # sin recursos externos (solo la direccion local escrita como texto)
+    assert not re.search(r"https?://", html.replace("http://127.0.0.1:18000", "") + js + FILES["app.css"])  # sin recursos externos (solo la direccion local escrita como texto)
     assert 'type="password"' in html and 'autocomplete="off"' in html  # la URI se escribe en un campo oculto
     assert "credentials: 'omit'" in js
 

@@ -2,7 +2,7 @@
 
 Lee la contraseña de PRUEBA de un archivo local (`--password-file`) sin imprimirla ni registrarla; muestra solo resultados verdadero/falso y datos no sensibles.
 No crea identidades, no inicia el firmante, no toca las solicitudes y no se conecta a nada fuera de 127.0.0.1 y del propio Docker local.
-Uso: python lab/manual/check_live.py --password-file <ruta> [--username admin-manual] [--port 8000] [--project nip46-manual] [--evidence resultado.json]
+Uso: python lab/manual/check_live.py --password-file <ruta> [--username admin-manual] [--port 18000] [--project nip46-manual] [--evidence resultado.json]
 """
 import argparse
 import base64
@@ -41,7 +41,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--password-file", required=True)
     ap.add_argument("--username", default="admin-manual")
-    ap.add_argument("--port", default="8000")
+    ap.add_argument("--port", default="18000")
     ap.add_argument("--project", default="nip46-manual")
     ap.add_argument("--evidence")
     a = ap.parse_args()

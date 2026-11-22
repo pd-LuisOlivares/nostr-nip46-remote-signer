@@ -1,7 +1,8 @@
 # B6.1D / B6.1D-R3: demostracion funcional LOCAL supervisada. Se usa SOBRE el compose.yaml del producto (no lo sustituye ni se incluye en su imagen):
-#   docker compose -p nip46-manual -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d
+#   docker compose --env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml up --build -d
+#   (lab/manual/manual.env fija APP_PORT=18000: el firmante de esta demostracion no usa el 8000 del perfil de evaluacion ni el 8001 de la validacion real)
 #
-#   Pestana A  http://127.0.0.1:8000    firmante (aprobacion humana, SOLO aqui)
+#   Pestana A  http://127.0.0.1:18000   firmante (aprobacion humana, SOLO aqui)
 #   Pestana B  http://127.0.0.1:18080   cliente NIP-46 de demostracion (NDK 2.12.2 real; no puede aprobar nada)
 #   Relay local ws://127.0.0.1:17777    (desde Docker: ws://relay:7777)
 #
