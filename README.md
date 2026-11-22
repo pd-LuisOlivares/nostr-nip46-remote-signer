@@ -52,7 +52,7 @@ En el panel, sección **Identidad**: pulse **Crear identidad temporal** (recomen
 
 ### 7. Iniciar el firmante
 
-Pulse **Iniciar firmante**. Pasa a **Listo** tras conectarse al relay `wss://relay.primal.net` (un efecto externo real). No hay ventana de tiempo obligatoria: el firmante sigue activo hasta que usted pulse **Detener**, y si el relay se corta, **se reconecta solo** (esperas de 2, 5, 10, 20 y 40 s; el estado muestra «Reconectando»; tras 5 fallos seguidos pasa a «Fallido» y hay que iniciarlo de nuevo).
+Pulse **Iniciar firmante**. Pasa a **Listo** tras conectarse al relay `wss://relay.primal.net` (un efecto externo real). No hay ventana de tiempo obligatoria: el firmante sigue activo hasta que usted pulse **Detener**, y si el relay se corta, **se reconecta solo** (esperas de 2, 5, 10, 20 y 40 s; el panel muestra «Reconectando, intento n de 5»; tras 5 fallos seguidos pasa a «Fallido» y hay que iniciarlo de nuevo).
 
 ### 8. Obtener la URI `bunker://`
 
@@ -492,7 +492,7 @@ Remove-Item Env:ADMIN_PASSWORD        # la cuenta persiste en el volumen: ya no 
 - **Recorrido:** A: ingresar → «Crear identidad temporal» → «Iniciar firmante» → «Emitir URI de un solo uso» → «Copiar». B: pegar la URI → «Crear sesión» → «Conectar (connect)» → en A **Aprobar** → «get_public_key» y «ping» → «Firma válida» → en A **Aprobar** (B muestra «Firmada y verificada» con 7 comprobaciones ✓) → «Enviar firma inválida» (cada variante: se rechaza sin tarjeta) → «Firma válida» y esperar más de 45 s antes de aprobar (B: «Rechazada»; A: «Rechazada al firmar: la política dejó de cumplirse»). Una URI es de un solo uso: repetirla en una sesión nueva también se rechaza.
 - **Qué no es:** no sustituye la validación real con Stacker News; «Firmada» en la pestaña B solo se muestra tras **verificar criptográficamente** la respuesta (id, firma BIP-340, identidad, contenido y reto).
 - **Herramientas técnicas** (se conservan): `lab/manual/local_client.py` (cliente de terminal contra el mismo relay) y `lab/manual/check_live.py` (28 comprobaciones automatizadas de solo lectura sobre la pila viva).
-- **Pruebas** (`E2E_DOCKER=1`): `tests/e2e/test_manual_client_web.py` automatiza los dos navegadores con aprobaciones **de prueba** (clics de Playwright), distintas de las que usted hace a mano.
+- **Pruebas** (`E2E_DOCKER=1`): `tests/e2e/test_manual_client_web.py` automatiza los dos navegadores con aprobaciones **de prueba** (clics de Playwright), distintas de las que usted hace a mano. Esas pruebas fijan `SIGNER_MODE=supervised` de forma explícita (verifican el tope de firmas y que la sesión termina sin reconectar); el modo `continuous` con NDK real y con un relay local lo cubren `test_docker_ndk.py` y `test_docker_continuous.py`. Verificadas el 2026-11-22 con una imagen temporal del código actual: `test_manual_client_web.py` 14 passed y los otros cuatro archivos de Docker 5 passed.
 
 ## 11. Consulta de `/health`
 
