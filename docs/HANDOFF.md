@@ -115,3 +115,16 @@ Conteo antes de la consolidación: **47 modificados** y **60 sin rastrear** (inc
 7. Con autorización: publicación.
 
 **Reglas que siguen vigentes** (`AGENTS.md`/`CLAUDE.md`): sin commit, push ni merge sin autorización explícita; no leer `.env`, claves ni contraseñas; no usar relays ni Stacker News sin una autorización con alcance definido; no borrar volúmenes (`down -v`) ni sobrescribir imágenes; distinguir pruebas automatizadas, validación local y validación real.
+
+## 11. Actualización de la segunda jornada nocturna (2026-11-22): estado vigente
+
+> Sustituye lo que digan en contrario los §5 (puertos), §8 (riesgos 4) y §9 (tareas). Detalle y resultados en [`OVERNIGHT-RESULTS.md`](OVERNIGHT-RESULTS.md).
+
+- **Commits locales SIN push** (`origin/main` sigue en `70b4481`): `4629061`, `4f2c112`, `1933ec7`, `2ffd56b`, `e5c2384`, `eaa7ecb` y el de la documentación de esta jornada (ver `git log origin/main..HEAD`). **Revisar y autorizar el push.**
+- **Puertos y servicios definitivos:** 8000 firmante de evaluación (`deploy/demo.env`), 8001 firmante de la validación real (B6.2, intacto), **18000** firmante del laboratorio (`lab/manual/manual.env`, nuevo), 18080 cliente NIP-46 de laboratorio, 17777 relay local. Proyectos Docker independientes con bases SQLite propias; el conflicto del 8000 **quedó resuelto**. Pendiente solo la decisión de organización de `deploy/` (propuesta en `NIGHTLY-REVIEW.md` §6).
+- **P-49 implementada** (contador «intento n de 5»). **P-47 y P-48 no se implementan** (no bloquean; riesgos aceptados en D-19.3 y D-19.4): requieren decisión del propietario.
+- **Pruebas:** árbol 1044 passed, 27 skipped, 0 failed; Docker del laboratorio 14 passed y otros cuatro archivos Docker 5 passed (con una imagen temporal ya eliminada); **clon limpio de los commits candidatos: 1036 passed, 35 skipped, 0 failed** y Docker funcional con recursos exclusivos.
+- **Cambio en las pruebas del laboratorio:** `tests/e2e/test_manual_client_web.py` fija `SIGNER_MODE=supervised` (verifica el tope de firmas y que la sesión termina sin reconectar); el modo continuo con NDK real y relay local lo cubren `test_docker_ndk.py` y `test_docker_continuous.py`.
+- **`.dockerignore`** excluye `deploy/`, `docs/`, `lab/`, `tests/` y `tools/` del contexto de construcción.
+- **Siguen vigentes** los riesgos del §8 (1 a 3 y 5 a 10), en especial: detener el firmante de B6.2 y **cambiar la contraseña de `b62-admin`**, y el correo de autoría en la historia pública.
+- **Orden recomendado ahora:** (1) revisar los commits locales; (2) detener el firmante de B6.2 y cambiar su contraseña; (3) decidir M-1/B-8, P-47/P-48 y la organización de `deploy/`; (4) autorizar el push; (5) reexportar transcripciones (50 a 53 parciales) y `check`.

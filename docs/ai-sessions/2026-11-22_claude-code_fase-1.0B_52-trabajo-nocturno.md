@@ -9,7 +9,7 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T05:58:18.525Z |
+| Hasta (UTC) | 2026-11-22T05:58:39.131Z |
 | Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión.
@@ -238,3 +238,50 @@ Ahora el informe `docs/NIGHTLY-REVIEW.md` (sin secretos; del correo de autoría 
 > *[Llamada a herramienta: PowerShell]*
 
 > *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: PowerShell]*
+
+<!-- 2026-11-22T05:58:39.131Z -->
+Las seis fases están hechas. Hay un commit local, `4629061`, **sin push** (queda 1 por delante de `origin/main`). El entorno B6.2 no se tocó: mismo contenedor, mismo arranque, 0 reinicios y la base con el mismo resumen lógico antes y después.
+
+## 1. Clon limpio: PASS
+- **Origen:** clon desde GitHub del estado publicado `70b4481`, en un directorio temporal.
+- **Instalación:** `pip install` y `pip check` según el README, sin errores.
+- **Pruebas:** `python -m pytest` dio **1029 passed, 35 skipped, 0 failed**.
+  - Las omitidas son 26 de Docker sin `E2E_DOCKER`, 8 vectores NIP-44 (no se versionan) y 1 de permisos POSIX.
+- **Docker del perfil demo:** lo ejecuté con recursos propios de la prueba (proyecto `nip46-clonetest`, puerto 18090, etiqueta de imagen propia), incluida una construcción sin caché.
+  - El contenedor quedó sano.
+  - El login con las credenciales del README dio 200 y con una contraseña incorrecta 401.
+  - Se creó una identidad temporal sin exponer la clave privada.
+  - Hubo 0 conexiones salientes.
+- **Limpieza:** eliminé solo lo que creé, tras verificar su pertenencia por etiqueta de proyecto.
+- **No cubre** el flujo real con Stacker News.
+
+## 2. Seguridad
+No hay hallazgos críticos ni altos. Los 9 commits no contienen secretos reales: solo fixtures de pruebas, y la contraseña de B6.2 no aparece en ninguno. Hay dos medios:
+- **Correo de autoría:** las identidades de autoría de los commits usan un correo corporativo que será público. Reescribir la historia no está autorizado.
+- **Firmante B6.2:** probablemente sigue iniciado con la identidad B4 en memoria, y la contraseña de `b62-admin` está en el historial local de la sesión.
+
+El resto son hallazgos bajos, detallados en `docs/NIGHTLY-REVIEW.md`.
+
+## 3. Trazabilidad
+- **Estado:** `python tools/ai_sessions.py check` dio «trazabilidad OK» tras la última exportación.
+- **Registro:** añadí las entradas 50 a 52. Las transcripciones 50 a 52 siguen **PARCIAL** porque la sesión está abierta.
+- **Secretos:** la contraseña de `b62-admin` está redactada y no aparece en ningún archivo.
+
+## 4. Archivos modificados
+- **Nuevo:** `docs/NIGHTLY-REVIEW.md` y la transcripción 52.
+- **Editados:** `README.md`, `docs/HANDOFF.md`, `docs/ai-log.md`, `docs/decisions.md`, `docs/phase-1.0B-B6.2-plan.md`, `tools/ai_sessions_manifest.json` y la transcripción 51.
+- **Sin cambios:** `app/`, `deploy/`, `compose.yaml`, `Dockerfile` y `tests/`.
+- **README:** ahora trae la URL real del repositorio y los requisitos para un evaluador sin archivos locales, e incluye el resultado del clon limpio.
+- **PASS:** quedó documentado como declaración suya, con la lista de lo no respaldado por evidencia.
+
+## 5. Bloqueos
+Ninguno técnico. No hizo falta cambiar código funcional.
+
+## 6. Qué revisar al volver
+1. **Firmante B6.2:** deténgalo desde la interfaz y cambie la contraseña de `b62-admin`.
+2. **Correo de autoría:** decida si acepta publicarlo o prefiere un correo `noreply` de GitHub para los commits futuros.
+3. **Puertos 8000/8001:** el 8001 es un proyecto Docker aparte del 8000 y con otra base. Hallazgo nuevo: el cliente de laboratorio también usa el 8000, así que choca con el perfil demo. La propuesta (sin implementar) está en la sección 6 de `docs/NIGHTLY-REVIEW.md`. Necesita su decisión.
+4. **P-47, P-48 y P-49:** siguen pendientes y sin implementar; mis recomendaciones están en la sección 8 del informe.
+5. **Push:** si aprueba el commit local, queda pendiente su autorización para el push. Antes conviene reexportar las transcripciones al cerrar la sesión.

@@ -2,6 +2,8 @@
 
 Trabajo realizado sin supervisión, dentro de los límites autorizados: **sin modificar código funcional**, sin tocar el entorno B6.2 (contenedor, volumen y SQLite), sin conexiones a relays ni a Stacker News y **sin push**. Este informe no contiene credenciales ni secretos. Todo lo que no se ejecutó figura como «no verificado».
 
+> **Actualización posterior (segunda jornada nocturna):** el conflicto del puerto 8000 descrito en §6 **ya se resolvió** (firmante de laboratorio en 18000), P-49 se implementó y P-47/P-48 se analizaron sin implementar. Ver [`OVERNIGHT-RESULTS.md`](OVERNIGHT-RESULTS.md). Lo demás de este informe sigue vigente.
+
 ## 1. Resumen ejecutivo
 
 | Área | Resultado |
