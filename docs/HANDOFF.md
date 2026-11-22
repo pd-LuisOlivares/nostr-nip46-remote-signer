@@ -2,6 +2,8 @@
 
 Para retomar el proyecto en una sesión nueva. Reemplaza en la práctica a [`handoff-2026-11-21.md`](handoff-2026-11-21.md), que describe el estado anterior (supervisado, B6.1D). **Este archivo no contiene credenciales ni secretos**; las referencias a contraseñas y claves son solo a *dónde* están.
 
+> **ESTADO VIGENTE: leer primero el §12 (simplificación final, D-20).** Los §3, §5, §6, §8 y §10 describen el entorno B6.2 y los perfiles `deploy/b62.env` y `deploy/continuous.env`, que **ya no existen en el árbol**; se conservan como historia.
+
 > **Actualización (jornada nocturna del 2026-11-22):** revisión autónoma sin push; ver [`NIGHTLY-REVIEW.md`](NIGHTLY-REVIEW.md) (clon limpio PASS, auditoría de seguridad, diagnóstico de los puertos 8000/8001 y propuestas). Los commits de esa jornada están **solo en local, sin push, a la espera de su revisión**.
 
 ## 1. Estado actual del proyecto
@@ -128,3 +130,15 @@ Conteo antes de la consolidación: **47 modificados** y **60 sin rastrear** (inc
 - **`.dockerignore`** excluye `deploy/`, `docs/`, `lab/`, `tests/` y `tools/` del contexto de construcción.
 - **Siguen vigentes** los riesgos del §8 (1 a 3 y 5 a 10), en especial: detener el firmante de B6.2 y **cambiar la contraseña de `b62-admin`**, y el correo de autoría en la historia pública.
 - **Orden recomendado ahora:** (1) revisar los commits locales; (2) detener el firmante de B6.2 y cambiar su contraseña; (3) decidir M-1/B-8, P-47/P-48 y la organización de `deploy/`; (4) autorizar el push; (5) reexportar transcripciones (50 a 53 parciales) y `check`.
+
+## 12. Simplificación final (2026-11-22, decisión D-20): estado vigente
+
+> Sustituye lo que digan en contrario los demás apartados. **Sin push**: `origin/main` sigue en `70b4481`; los commits están solo en local.
+
+- **Una sola instalación oficial** (README, «Instalación oficial»): `docker compose --env-file deploy/demo.env -p nip46-evaluacion up --build -d` → <http://127.0.0.1:8000>, usuario `evaluador` con las credenciales de demostración públicas del README, SQLite en el volumen `nip46-evaluacion_app_data`, identidad Nostr creada desde la interfaz, aprobación humana de cada `connect` y `sign_event`, modo continuo. La cuenta se crea sola en un volumen nuevo y persiste al reiniciar.
+- **Retirado del árbol** (siguen en el historial, p. ej. `git show 70b4481:deploy/b62.env`): `deploy/b62.env`, `deploy/continuous.env`, `deploy/import_admin_db.py` y `tests/e2e/test_docker_b62_profile.py`. Detalle y motivos en `docs/decisions.md` D-20. El código, el modo `supervised`, las pruebas relevantes, el cliente de laboratorio, la trazabilidad de IA, las decisiones y la evidencia de la validación real **se conservan**.
+- **Usuario `evaluador` verificado en SQLite** (Docker aislado, 36 comprobaciones, 0 fallidas): existe, activo, Argon2id; login 200 / 401; persiste al reiniciar; despliegue idempotente; una base con otro administrador no recibe `evaluador` (procedimiento seguro en el README, paso 6). Evidencia: [`evidence/evaluador-instalacion-oficial-2026-11-22.md`](evidence/evaluador-instalacion-oficial-2026-11-22.md).
+- **Cliente de laboratorio:** opcional y aislado (firmante en 18000, cliente en 18080, relay local en 17777); no compite con el 8000. Tiene su propio firmante porque el oficial solo admite relays `wss://`.
+- **Entorno B6.2 de la máquina del propietario:** **no se tocó** (contenedor, volumen, base, imagen, puerto 8001, credenciales). Ya no tiene perfil en el árbol ni forma parte de ningún procedimiento. Pendiente del propietario: detener su firmante, cambiar la contraseña de `b62-admin` (está en el historial local de la sesión) y decidir si elimina su contenedor, volumen e imagen (`nostr-nip46-remote-signer:d17-continuous`, `manual-b61d`).
+- **Siguen pendientes de decisión del propietario:** autorizar el push; M-1 (correo de autoría en la historia pública) y B-8 (transcripciones de IA publicadas); P-47 y P-48; dependencias sin hashes y base mutable (D-6); evidencia sanitizada de la validación real (requiere su aportación).
+- **Trazabilidad:** transcripciones de esta sesión PARCIALES hasta cerrarla; reexportar y ejecutar `python tools/ai_sessions.py check --history-dir <historial>`.

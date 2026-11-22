@@ -1,7 +1,7 @@
 """Validación LOCAL de la imagen DEFINITIVA (modo continuo) en Docker: proyecto efímero propio, relay local en el mismo compose y NINGÚN servicio externo.
 
-Se activa con E2E_DOCKER=1. NO construye ni descarga nada: usa la imagen local `nostr-nip46-remote-signer:d17-continuous` (o la de `D17_TEST_IMAGE`) con `--no-build --pull never`.
-Proyecto, red y volumen PROPIOS (`nip46-d17v-*`): no toca el entorno B6.2, sus imágenes, su volumen ni sus respaldos. Identidad y contraseña FICTICIAS y aleatorias.
+Se activa con E2E_DOCKER=1. NO construye ni descarga nada: usa la imagen local `nostr-nip46-remote-signer:evaluation` (la del perfil oficial `deploy/demo.env`; o la de `D17_TEST_IMAGE`) con `--no-build --pull never`.
+Proyecto, red y volumen PROPIOS (`nip46-d17v-*`): no toca ningún otro entorno Docker (imágenes, volúmenes ni respaldos de otros proyectos). Identidad y contraseña FICTICIAS y aleatorias.
 
 Opera la INTERFAZ en un navegador real: importa una identidad de prueba, inicia el firmante, emite la URI desde la interfaz (sin registrarla en logs), exige la aprobación humana
 de cada `connect` y de cada `sign_event`, comprueba los límites, la revocación individual y la reconexión. NO es una autenticación con Stacker News.
@@ -31,7 +31,7 @@ from tests.support import CHALLENGE, login_template
 sync_api = pytest.importorskip("playwright.sync_api")
 expect = sync_api.expect
 pytestmark = [pytest.mark.e2e, pytest.mark.skipif(os.environ.get("E2E_DOCKER") != "1", reason="defina E2E_DOCKER=1 para ejecutar las pruebas de Docker")]
-IMAGE = os.environ.get("D17_TEST_IMAGE", "nostr-nip46-remote-signer:d17-continuous")
+IMAGE = os.environ.get("D17_TEST_IMAGE", "nostr-nip46-remote-signer:evaluation")
 ORIGIN = "https://sn.d17.invalid"
 LAB_RELAY_IMAGE = "nip46-lab-py:1.0a"
 

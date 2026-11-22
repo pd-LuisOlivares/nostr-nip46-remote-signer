@@ -2,15 +2,16 @@
 
 Firmante remoto (*remote signer*) Nostr conforme a **NIP-46**, en Python (FastAPI, SQLite, Docker Compose), para iniciar sesión en Stacker News con una identidad Nostr sin entregarle la clave privada.
 
-## Inicio rápido para evaluadores
+## Instalación oficial
 
-Todo se hace desde el navegador. Tras el comando de arranque no hace falta PowerShell, ningún script ni un asistente de IA.
+Hay **una sola instalación oficial**: el firmante NIP-46 en <http://127.0.0.1:8000>, con el administrador `evaluador` y las credenciales de demostración de este README, SQLite en un volumen Docker, **modo continuo** y **aprobación humana de cada `connect` y de cada `sign_event`**. Después del comando de arranque todo se hace desde el navegador: no hace falta PowerShell, ningún script ni un asistente de IA.
 
 ### 1. Requisitos previos
 
 - **Docker con Compose v2** (probado con Docker 25.0.2 y Compose v2.24.3) y **conexión a Internet**: el primer arranque construye la imagen (descarga la imagen base y los paquetes de Python) y, más tarde, el firmante se conecta al relay público y usted a Stacker News.
 - Un navegador. Para Stacker News se recomienda una **ventana privada** y una **identidad Nostr de prueba**, nunca una clave personal.
 - El puerto `8000` libre en su equipo (si no lo está, cambie `APP_PORT` en `deploy/demo.env`).
+- **Nada más.** No hace falta un `.env`, ni archivos del desarrollador, ni la carpeta `data/`, ni imágenes de laboratorio.
 
 ### 2. Clonar el repositorio
 
@@ -19,94 +20,103 @@ git clone https://github.com/pd-LuisOlivares/nostr-nip46-remote-signer.git
 cd nostr-nip46-remote-signer
 ```
 
-### 3. Levantar la aplicación
+### 3. Configuración mínima
 
-Este único comando funciona igual en PowerShell, bash y zsh, desde la raíz del repositorio:
+**Ninguna.** El perfil oficial [`deploy/demo.env`](deploy/demo.env) ya está en el repositorio y trae todo lo necesario: puerto, usuario, contraseña de demostración, modo continuo, relay y origen de Stacker News. Solo si el puerto 8000 está ocupado, cambie `APP_PORT` en ese archivo.
+
+### 4. Comando único de inicio
+
+Funciona igual en PowerShell, bash y zsh, desde la raíz del repositorio:
 
 ```bash
 docker compose --env-file deploy/demo.env -p nip46-evaluacion up --build -d
 ```
 
-La primera vez tarda unos minutos. Cuando `docker compose -p nip46-evaluacion ps` muestre el servicio como `healthy`, ya puede usarla. El comando crea un proyecto Docker propio (`nip46-evaluacion`) con su contenedor, su red y su volumen; no afecta a ningún otro proyecto. Arrancar **no abre ninguna conexión externa**: el relay solo se contacta cuando usted pulsa «Iniciar firmante».
+La primera vez tarda unos minutos. Cuando `docker compose -p nip46-evaluacion ps` muestre el servicio como `healthy`, ya puede usarla. El comando crea un proyecto Docker propio (`nip46-evaluacion`) con su contenedor, su red y su volumen `nip46-evaluacion_app_data` (la base SQLite); no afecta a ningún otro proyecto. **Mantenga siempre `-p nip46-evaluacion`**: sin él, Compose usaría el nombre de proyecto por defecto y podría compartir recursos con otra copia del repositorio. Arrancar **no abre ninguna conexión externa**: el relay solo se contacta cuando usted pulsa «Iniciar firmante».
 
-### 4. URL de acceso
+### 5. URL de acceso
 
 <http://127.0.0.1:8000> (solo accesible desde su propio equipo).
 
-### 5. Usuario y contraseña de demostración
+### 6. Usuario y contraseña de demostración
 
 | Usuario | Contraseña |
 |---|---|
 | `evaluador` | `demo-nip46-zuentkew6ahznf94` |
 
-> **Credenciales públicas y solo para evaluación local.** Son exclusivas de este proyecto de demostración (no son personales ni de otro servicio) y están a la vista en [`deploy/demo.env`](deploy/demo.env).
-> - **No las use en producción.** Para cualquier otro despliegue defina una contraseña propia (§8, «Primer arranque»).
+La cuenta `evaluador` se crea sola **la primera vez que arranca un volumen nuevo**, con la contraseña de `deploy/demo.env` (solo se guarda su hash Argon2id). Después, la contraseña del archivo se ignora: la cuenta persiste en el volumen y sobrevive a reiniciar o recrear el contenedor.
+
+> **Credenciales públicas y solo para evaluación local.** Son exclusivas de este proyecto de demostración (no son personales ni de otro servicio) y están a la vista en [`deploy/demo.env`](deploy/demo.env). El código **no** trae ninguna contraseña por defecto: la única excepción es este perfil, que se activa solo si se elige con `--env-file`.
+> - **Cámbielas fuera de la evaluación local.** Para cualquier otro despliegue defina una contraseña propia (§8, «Primer arranque»).
 > - **No exponga el puerto a otras máquinas ni a Internet con estas credenciales.** Compose lo publica solo en `127.0.0.1`; no lo cambie.
 > - El repositorio **no contiene claves privadas Nostr ni secretos reales**.
 
-### 6. Generar o importar una identidad Nostr
+Si ingresa una contraseña incorrecta, el acceso se rechaza (401) y 5 intentos fallidos bloquean el ingreso 5 minutos.
+
+**Si el volumen ya tenía otro administrador.** La base admite **un único** administrador (D-9) y la aplicación **nunca** sobrescribe una cuenta existente ni agrega `evaluador` a una base que ya tiene otra: arrancará con normalidad, pero `evaluador` recibirá 401 y la contraseña del archivo se ignorará. No hay restablecimiento automático de contraseñas. Para tener `evaluador` **sin borrar ni modificar** la base anterior, use un proyecto (y por tanto un volumen) nuevo y, si el 8000 está ocupado por el anterior, otro puerto:
+
+```bash
+# bash/zsh                                                          # PowerShell: $env:APP_PORT = "8002"; docker compose ...
+APP_PORT=8002 docker compose --env-file deploy/demo.env -p nip46-evaluacion-2 up --build -d
+```
+
+La base anterior queda intacta en su volumen. Solo si **acepta perder** esa cuenta puede, en cambio, restablecer el proyecto oficial (`down -v` borra su volumen; ver paso 13).
+
+### 7. Generar o importar una identidad Nostr
 
 En el panel, sección **Identidad**: pulse **Crear identidad temporal** (recomendado) o pegue una clave de prueba propia (hex o `nsec`) en «Importar una clave propia» y pulse **Importar**. La interfaz muestra solo la clave **pública**.
 
 > **La clave privada vive solo en memoria** (la del contenedor). No se guarda en SQLite ni en ningún archivo, nunca se muestra y no vuelve a salir. **Tras reiniciar o recrear el contenedor, o detenerlo y volver a arrancarlo, debe generar o importar la identidad de nuevo.** Una identidad nueva tiene otra clave pública y Stacker News la tratará como otra cuenta; para conservar la misma cuenta, importe siempre la misma clave de prueba.
 
-### 7. Iniciar el firmante
+### 8. Iniciar y detener el firmante
 
-Pulse **Iniciar firmante**. Pasa a **Listo** tras conectarse al relay `wss://relay.primal.net` (un efecto externo real). No hay ventana de tiempo obligatoria: el firmante sigue activo hasta que usted pulse **Detener**, y si el relay se corta, **se reconecta solo** (esperas de 2, 5, 10, 20 y 40 s; el panel muestra «Reconectando, intento n de 5»; tras 5 fallos seguidos pasa a «Fallido» y hay que iniciarlo de nuevo).
+- **Iniciar:** pulse **Iniciar firmante**. Pasa a **Listo** tras conectarse al relay `wss://relay.primal.net` (un efecto externo real). No hay ventana de tiempo obligatoria: sigue activo hasta que usted pulse **Detener**, y si el relay se corta, **se reconecta solo** (esperas de 2, 5, 10, 20 y 40 s; el panel muestra «Reconectando, intento n de 5»; tras 5 fallos seguidos pasa a «Fallido» y hay que iniciarlo de nuevo).
+- **Detener:** cierra el firmante de forma ordenada y revoca todas las conexiones. **Revocar** (en **Conexiones**) revoca solo esa conexión y cancela sus solicitudes pendientes. **Cerrar sesión** termina la sesión de la interfaz (dura 1 hora en este perfil).
 
-### 8. Obtener la URI `bunker://`
+### 9. Obtener la URI `bunker://`
 
 En **Conexión bunker://** pulse **Emitir URI de un solo uso** y luego **Copiar**. La URI se muestra una sola vez, sirve para **un** emparejamiento y caduca a los 5 minutos. Es un secreto: no la pegue en chats ni en archivos.
 
-### 9. Iniciar sesión con Nostr en Stacker News
+### 10. Prueba opcional con el cliente de laboratorio
+
+**Es opcional y no hace falta para evaluar.** El cliente NIP-46 de laboratorio (`lab/manual/client_web/`, cliente **NDK 2.12.2** real, el de Stacker News) permite recorrer el protocolo completo con dos pestañas del navegador contra un relay **local**, sin Internet. **No compite con el puerto 8000** (el firmante de esa demostración usa el 18000, el cliente el 18080 y el relay el 17777) y no depende de nada de la instalación oficial.
+
+Necesita un firmante propio y no puede reutilizar el oficial por una razón técnica: el firmante oficial solo admite relays `wss://` (TLS) y el relay local de laboratorio es `ws://`, que únicamente un compose de laboratorio habilita. Instrucciones, requisitos (imágenes del laboratorio) y recorrido en §10, «Cliente de laboratorio». No sustituye la prueba con Stacker News.
+
+### 11. Prueba con Stacker News
 
 1. En una ventana privada, abra <https://stacker.news/signup> (o <https://stacker.news/login?type=nostr>) y elija **Continue with Nostr**.
-2. Elija el inicio con **firmante remoto** (*bunker*) y pegue la URI.
+2. Elija el inicio con **firmante remoto** (*bunker*) y pegue la URI (paso 9). (Es el recorrido observado en la validación real; la interfaz de Stacker News puede cambiar. No necesita billetera Lightning ni hacer pagos.)
+3. **Aprobar el `connect`:** en **Solicitudes pendientes** aparece una tarjeta «Conexión de un cliente». Revísela y pulse **Aprobar** (o **Rechazar**). Cada nueva conexión exige su propia aprobación; la solicitud caduca a los 5 minutos.
+4. **Aprobar el `sign_event`:** aparece la tarjeta «Firma del evento de inicio de sesión». Antes de aprobar compruebe que las **11 comprobaciones están en verde**, que el origen `u` es `https://stacker.news`, que el contenido es «Stacker News Authentication» y que el evento es de hace unos segundos; pulse **Aprobar**. Si algo no coincide, **Rechazar**. Cada firma exige su propia aprobación: **no hay firmas automáticas ni aprobaciones que se conserven**. Debe aprobar pronto: pasados 120 s desde la creación del evento, la política lo descarta y ya no firma.
+5. **Verificar:** Stacker News debe mostrar una sesión iniciada (menú de usuario). En el panel, **Recientes** debe mostrar la solicitud como aprobada y firmada, y **Auditoría** el evento `sign_ok` y el recuento de firmas. «Firmada» significa que la firma se produjo y se autoverificó; la sesión efectiva la confirma Stacker News.
 
-(Es el recorrido observado en la validación real B4; la interfaz de Stacker News puede cambiar. No necesita billetera Lightning ni hacer pagos.)
+### 12. Ejecutar las pruebas
 
-### 10. Aprobar el `connect`
+Requiere Python 3.12 y `pip` (no hace falta Docker; las E2E de navegador usan Chrome o Edge si están instalados y, si no, se omiten solas). Desde la raíz del repositorio, con un entorno virtual (§5):
 
-En **Solicitudes pendientes** aparece una tarjeta «Conexión de un cliente». Revísela y pulse **Aprobar** (o **Rechazar**). Cada nueva conexión exige su propia aprobación; la solicitud caduca a los 5 minutos.
+```bash
+python -m pip install -c constraints.txt -e ".[dev]"
+python -m pytest
+```
 
-### 11. Aprobar el `sign_event`
+Son pruebas automatizadas locales y sin red: **no demuestran** interoperabilidad con Stacker News. Opcional (con Docker): `python -I -X utf8 tools/validate_official_install.py . evidencia.json` verifica en recursos **nuevos y aislados** (puertos 18095 a 18097; no toca el proyecto `nip46-evaluacion`) que `evaluador` existe en SQLite, entra con la contraseña de este README (200), se rechaza una incorrecta (401), persiste al reiniciar y no se duplica ni se sobrescribe; los elimina al terminar. Resultado y evidencia: [`docs/evidence/evaluador-instalacion-oficial-2026-11-22.md`](docs/evidence/evaluador-instalacion-oficial-2026-11-22.md). Detalle de lo que cubren, de lo que se omite y de las pruebas de Docker (`E2E_DOCKER=1`) en §9.
 
-Aparece la tarjeta «Firma del evento de inicio de sesión». Antes de aprobar compruebe que las **11 comprobaciones están en verde**, que el origen `u` es `https://stacker.news`, que el contenido es «Stacker News Authentication» y que el evento es de hace unos segundos; pulse **Aprobar**. Si algo no coincide, **Rechazar**. Cada firma exige su propia aprobación: **no hay firmas automáticas ni aprobaciones que se conserven**. Debe aprobar pronto: pasados 120 s desde la creación del evento, la política lo descarta y ya no firma.
+### 13. Detener y limpiar de forma segura
 
-### 12. Verificar la autenticación
+Todos los comandos afectan **solo** al proyecto `nip46-evaluacion`:
 
-Stacker News debe mostrar una sesión iniciada (menú de usuario). En el panel, **Recientes** debe mostrar la solicitud como aprobada y firmada, y **Auditoría** el evento `sign_ok` y el recuento de firmas. «Firmada» significa que la firma se produjo y se autoverificó; la sesión efectiva la confirma Stacker News.
-
-### 13. Revocar conexiones y detener el firmante
-
-- **Revocar** (en **Conexiones**) revoca esa conexión y cancela sus solicitudes pendientes; las demás siguen activas.
-- **Detener** cierra el firmante de forma ordenada y revoca todas las conexiones.
-- **Cerrar sesión** termina la sesión de la interfaz (dura 1 hora en este perfil).
-
-### Detener y restablecer la demostración
-
-- `docker compose -p nip46-evaluacion stop` detiene el contenedor y `docker compose -p nip46-evaluacion start` lo reanuda (se conserva el administrador; la identidad Nostr hay que crearla o importarla de nuevo). `docker compose -p nip46-evaluacion down` elimina el contenedor y la red **conservando** el volumen; para volver a levantarla repita el comando del paso 3.
-- **Restablecer desde cero (destruye datos).** Solo si necesita empezar de nuevo: `docker compose --env-file deploy/demo.env -p nip46-evaluacion down -v` **borra el volumen `nip46-evaluacion_app_data`** (la cuenta de administrador de esta demostración) y el contenedor y la red de ese proyecto. No afecta a ningún otro proyecto ni volumen de Docker. No es un paso rutinario.
+- **Detener y reanudar** (conserva el administrador; la identidad Nostr hay que crearla o importarla de nuevo): `docker compose -p nip46-evaluacion stop` y `docker compose -p nip46-evaluacion start`.
+- **Quitar el contenedor y la red conservando la base:** `docker compose -p nip46-evaluacion down`. Para volver a levantarla, repita el comando del paso 4.
+- **Restablecer desde cero (destruye datos).** Solo si necesita empezar de nuevo: `docker compose --env-file deploy/demo.env -p nip46-evaluacion down -v` **borra el volumen `nip46-evaluacion_app_data`** (la cuenta de administrador de esta demostración), el contenedor y la red de ese proyecto. No afecta a ningún otro proyecto ni volumen de Docker. No es un paso rutinario.
+- **Quitar la imagen:** `docker image rm nostr-nip46-remote-signer:evaluation`.
 - Si cambia la contraseña de `deploy/demo.env` en un volumen que ya existe, **se ignora**: la contraseña solo se aplica al crear el administrador.
 
-### Si algo no funciona
+**Si algo no funciona**
 
 - *Inicio de sesión bloqueado:* 5 intentos fallidos bloquean el ingreso 5 minutos.
 - *El firmante queda en «Fallido»:* el relay no respondió o rechazó la conexión; consulte `docker compose -p nip46-evaluacion logs app` (los registros no contienen secretos) y vuelva a pulsar **Iniciar firmante**.
 - *La URI caducó o se usó:* emita otra.
-
-### Requisitos para un evaluador sin archivos del desarrollador
-
-Un clon limpio contiene todo lo necesario para levantar y usar el producto: **no** hace falta un `.env`, ni la identidad de pruebas de B4, ni la carpeta `data/`, ni imágenes de laboratorio. Solo se necesita:
-
-| Para | Necesita |
-|---|---|
-| Levantar y usar la aplicación (pasos 1 a 13) | Docker con Compose v2, Internet (construir la imagen y, al iniciar el firmante, alcanzar el relay) y un navegador. **Nada más** |
-| Ejecutar las pruebas en local (§5 y §9) | Python 3.12 y `pip`; para las E2E de navegador, Chrome o Edge instalado (si no hay, se omiten solas) |
-
-**Qué no trae un clon** (no se versiona a propósito): los **vectores oficiales de NIP-44** (`lab/vendor/`, licencia sin aclarar; sus **8 pruebas se omiten con aviso**, ver §9), las **imágenes de laboratorio** `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a` (solo las necesitan las pruebas de Docker con `E2E_DOCKER=1`, que se omiten sin ellas) y la base de datos de otros entornos.
-
-**Verificado en un clon limpio (2026-11-22, desde GitHub, en un directorio temporal):** `pip install -c constraints.txt -e ".[dev]"` y `pip check` sin errores; `python -m pytest` → **1029 passed, 35 skipped, 0 failed** (26 de Docker, 8 vectores NIP-44 y 1 de permisos POSIX); `docker compose --env-file deploy/demo.env up --build -d` con **proyecto, puerto (18090) y etiqueta de imagen exclusivos de la prueba**, con una segunda construcción **sin caché**: contenedor `healthy`, inicio de sesión con las credenciales de este README (200; contraseña incorrecta, 401), identidad temporal creada sin exponer la clave privada, modo `continuous`, cabeceras de seguridad y `Host` ajeno rechazado. **No se inició el firmante ni se contactó con relays ni con Stacker News**: el flujo completo con Stacker News (pasos 7 a 12) no forma parte de esa verificación. Informe: [`docs/NIGHTLY-REVIEW.md`](docs/NIGHTLY-REVIEW.md).
 
 ## 1. Descripción y objetivo
 
@@ -128,7 +138,7 @@ El producto está **implementado y probado de forma automatizada y local**. Se d
 
 Una prueba automatizada que pasa **no demuestra** interoperabilidad: solo cuenta la autenticación real contra Stacker News. El historial de fases y de decisiones está en [`docs/`](docs/) (§14).
 
-**Modos del firmante (`SIGNER_MODE`).** `continuous` (**por defecto**): disponible mientras el operador no lo detenga, sin parada por duración de sesión, con reconexión automática al relay y límites de frecuencia (30 solicitudes/min por conexión y 120/min en total); **cada `connect` y cada `sign_event` exigen aprobación humana individual**, sin firma automática. `supervised`: el modo de validación de B6.2 (una firma, sesión limitada), que se activa con `deploy/b62.env`.
+**Modos del firmante (`SIGNER_MODE`).** `continuous` (**por defecto**): disponible mientras el operador no lo detenga, sin parada por duración de sesión, con reconexión automática al relay y límites de frecuencia (30 solicitudes/min por conexión y 120/min en total); **cada `connect` y cada `sign_event` exigen aprobación humana individual**, sin firma automática. `supervised`: una firma y una sesión acotada; se activa con `SIGNER_MODE=supervised` (no es el modo oficial; lo usan las pruebas del laboratorio).
 
 **Implementado en `app/`:** FastAPI con `GET /health`; configuración (`app/config.py`); el núcleo `app/nostr/` (claves, eventos NIP-01, NIP-44, NIP-04 entrante, mensajes NIP-46, URI `bunker://` y transporte WebSocket a un relay); los servicios `app/services/` (política de firma del evento de login `kind 27235`, conexiones con revocación individual, aprobaciones, auditoría, límites de frecuencia, estado de sesión conservado entre reconexiones y el firmante NIP-46 con su supervisor de reconexión); la **cuenta del administrador local** (SQLite en `app/storage/`; contraseña con Argon2id en `app/security/passwords.py`) y su sesión con **JWT** (`app/security/`); la **API local de control** (`/api/*`) y la **interfaz web** (`app/static/`). Cada `connect` y cada firma exigen una **aprobación humana explícita** y solo se admite el evento de login de Stacker News (`kind 27235`); no hay firma automática ni aprobaciones persistentes. **No existen** persistencia de claves Nostr ni multiusuario (SQLite guarda solo la cuenta del administrador). El laboratorio (`lab/`) es un arnés de validación **separado del producto**: `app/` nunca importa de él.
 
@@ -179,7 +189,7 @@ nostr-nip46-remote-signer/
 ├── tests/                 # espejo de app/; tests/e2e/ = navegador real; tests/nostr/fixtures/ = datos de interoperabilidad
 ├── lab/                   # laboratorio y arnés de regresión (NO es el producto)
 ├── docs/                  # decisiones, cierre de fases, propuestas y registro de IA
-├── deploy/                # perfiles de Docker Compose (demo.env = evaluación; continuous.env, b62.env = validación) y herramienta de importación de la base
+├── deploy/                # perfil de la instalación oficial (demo.env)
 ├── Dockerfile  compose.yaml  .dockerignore  .env.example
 ├── pyproject.toml  constraints.txt
 └── AGENTS.md  CLAUDE.md  README.md
@@ -261,7 +271,7 @@ Solo por variables de entorno, leídas y validadas en un único módulo (`app/co
 | `RELAY_ALLOW_INSECURE` | `0` | `1` admite `ws://` **solo** para un relay local de pruebas; nunca en una demostración real |
 | `SERVICE_ORIGIN` | `https://stacker.news` | Valor EXACTO esperado de la etiqueta `u` del evento de login |
 | `SIGNER_WINDOW_S` | `120` | Antigüedad máxima aceptada de `created_at` y de los eventos de transporte (1–300) |
-| `SIGNER_MODE` | `continuous` | `continuous` (por defecto): firmante disponible hasta que el operador lo detenga, con reconexión y límites de frecuencia; `supervised`: modo de validación de B6.2 (topes totales de sesión) |
+| `SIGNER_MODE` | `continuous` | `continuous` (por defecto): firmante disponible hasta que el operador lo detenga, con reconexión y límites de frecuencia; `supervised`: una firma y topes totales de sesión (no es el modo oficial) |
 | `SECRET_TTL_S` / `CONNECTION_TTL_S` / `SESSION_TTL_S` | continuo `300` / `28800` / (no se aplica); supervisado `600` / `1800` / `3600` | Vida del secreto de la URI, de una conexión (al caducar hay que emparejar de nuevo) y de la sesión del firmante (solo supervisado) |
 | `REQUESTS_PER_MIN` | `30` | Solo modo continuo: solicitudes por minuto **por conexión** (1–120). Además hay un límite **global** fijo de 120/min, aplicado antes de verificar la firma o descifrar. Al superarlos el mensaje se descarta sin detener el firmante ni revocar conexiones |
 | `APPROVAL_TTL_S` | continuo `300` / supervisado `120` | Segundos que una solicitud espera la decisión del operador (5–600); vencida = denegada |
@@ -276,7 +286,7 @@ Solo por variables de entorno, leídas y validadas en un único módulo (`app/co
 | `ADMIN_PASSWORD_FILE` | (vacío) | Alternativa a `ADMIN_PASSWORD`: ruta de un archivo de texto con la contraseña inicial (excluyentes). No se lee si ya hay administrador |
 | `APP_IMAGE` | `nostr-nip46-remote-signer:dev` | Solo Docker Compose: etiqueta de la imagen local (útil para una segunda copia del repositorio) |
 
-En Docker Compose, todas las variables de arriba (salvo `RELAY_ALLOW_INSECURE`, `ADMIN_PASSWORD_FILE` y `DATABASE_PATH`) llegan al contenedor. Los perfiles de `deploy/` (§10) agrupan valores: `demo.env` para evaluación (contraseña pública, solo local), `continuous.env` y `b62.env` para la validación real.
+En Docker Compose, todas las variables de arriba (salvo `RELAY_ALLOW_INSECURE`, `ADMIN_PASSWORD_FILE` y `DATABASE_PATH`) llegan al contenedor. El perfil oficial `deploy/demo.env` agrupa los valores de la instalación (contraseña pública, solo local).
 
 Un valor inválido hace fallar el arranque con un mensaje que nombra la variable, **nunca** su valor. **Ya no existe** el código de acceso de la terminal (D-9). **No existe** variable para la clave de firma del JWT ni la clave Nostr: la **clave de firma del JWT** la genera el servidor al azar en cada arranque y vive solo en memoria (nunca se deriva de la contraseña); la **clave privada Nostr** vive **solo en memoria** (decisión D-3). `ADMIN_PASSWORD` y `ADMIN_PASSWORD_FILE` no aparecen en `repr` ni en los errores. Con el `RELAY_URL` real, «Iniciar firmante» **abre una conexión real** a ese relay.
 
@@ -284,7 +294,7 @@ Un valor inválido hace fallar el arranque con un mensaje que nombra la variable
 
 ### Primer arranque: crear el administrador local
 
-La aplicación **ya no muestra un código de acceso** en la terminal: se ingresa con **usuario y contraseña** guardados en SQLite (solo su hash Argon2id). En una instalación nueva el administrador se crea **una sola vez**, en el primer arranque, con una contraseña inicial que usted aporta. **El código no tiene ninguna contraseña por defecto** ni hay pantalla pública de registro. La única excepción es el perfil de **evaluación** `deploy/demo.env` (ver «Inicio rápido» y D-18): trae una contraseña pública, solo para uso local, y se activa únicamente si usted lo selecciona con `--env-file`. Para cualquier otro uso, siga los pasos de abajo con una contraseña propia.
+La aplicación **ya no muestra un código de acceso** en la terminal: se ingresa con **usuario y contraseña** guardados en SQLite (solo su hash Argon2id). En una instalación nueva el administrador se crea **una sola vez**, en el primer arranque, con una contraseña inicial que usted aporta. **El código no tiene ninguna contraseña por defecto** ni hay pantalla pública de registro. La única excepción es el perfil **oficial** `deploy/demo.env` (ver «Instalación oficial» y D-18): trae una contraseña pública, solo para uso local, y se activa únicamente si usted lo selecciona con `--env-file`. Para cualquier otro uso, siga los pasos de abajo con una contraseña propia.
 
 1. Elija una contraseña de 12 a 128 caracteres (sin reglas de composición; no puede ser igual al usuario ni casi un único carácter repetido) y, si quiere, un usuario (`ADMIN_USERNAME`, por defecto `admin`).
 2. Pásela a la aplicación **sin escribirla en la línea de comandos** (el historial de la terminal la guardaría) ni en archivos versionados:
@@ -347,7 +357,7 @@ La base la crea sola el primer arranque (archivo con permisos solo del propietar
 
 No hay recuperación por correo ni por pregunta secreta (la aplicación es local y no usa servicios externos). La base solo contiene la cuenta del administrador, así que el procedimiento es: **detener la aplicación, borrar la base y repetir el primer arranque** con una contraseña inicial nueva.
 - Local: borre `data/nip46.db` (o el archivo de `DATABASE_PATH`) y sus auxiliares `-journal`, `-wal` y `-shm`.
-- Docker Compose: **destruye los datos de ese entorno.** `docker compose -p <proyecto> down -v` borra el volumen `<proyecto>_app_data` (solo el de ese proyecto). Identifique antes el proyecto y el volumen (`docker volume ls`); en la demostración de evaluación son `nip46-evaluacion` y `nip46-evaluacion_app_data`. No lo ejecute sin `-p` en una máquina donde haya otros entornos.
+- Docker Compose: **destruye los datos de ese entorno.** `docker compose -p <proyecto> down -v` borra el volumen `<proyecto>_app_data` (solo el de ese proyecto). Identifique antes el proyecto y el volumen (`docker volume ls`); en la instalación oficial son `nip46-evaluacion` y `nip46-evaluacion_app_data`. No lo ejecute sin `-p` en una máquina donde haya otros entornos.
 
 Esto **no** afecta a nada más: la identidad Nostr vive solo en memoria y la identidad de B4 está en su propio archivo fuera del repositorio. Una herramienta de cambio de contraseña sin borrar la base queda como propuesta (P-39).
 
@@ -422,11 +432,11 @@ $env:E2E_DOCKER = "1"; python -m pytest tests/e2e/test_docker_ndk.py -v
 
 **Docker Compose real del producto** (`tests/e2e/test_docker_persistence.py`, también con `E2E_DOCKER=1`; construye la imagen del repositorio con un proyecto y una etiqueta propios): administrador inicial desde el entorno, persistencia de SQLite tras `restart`, `down` y recreación **sin** la contraseña inicial, que una contraseña distinta en el entorno no sobrescribe la guardada, usuario no root, raíz de solo lectura con solo `/data` escribible, ausencia de credenciales en la imagen y los registros, y el arranque abortado sin contraseña inicial.
 
-**Modo continuo en Docker** (`tests/e2e/test_docker_continuous.py`, también con `E2E_DOCKER=1`; usa la imagen local `nostr-nip46-remote-signer:d17-continuous` —o `D17_TEST_IMAGE`— y la del laboratorio `nip46-lab-py:1.0a`, y **no construye ni descarga nada**): proyecto Docker efímero con un relay local, clave de prueba generada al vuelo y sin servicios externos; opera la interfaz en un navegador real (importación de identidad, URI solo desde la interfaz y ausente de los registros, aprobación humana de `connect` y de dos `sign_event`, límite de 30 por conexión, revocación individual, reconexión tras parar y arrancar el relay y ausencia de sockets hacia fuera de la red de Docker).
+**Modo continuo en Docker** (`tests/e2e/test_docker_continuous.py`, también con `E2E_DOCKER=1`; usa la imagen local `nostr-nip46-remote-signer:evaluation` (la que construye la instalación oficial) —o `D17_TEST_IMAGE`— y la del laboratorio `nip46-lab-py:1.0a`, y **no construye ni descarga nada**): proyecto Docker efímero con un relay local, clave de prueba generada al vuelo y sin servicios externos; opera la interfaz en un navegador real (importación de identidad, URI solo desde la interfaz y ausente de los registros, aprobación humana de `connect` y de dos `sign_event`, límite de 30 por conexión, revocación individual, reconexión tras parar y arrancar el relay y ausencia de sockets hacia fuera de la red de Docker).
 
 Además, `python lab/run_product_regression.py` (servicio) y `python lab/run_product_regression.py --api` (aplicación completa por HTTP, P-33) ejecutan E1, E2, E3 y E8 con NDK 2.12.2 en red Docker `internal`.
 
-**Qué NO demuestran:** nada de lo anterior es una autenticación con Stacker News. Es validación **local**; la **real** está pendiente de la autorización de B4.
+**Qué NO demuestran:** nada de lo anterior es una autenticación con Stacker News. Es validación **local**; la **real** con Stacker News está en §2 (validaciones del propietario, sin automatizar).
 
 ## 10. Ejecución mediante Docker Compose
 
@@ -448,35 +458,28 @@ Dentro del contenedor la aplicación escucha en `0.0.0.0:8000` (necesario para q
 
 Tras `docker compose up`, abra <http://127.0.0.1:8000> e ingrese con su usuario y contraseña. `compose.yaml` pasa al contenedor las variables del administrador (`ADMIN_USERNAME`, `ADMIN_PASSWORD`) y del firmante (`RELAY_URL`, `RELAY_TLS_GROUPS`, `SERVICE_ORIGIN`, `APPROVAL_TTL_S`, `MAX_SIGNATURES`, `SESSION_TTL_S`, `ALLOWED_HOSTS`, `JWT_TTL_S`, `SIGNER_WINDOW_S`, `SECRET_TTL_S`, `CONNECTION_TTL_S`, `MAX_REQUESTS`, `MAX_PENDING`, `COOKIE_SECURE`; vacío = valor por defecto de la §7); `DATABASE_PATH` queda fijo en `/data/nip46.db`. **No** reenvía `RELAY_ALLOW_INSECURE` (Docker nunca admite `ws://`) ni `ADMIN_PASSWORD_FILE`.
 
-**Persistencia.** SQLite vive en el volumen con nombre `app_data` (en `/data`, el **único** directorio escribible: la raíz del contenedor sigue siendo de solo lectura y el usuario es el no privilegiado `uid 10001`). `docker compose down` **conserva** el volumen (y por tanto el administrador). La imagen no contiene credenciales. Empezar desde cero **destruye los datos de ese entorno** (la cuenta de administrador): `docker compose -p <proyecto> down -v` borra únicamente el volumen `<proyecto>_app_data`; con el proyecto por defecto sería `nostr-nip46-remote-signer_app_data`. Identifique siempre el proyecto y el volumen antes (`docker volume ls`) y no lo use de forma rutinaria; el procedimiento de la demostración de evaluación está en el «Inicio rápido». La clave privada Nostr nunca está en el volumen: se pierde siempre al reiniciar el contenedor y se vuelve a crear o importar desde la interfaz.
+**Persistencia.** SQLite vive en el volumen con nombre `app_data` (en `/data`, el **único** directorio escribible: la raíz del contenedor sigue siendo de solo lectura y el usuario es el no privilegiado `uid 10001`). `docker compose down` **conserva** el volumen (y por tanto el administrador). La imagen no contiene credenciales. Empezar desde cero **destruye los datos de ese entorno** (la cuenta de administrador): `docker compose -p <proyecto> down -v` borra únicamente el volumen `<proyecto>_app_data`; con el proyecto por defecto sería `nostr-nip46-remote-signer_app_data`. Identifique siempre el proyecto y el volumen antes (`docker volume ls`) y no lo use de forma rutinaria; el procedimiento de la instalación oficial está en la «Instalación oficial». La clave privada Nostr nunca está en el volumen: se pierde siempre al reiniciar el contenedor y se vuelve a crear o importar desde la interfaz.
 
-**Perfil de validación B6.2 (D-16).** `deploy/b62.env` es un perfil **específico de validación** (no la configuración definitiva del producto) con los límites exactos de [`docs/phase-1.0B-B6.2-plan.md`](docs/phase-1.0B-B6.2-plan.md) §4: puerto 8001, relay y origen reales, una firma, 30 solicitudes, ventana de firma de 120 s y sesión y conexión de 720 s. No contiene secretos. Se aplica con `--env-file`, que **sustituye** al `.env` local (un `.env` personal no altera la validación):
-
-```bash
-docker compose --env-file deploy/b62.env -p nostr-nip46-remote-signer up -d      # Linux/macOS/PowerShell (desde la raíz del repositorio)
-```
-
-**Servicios y puertos definitivos.** Cada fila es un **proyecto Docker independiente** (contenedor, red y volumen propios, y por tanto **su propia base SQLite**); no hay bases compartidas y el cliente de laboratorio **no** forma parte de `compose.yaml`. Pueden estar levantados **a la vez** porque ya no comparten ningún puerto:
+**Servicios y puertos.** Cada fila es un **proyecto Docker independiente** (contenedor, red y volumen propios, y por tanto **su propia base SQLite**); no hay bases compartidas y el cliente de laboratorio **no** forma parte de `compose.yaml`. Pueden estar levantados **a la vez** porque no comparten ningún puerto:
 
 | Puerto del host | Servicio | Cómo se levanta | Para qué |
 |---|---|---|---|
-| `8000` | **Firmante** (interfaz web `/` + API `/api`) | `deploy/demo.env`, proyecto `nip46-evaluacion` | **Evaluación** (camino principal; es también el valor por defecto de `compose.yaml`) |
-| `8001` | **Firmante** | `deploy/continuous.env` o `deploy/b62.env`, proyecto `nostr-nip46-remote-signer` | Validación real del propietario (B6.2); no hace falta para evaluar |
-| `18000` | **Firmante** de la demostración de laboratorio (pestaña A) | `lab/manual/manual.env`, proyecto `nip46-demo` | Probar el cliente NIP-46 de laboratorio (ver más abajo) |
+| `8000` | **Firmante** (interfaz web `/` + API `/api`) | `deploy/demo.env`, proyecto `nip46-evaluacion` | **Instalación oficial** (es también el valor por defecto de `compose.yaml`) |
+| `18000` | **Firmante** de la demostración de laboratorio (pestaña A) | `lab/manual/manual.env`, proyecto `nip46-demo` | Solo para el cliente NIP-46 de laboratorio (opcional) |
 | `18080` | **Cliente NIP-46 de laboratorio** (pestaña B, NDK real) | `lab/manual/compose.manual.yaml` | Hace de «Stacker News» local; no puede aprobar nada |
 | `17777` | **Relay local de laboratorio** | `lab/manual/compose.manual.yaml` | Sin conexión a relays públicos |
 
 La interfaz del **firmante** (donde se aprueba) está en `app/static/` y la sirve el propio firmante; el **cliente de laboratorio** vive en `lab/manual/client_web/` y es otra aplicación. Un solo proceso del firmante por proyecto. `tests/test_deploy_profile.py` comprueba que ningún perfil documentado repite puerto.
 
-Arrancar el contenedor **no abre ninguna conexión externa**: el relay solo se contacta cuando la persona pulsa «Iniciar firmante» en el panel. **Reutilizar una base SQLite existente** (p. ej. `data/b62.db`) sin exponer la contraseña ni sobrescribir nada: cree antes el volumen con `docker compose --env-file deploy/b62.env -p nostr-nip46-remote-signer create --no-build --pull never` y ejecute `python deploy/import_admin_db.py --source data/b62.db --volume nostr-nip46-remote-signer_app_data --image <imagen-del-proyecto>`. **Indique siempre `--image` con la misma imagen que usa el proyecto** (`APP_IMAGE`; en la validación B6.2, `nostr-nip46-remote-signer:manual-b61d`): su valor por defecto es `nostr-nip46-remote-signer:dev`, que puede no coincidir con el código actual. La herramienta monta el origen **solo de lectura** en un contenedor efímero sin red, **nunca sobrescribe** un destino existente, comprueba integridad, esquema, número de administradores, propietario (`uid 10001`) y permisos (`0600`, directorio `0700`), y comprueba que el archivo de origen no cambió (SHA-256). No imprime contraseñas, hashes ni usuarios. Con la base importada no se necesita `ADMIN_PASSWORD`. Procedimiento completo: plan B6.2 §17.
+Arrancar el contenedor **no abre ninguna conexión externa**: el relay solo se contacta cuando la persona pulsa «Iniciar firmante» en el panel.
 
 **Varias copias del repositorio.** Por defecto `compose.yaml` usa el proyecto `nostr-nip46-remote-signer` y la imagen `nostr-nip46-remote-signer:dev`: otra copia reemplazaría esa imagen y compartiría contenedor, red **y el volumen con el administrador** con la primera. Para una copia independiente use un proyecto y una imagen propios: `APP_IMAGE=mi-copia:dev docker compose -p mi-copia up --build -d` (PowerShell: `$env:APP_IMAGE = "mi-copia:dev"; docker compose -p mi-copia up --build -d`) y, si hace falta, otro `APP_PORT`. El valor por defecto no cambia nada para quien ya usa el proyecto actual.
 
 **Imagen base.** Por defecto `python:3.12-slim` (etiqueta mutable). Para un bloqueo verificable antes de las pruebas reales hay un digest del índice multiarquitectura (amd64 y arm64) verificado en el laboratorio: `PYTHON_IMAGE=python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b docker compose build` (decisión D-6; no activado por defecto). Con ese digest se verificó el Bloque B0.
 
-### Demostración local desde el navegador (cliente web de laboratorio, B6.1D-R3)
+### Cliente de laboratorio (demostración local desde el navegador; opcional)
 
-Permite probar **todo el protocolo NIP-46 con dos pestañas del navegador**, sin scripts durante el recorrido: la pestaña A es el firmante (donde se **aprueba**) y la pestaña B es un cliente de demostración que usa el cliente **NDK 2.12.2 real** (el de Stacker News) contra un relay **local**. Es solo de laboratorio: no forma parte de la imagen ni del `compose.yaml` del producto, no tiene forma de aprobar nada y no se conecta a Stacker News ni a relays públicos. Requiere las imágenes del laboratorio `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a` (`lab/README.md`).
+Permite probar **todo el protocolo NIP-46 con dos pestañas del navegador**, sin scripts durante el recorrido: la pestaña A es el firmante (donde se **aprueba**) y la pestaña B es un cliente de demostración que usa el cliente **NDK 2.12.2 real** (el de Stacker News) contra un relay **local**. Es opcional y solo de laboratorio: no forma parte de la imagen ni del `compose.yaml` del producto, no tiene forma de aprobar nada y no se conecta a Stacker News ni a relays públicos. Necesita su propio firmante porque el oficial solo admite relays `wss://` y el relay local es `ws://`. Requiere las imágenes del laboratorio `nip46-lab-py:1.0a` y `nip46-lab-node:1.0a` (`lab/README.md`).
 
 ```powershell
 # Una vez (PowerShell 7, raiz del repositorio). Contrasena inicial por entrada oculta, solo la primera vez en un volumen nuevo:
@@ -487,7 +490,7 @@ Remove-Item Env:ADMIN_PASSWORD        # la cuenta persiste en el volumen: ya no 
 # Detener: docker compose --env-file lab/manual/manual.env -p nip46-demo -f compose.yaml -f lab/manual/compose.manual.yaml down      (down -v borra tambien la base de prueba)
 ```
 
-- **Pestaña A (firmante):** <http://127.0.0.1:18000> (`lab/manual/manual.env` fija `APP_PORT=18000`, para no chocar con el 8000 de la evaluación ni el 8001 de la validación real). **Pestaña B (cliente):** <http://127.0.0.1:18080>. **Relay local:** `ws://127.0.0.1:17777` (desde Docker, `ws://relay:7777`). Todo se publica solo en `127.0.0.1`.
+- **Pestaña A (firmante):** <http://127.0.0.1:18000> (`lab/manual/manual.env` fija `APP_PORT=18000`, para no chocar con el 8000 de la instalación oficial). **Pestaña B (cliente):** <http://127.0.0.1:18080>. **Relay local:** `ws://127.0.0.1:17777` (desde Docker, `ws://relay:7777`). Todo se publica solo en `127.0.0.1`.
 - **Parámetros solo de la demostración:** ventana de firma **45 s** y TTL de aprobación **120 s** (variables `MANUAL_SIGNER_WINDOW_S` y `MANUAL_APPROVAL_TTL_S`). El firmante muestra en cada solicitud de firma el **plazo efectivo restante** («Plazo efectivo para firmar: N s»), que es el **menor** entre la ventana de la política y la caducidad de la aprobación; al llegar a cero indica «Ya no puede firmarse» y el botón pasa a «Aprobar (ya no firmará)».
 - **Recorrido:** A: ingresar → «Crear identidad temporal» → «Iniciar firmante» → «Emitir URI de un solo uso» → «Copiar». B: pegar la URI → «Crear sesión» → «Conectar (connect)» → en A **Aprobar** → «get_public_key» y «ping» → «Firma válida» → en A **Aprobar** (B muestra «Firmada y verificada» con 7 comprobaciones ✓) → «Enviar firma inválida» (cada variante: se rechaza sin tarjeta) → «Firma válida» y esperar más de 45 s antes de aprobar (B: «Rechazada»; A: «Rechazada al firmar: la política dejó de cumplirse»). Una URI es de un solo uso: repetirla en una sesión nueva también se rechaza.
 - **Qué no es:** no sustituye la validación real con Stacker News; «Firmada» en la pestaña B solo se muestra tras **verificar criptográficamente** la respuesta (id, firma BIP-340, identidad, contenido y reto).
@@ -505,17 +508,17 @@ curl http://127.0.0.1:8000/health
 ## 12. Detención de contenedores
 
 ```bash
-docker compose down                          # proyecto por defecto
-docker compose -p nip46-evaluacion down      # demostración de evaluación
+docker compose -p nip46-evaluacion down      # instalación oficial
+docker compose down                          # proyecto por defecto (solo si lo levantó sin -p)
 ```
 
-Solo afecta a los recursos de ese proyecto (contenedor y red). El volumen `app_data` (el administrador) **permanece**; borrarlo destruye datos y se explica en §10 y en el «Inicio rápido». La imagen permanece (`nostr-nip46-remote-signer:dev`, o `:evaluation` en la demostración); se borra con `docker image rm <imagen>`.
+Solo afecta a los recursos de ese proyecto (contenedor y red). El volumen `app_data` (el administrador) **permanece**; borrarlo destruye datos y se explica en §10 y en la «Instalación oficial». La imagen permanece (`nostr-nip46-remote-signer:evaluation` en la instalación oficial); se borra con `docker image rm <imagen>`.
 
 ## 13. Limitaciones actuales
 
-- **Autenticación real con Stacker News: dos ejecuciones, ambas observadas por el propietario.** La de B4 (2026-11-21, PASS con observaciones) fue observada por el propietario (sin captura ni comprobación de persistencia al recargar) y con la versión de entonces (supervisada, una firma). Se repitió el 2026-11-22 con la versión final en modo continuo (imagen `d17-continuous`): **PASS confirmado por el propietario**, sin evidencia técnica capturada (auditoría, horas y número de firmas **no verificados**); cualquier repetición requiere autorización expresa. El resto de las validaciones (B2, B3, B5, B6 local, modo continuo en Docker) son entorno local.
+- **Autenticación real con Stacker News: dos ejecuciones, ambas observadas por el propietario.** La de B4 (2026-11-21, PASS con observaciones) fue observada por el propietario (sin captura ni comprobación de persistencia al recargar) y con la versión de entonces (supervisada, una firma). Se repitió el 2026-11-22 con la versión final en modo continuo: **PASS confirmado por el propietario**, sin evidencia técnica capturada (auditoría, horas y número de firmas **no verificados**); cualquier repetición requiere autorización expresa. El resto de las validaciones (B2, B3, B5, B6 local, modo continuo en Docker) son entorno local.
 - **Sin persistencia de claves Nostr (D-3)** y sin multiusuario: SQLite guarda solo **un** administrador (D-9). **Reiniciar o recrear el contenedor borra la identidad** (hay que crearla o importarla de nuevo), cierra todas las sesiones de la interfaz y revoca las conexiones. La sesión de la interfaz dura 15 minutos por defecto (1 hora en el perfil de demostración). La cookie no es `Secure` por defecto porque la aplicación local usa `http://127.0.0.1`.
-- **Credenciales de demostración públicas** (`deploy/demo.env`, D-18): solo para evaluación local; no deben usarse en producción ni exponerse en red.
+- **Credenciales de demostración públicas** (`deploy/demo.env`, D-18): solo para la instalación oficial local; no deben usarse en producción ni exponerse en red.
 - No hay recuperación ni cambio de contraseña desde la aplicación: se recupera borrando la base (ver §8; P-39). El límite de intentos es global: alguien con acceso a la red local puede bloquear el ingreso 5 minutos (P-40).
 - **Revalidación antes de firmar (P-38, corregido en B6.1B; P-42 corregido en B6.1C; plazo efectivo visible en B6.1D-R3):** tras la aprobación humana el firmante vuelve a comprobar, justo antes de usar la clave, que la aprobación sigue vigente y sin consumir, que el firmante y el cliente siguen activos, que la política completa (incluida la ventana temporal `SIGNER_WINDOW_S`) se sigue cumpliendo y que lo que se firma es exactamente lo aprobado. **Consecuencia práctica:** una aprobación tardía **ya no firma**: debe aprobar dentro de `SIGNER_WINDOW_S` (120 s por defecto) menos la antigüedad de la plantilla, aunque `APPROVAL_TTL_S` sea mayor. La interfaz muestra el **resultado real** de cada firma (P-42): «Aprobada por el operador; falta el resultado de la firma», «Firmada correctamente», «Rechazada al firmar: <motivo>» o «Fallida: <motivo>», y lo anuncia con un banner; «firmada» significa que la firma se produjo y se autoverificó, no que el relay confirmara la entrega (eso se audita aparte, `response_published`).
 - **Relay (modo continuo):** una sola conexión al relay; ante pérdidas **recuperables** se reconecta sola (2, 5, 10, 20 y 40 s) conservando conexiones y anti-replay, y tras 5 fallos seguidos pasa a «Fallido» (iniciar de nuevo a mano). **No** se reconecta tras una detención manual ni ante errores permanentes: un relay que exija `AUTH` (NIP-42), un error de TLS o un cierre explícito detienen la sesión.
@@ -532,12 +535,12 @@ Solo afecta a los recursos de ese proyecto (contenedor y red). El volumen `app_d
 
 - Cierre de la Fase 1.0A y propuesta de la Fase 1.0B: [`docs/phase-1.0A-closure.md`](docs/phase-1.0A-closure.md), [`docs/phase-1.0B-proposal.md`](docs/phase-1.0B-proposal.md), resumen sanitizado de la evidencia: [`docs/phase-1.0A-evidence-summary.md`](docs/phase-1.0A-evidence-summary.md).
 - Demostración real de B4 (resultado PASS con observaciones) y su compuerta: [`docs/phase-1.0B-B4-gate.md`](docs/phase-1.0B-B4-gate.md); evidencia sanitizada en [`docs/evidence/`](docs/evidence/).
-- Cliente web local NIP-46 y contador del plazo efectivo de firma (B6.1D-R3): [`docs/phase-1.0B-B6.1D-R3-web-client.md`](docs/phase-1.0B-B6.1D-R3-web-client.md); diagnóstico de la validación manual (B6.1D): [`docs/phase-1.0B-B6.1D-diagnosis-and-proposal.md`](docs/phase-1.0B-B6.1D-diagnosis-and-proposal.md); cierre de B6.1D: [`docs/phase-1.0B-B6.1D-closure.md`](docs/phase-1.0B-B6.1D-closure.md); plan de la validación real B6.2 (pendiente de autorización): [`docs/phase-1.0B-B6.2-plan.md`](docs/phase-1.0B-B6.2-plan.md).
+- Cliente web local NIP-46 y contador del plazo efectivo de firma (B6.1D-R3): [`docs/phase-1.0B-B6.1D-R3-web-client.md`](docs/phase-1.0B-B6.1D-R3-web-client.md); diagnóstico de la validación manual (B6.1D): [`docs/phase-1.0B-B6.1D-diagnosis-and-proposal.md`](docs/phase-1.0B-B6.1D-diagnosis-and-proposal.md); cierre de B6.1D: [`docs/phase-1.0B-B6.1D-closure.md`](docs/phase-1.0B-B6.1D-closure.md); plan y resultado de la segunda validación real (B6.2; PASS declarado por el propietario; sus perfiles de despliegue se retiraron del árbol, D-20): [`docs/phase-1.0B-B6.2-plan.md`](docs/phase-1.0B-B6.2-plan.md).
 - Compuerta Argon2id (P-41) y resultado real de la firma en la interfaz (P-42), B6.1C: [`docs/phase-1.0B-B6.1C-p41-p42.md`](docs/phase-1.0B-B6.1C-p41-p42.md).
 - Cierre de seguridad B6.1B (revalidación antes de firmar, P-38; Argon2id con memoria limitada, P-41): [`docs/phase-1.0B-B6.1B-security-closure.md`](docs/phase-1.0B-B6.1B-security-closure.md).
 - Autenticación local con SQLite + JWT y correcciones P-35/P-36/P-37 (B6.1A): [`docs/phase-1.0B-B6.1A-local-auth.md`](docs/phase-1.0B-B6.1A-local-auth.md).
 - Reproducibilidad desde un clon limpio (B6, etapa 1): [`docs/phase-1.0B-B6-stage1-reproducibility.md`](docs/phase-1.0B-B6-stage1-reproducibility.md).
-- **Continuidad (leer primero para retomar):** [`docs/handoff-2026-11-21.md`](docs/handoff-2026-11-21.md).
+- **Continuidad (leer primero para retomar):** [`docs/HANDOFF.md`](docs/HANDOFF.md) (el anterior, [`docs/handoff-2026-11-21.md`](docs/handoff-2026-11-21.md), es histórico). Simplificación final de la instalación: decisión D-20 en [`docs/decisions.md`](docs/decisions.md).
 - Decisiones y registro de IA: [`docs/decisions.md`](docs/decisions.md), [`docs/ai-log.md`](docs/ai-log.md).
 - Investigación y diseño (Fase 0.3), todo **propuestas** salvo lo que `docs/decisions.md` marque como aprobado:
   - [Análisis del protocolo NIP-46](docs/nip46-protocol-analysis.md)

@@ -27,14 +27,14 @@ services:
       SESSION_TTL_S: ${SESSION_TTL_S:-}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
       JWT_TTL_S: ${JWT_TTL_S:-}
-      # Limites del firmante (D-16). Vacio = valor por defecto de app/config.py. Se reenvian para poder fijar el perfil de validacion deploy/b62.env.
+      # Limites del firmante (D-16). Vacio = valor por defecto de app/config.py. Se reenvian para poder ajustarlos desde un perfil (--env-file) o el entorno.
       SIGNER_WINDOW_S: ${SIGNER_WINDOW_S:-}
       SECRET_TTL_S: ${SECRET_TTL_S:-}
       CONNECTION_TTL_S: ${CONNECTION_TTL_S:-}
       MAX_REQUESTS: ${MAX_REQUESTS:-}
       MAX_PENDING: ${MAX_PENDING:-}
       COOKIE_SECURE: ${COOKIE_SECURE:-}
-      # Modo del firmante (D-17). Vacio = `continuous`, el modo principal; `supervised` conserva el comportamiento de validacion de B6.2 (deploy/b62.env).
+      # Modo del firmante (D-17). Vacio = `continuous`, el modo principal; `supervised` (una firma y sesion acotada) no es el modo oficial.
       SIGNER_MODE: ${SIGNER_MODE:-}
       REQUESTS_PER_MIN: ${REQUESTS_PER_MIN:-}
       # A PROPOSITO no se reenvian RELAY_ALLOW_INSECURE (ws:// solo para laboratorios con su propio compose) ni ADMIN_PASSWORD_FILE.

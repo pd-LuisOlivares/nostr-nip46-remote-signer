@@ -166,7 +166,7 @@ def test_there_is_no_automatic_signing_setting_anywhere():
     """Alcance de D-17: cada `connect` y cada `sign_event` requieren aprobacion humana; no existe ninguna variable ni campo de firma automatica."""
     assert not [name for name in Settings.__dataclass_fields__ if "auto" in name]
     assert Settings.from_env({"AUTO_SIGN_PER_HOUR": "abc"}) == Settings()  # una variable ajena se ignora: ya no se lee ni se valida
-    for relative in ("app/config.py", "compose.yaml", ".env.example", "deploy/b62.env"):
+    for relative in ("app/config.py", "compose.yaml", ".env.example", "deploy/demo.env"):
         text = (ROOT / relative).read_text(encoding="utf-8").lower().replace("á", "a")
         assert "auto_sign" not in text and "firma automatica" not in text and "firmas automaticas" not in text, relative
 
