@@ -33,6 +33,8 @@ class SignerOut(BaseModel):
     connections_active: int
     connections_pending: int
     connections_unused_secrets: int
+    reconnect_attempt: int | None = None  # solo mientras se reconecta (modo continuo): número del intento (P-49)
+    reconnect_max: int | None = None  # total de intentos antes de pasar a «Fallido»
 
 
 class StatusOut(BaseModel):

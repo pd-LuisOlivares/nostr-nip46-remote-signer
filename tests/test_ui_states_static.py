@@ -19,3 +19,9 @@ def test_the_exhausted_reconnection_is_explained_and_says_the_connections_are_ke
 def test_the_revoke_button_calls_the_opaque_id_endpoint_with_delete():
     assert "api('DELETE', `/api/connections/${encodeURIComponent(id)}`)" in JS and "'Revocar'" in JS
     assert "c.client" in JS and "onRevoke(c.id)" in JS  # se revoca por el id opaco, no por la clave del cliente
+
+
+def test_the_ui_shows_the_reconnection_attempt_as_plain_text_only_while_reconnecting() -> None:
+    js = (Path(__file__).resolve().parents[1] / "app" / "static" / "app.js").read_text(encoding="utf-8")
+    assert "sg.state === 'reconnecting' && sg.reconnect_attempt" in js and "intento ${sg.reconnect_attempt} de ${sg.reconnect_max}" in js  # P-49
+    assert "innerHTML" not in js and "reconnect_attempt" not in js.split("function renderConnections")[1]  # solo texto, y solo en la zona del estado del firmante

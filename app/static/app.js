@@ -209,6 +209,9 @@
       ? `${sg.signatures} (cada una aprobada por una persona)`
       : `${sg.signatures} de ${sg.max_signatures} permitidas`;
     $('signer-end').textContent = endText(sg.end_reason);
+    if (sg.state === 'reconnecting' && sg.reconnect_attempt) {
+      $('signer-end').textContent = `Reconectando, intento ${sg.reconnect_attempt} de ${sg.reconnect_max}.`; // P-49
+    }
     const running = ['starting', 'ready', 'reconnecting', 'stopping'].includes(sg.state); // «Detener» sigue disponible mientras se reconecta
     $('identity-create').disabled = running;
     $('identity-import').disabled = running;

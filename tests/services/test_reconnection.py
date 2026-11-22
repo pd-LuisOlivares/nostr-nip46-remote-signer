@@ -356,3 +356,51 @@ async def test_supervised_mode_never_reconnects_and_keeps_revoking() -> None:
 async def test_the_default_backoff_of_the_runtime_is_the_approved_one() -> None:
     runtime = SignerRuntime(Harness("continuous").settings)
     assert runtime._backoff == (2.0, 5.0, 10.0, 20.0, 40.0)
+
+
+async def test_the_status_reports_the_reconnection_attempt_n_of_5_only_while_reconnecting() -> None:
+    """P-49: «Reconectando, intento n de 5». El número sale del contador del supervisor y desaparece al reconectar, al agotarse o al detener."""
+    sleep = FakeSleep(hold=True)
+    h = recon(sleep)
+    first = await h.start()
+    assert "reconnect_attempt" not in h.runtime.status()["signer"]  # en marcha normal no hay contador
+    h.relay_plan = [{"fail_connect": True}, {"fail_connect": True}, {}]
+    drop(first)
+    await wait_until(h, lambda: sleep.delays == [2.0])
+    signer = h.runtime.status()["signer"]
+    assert signer["state"] == "reconnecting" and (signer["reconnect_attempt"], signer["reconnect_max"]) == (1, 5)
+    sleep.release.set()
+    sleep.release.clear()  # libera solo la espera en curso
+    await wait_until(h, lambda: sleep.delays == [2.0, 5.0])
+    assert h.runtime.status()["signer"]["reconnect_attempt"] == 2  # el segundo intento tras fallar el primero
+    sleep.release.set()  # a partir de aquí no se retiene ninguna espera más
+    await wait_until(h, lambda: ready_again(h, first.service))
+    signer = h.runtime.status()["signer"]
+    assert signer["state"] == "ready" and "reconnect_attempt" not in signer  # reconectado: el contador desaparece
+    await h.runtime.stop()
+    assert "reconnect_attempt" not in h.runtime.status()["signer"]
+
+
+async def test_after_exhausting_the_attempts_the_status_shows_the_reason_and_no_attempt_counter() -> None:
+    sleep = FakeSleep()
+    h = recon(sleep)
+    first = await h.start()
+    h.relay_plan = [{"fail_connect": True}] * len(RECONNECT_BACKOFF_S)
+    drop(first)
+    await wait_until(h, lambda: h.runtime.status()["signer"].get("end_reason") == "reconexion_agotada")
+    signer = h.runtime.status()["signer"]
+    assert signer["state"] != "reconnecting" and "reconnect_attempt" not in signer  # FAILED con la razón de agotamiento y sin contador
+    assert sleep.delays == list(RECONNECT_BACKOFF_S)
+    await h.runtime.stop()
+
+
+def test_the_status_schema_exposes_the_attempt_fields_as_optional_integers() -> None:
+    from app.schemas.control import SignerOut
+
+    base = {"state": "reconnecting", "relay_host": "r", "signatures": 0, "max_signatures": None, "end_reason": None, "pending": 0,
+            "connections_active": 1, "connections_pending": 0, "connections_unused_secrets": 0}
+    assert SignerOut(**base).reconnect_attempt is None  # el resto de estados no cambia
+    shown = SignerOut(**base, reconnect_attempt=3, reconnect_max=5)
+    assert (shown.reconnect_attempt, shown.reconnect_max) == (3, 5)
+    with pytest.raises(ValueError):
+        SignerOut(**base, reconnect_attempt="tres")  # type: ignore[arg-type]

@@ -73,6 +73,7 @@ class SignerRuntime:
         self._supervisor: asyncio.Task[None] | None = None  # una SOLA tarea de reconexión por arranque (solo modo continuo)
         self._manual_stop = False
         self._exhausted = False
+        self._attempt_no = 0  # número del intento de reconexión en curso o inminente (P-49): solo se muestra mientras se reconecta
 
     def now(self) -> float:
         return self._now()
@@ -205,20 +206,25 @@ class SignerRuntime:
                 return  # parada manual, error permanente o motivo no recuperable: no se reconecta
             if self._now() - ready_at >= RECONNECT_STABLE_S:
                 failures = 0
+            self._attempt_no = min(failures + 1, len(self._backoff))  # visible desde que se detecta la pérdida
             while True:
                 if failures >= len(self._backoff):
+                    self._attempt_no = 0
                     self._exhausted = True
                     self.audit.emit("reconnect_exhausted", attempts=len(self._backoff))
                     return  # FAILED con las conexiones conservadas: se reanuda con un «Iniciar» manual
                 delay = self._backoff[failures]
                 failures += 1
+                self._attempt_no = failures
                 self.audit.emit("relay_reconnect", attempt=failures, max_attempts=len(self._backoff), delay_s=int(delay))
                 await self._sleep(delay)
                 outcome = await self._attempt()
                 if outcome == "ready":
                     ready_at = self._now()
+                    self._attempt_no = 0
                     break
                 if outcome == "permanent":
+                    self._attempt_no = 0
                     return
 
     async def _attempt(self) -> AttemptOutcome:
@@ -262,6 +268,8 @@ class SignerRuntime:
         signer = self.service.status()
         if self._supervisor_alive and not self.service.running:
             signer["state"] = "reconnecting"  # esperando o reintentando la conexión con el relay
+            if self._attempt_no:
+                signer["reconnect_attempt"], signer["reconnect_max"] = self._attempt_no, len(self._backoff)  # «intento n de 5» (P-49)
         elif self._exhausted:
             signer["end_reason"] = "reconexion_agotada"  # FAILED, con las conexiones conservadas: «Iniciar» las reanuda
         base["signer"] = signer
