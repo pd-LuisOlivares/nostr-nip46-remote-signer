@@ -2,6 +2,37 @@
 
 Firmante remoto (*remote signer*) Nostr conforme a **NIP-46**, en Python (FastAPI, SQLite, Docker Compose), para iniciar sesión en Stacker News con una identidad Nostr sin entregarle la clave privada.
 
+### Alcance, supuestos y tradeoffs
+
+**Qué exige la prueba y cómo se cumple.**
+
+| Exigencia | Cómo se cumple |
+|---|---|
+| Aplicación mínima en Python, Rust, Elixir o Go | **Python 3.12** (FastAPI, SQLite, Docker Compose, pytest) |
+| Crear o ingresar una clave secreta Nostr | En la interfaz web: «Crear identidad temporal» o importar una clave (hex o `nsec`); vive solo en memoria (paso 7) |
+| Firmante NIP-46 propio | `app/nostr/` y `app/services/signer.py`: `connect`, `get_public_key`, `sign_event` (solo `kind 27235`) y `ping`, con URI `bunker://`, NIP-44 y NIP-04 entrante. No existe un firmante NIP-46 ni NIP-44 en PyPI, así que se implementaron con bibliotecas criptográficas establecidas (D-1) |
+| Autenticación real en Stacker News | Dos ejecuciones del propietario (2026-11-21 y 2026-11-22) en las que Stacker News mostró una sesión; solo la primera tiene auditoría del firmante sanitizada, y ninguna tiene captura (§2). Las pruebas automatizadas **no** la demuestran |
+| README breve, supuestos, tradeoffs y registros de conversaciones con IA | Este resumen, §13 y [`docs/decisions.md`](docs/decisions.md); [`docs/ai-log.md`](docs/ai-log.md) y `docs/ai-sessions/` (con lo que está **parcial o no recuperado**, indicado allí) |
+
+**Por qué Python.** Motivos declarados por el propietario: entre los lenguajes que permitía la prueba (Python, Rust, Elixir y Go) era el que **más conocía**; ya lo había usado antes, aunque con **experiencia práctica limitada**; le resultaba familiar su sintaxis basada en indentación, y permitía usar **FastAPI**. Quedó fijado como stack en `AGENTS.md` §2 y D-6. Dato técnico verificado, que no es el motivo de la elección: `coincurve` y `cryptography` cubren BIP-340, ECDH, ChaCha20 y HKDF y se validaron en el laboratorio contra NDK 2.12.2, el cliente que usa Stacker News (D-1).
+
+**Funcionalidades adicionales y por qué.**
+- **Ingreso del administrador** (usuario y contraseña con Argon2id en SQLite, sesión JWT): la interfaz que aprueba firmas controla una clave privada, así que su acceso debe estar protegido. JWT estaba previsto en `AGENTS.md`; SQLite y Argon2id se pidieron como requisito de alcance (D-8, D-9).
+- **Aprobación humana de cada `connect` y `sign_event`**, política de 11 comprobaciones y revalidación justo antes de firmar: la clave no firma nada que una persona no haya revisado (D-10).
+- **Modo continuo** con reconexión acotada, límites de frecuencia y revocación individual: permite dejar el firmante activo sin una ventana de tiempo obligatoria (D-17).
+- **Perfil de evaluación con Docker Compose** y credenciales de demostración públicas: el evaluador lo usa solo desde el navegador (D-18).
+- **Laboratorio `lab/` y cliente NIP-46 de laboratorio**: comprueban la interoperabilidad con NDK sin servicios externos; `app/` nunca los importa (D-13).
+
+**Fuera de alcance, a propósito.** Persistir o cifrar claves privadas (D-3); multiusuario y recuperación de contraseña (D-9, P-39); firma automática o aprobaciones persistentes (D-17.3); firmar otros `kind` distintos de 27235; varios relays o conmutación entre ellos; renovar una conexión caducada o revocada con la misma clave de cliente (P-47); un límite propio para remitentes no autorizados (P-48).
+
+**Decisiones de seguridad.** Clave privada solo en memoria (D-3); contraseña con Argon2id (RFC 9106, perfil de baja memoria) y sesión JWT HS256 en cookie `HttpOnly` y `SameSite=Strict` con CSRF (D-8, D-9); aprobación humana individual (D-10); relay `wss://` con TLS verificado (D-7); puerto publicado solo en `127.0.0.1`; contenedor sin root, de solo lectura y sin capacidades; registros sin secretos; ningún secreto en el repositorio (la contraseña del perfil de evaluación es pública a propósito y solo vale para uso local, D-18). Diseño completo: [`docs/nip46-security-design.md`](docs/nip46-security-design.md).
+
+**Supuestos y tradeoffs principales.**
+- *Supuesto observado, no garantizado:* Stacker News usa `bunker://` con `connect` en NIP-04 y el resto en NIP-44 ([`docs/stacker-news-compatibility.md`](docs/stacker-news-compatibility.md)); su interfaz puede cambiar. *Sin verificar:* que reutilice su clave de cliente en inicios posteriores y que el reloj de Docker coincida con el del equipo (D-17).
+- *Seguridad frente a comodidad:* aprobar cada firma exige actuar rápido (el evento caduca a los 120 s) y la identidad se pierde al reiniciar el contenedor (D-3).
+- *Simplicidad frente a robustez:* un solo administrador y un solo proceso; dependencias fijadas por versión **sin hashes** y base de imagen mutable (D-6).
+- Lista completa de limitaciones en §13; decisiones, alternativas descartadas y supuestos por fase en [`docs/decisions.md`](docs/decisions.md).
+
 ## Instalación oficial
 
 Hay **una sola instalación oficial**: el firmante NIP-46 en <http://127.0.0.1:8000>, con el administrador `evaluador` y las credenciales de demostración de este README, SQLite en un volumen Docker, **modo continuo** y **aprobación humana de cada `connect` y de cada `sign_event`**. Después del comando de arranque todo se hace desde el navegador: no hace falta PowerShell, ningún script ni un asistente de IA.

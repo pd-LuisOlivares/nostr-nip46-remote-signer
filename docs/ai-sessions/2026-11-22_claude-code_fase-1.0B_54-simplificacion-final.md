@@ -9,7 +9,7 @@
 | Nivel de razonamiento | high (campo `effort` de los registros de sesión) |
 | Sesión | 97ea8763-694e-4b53-8496-52b85c37bc64 |
 | Origen de la transcripción | Archivo de sesión local de Claude Code (JSONL), extraído con `tools/ai_sessions.py`; no reconstruido |
-| Hasta (UTC) | 2026-11-22T13:03:32.487Z |
+| Hasta (UTC) | 2026-11-22T13:04:03.996Z |
 | Estado | PARCIAL (la sesión de origen sigue abierta: se reexporta al cerrarla) |
 
 **Qué contiene y qué no.** Prompts del propietario (sin las etiquetas `pasted_content`, los bloques del editor ni los recordatorios del sistema) y todo el texto visible de las respuestas de Claude Code, en orden. Las llamadas a herramientas se indican con una línea de marcador; su contenido y sus salidas **no** se incluyen (los archivos resultantes están en el repositorio y los resultados de las pruebas, en `docs/decisions.md`). **No se incluye razonamiento interno del modelo** ni contexto del sistema. Las marcas `<!-- fecha -->` son del archivo de sesión. Se omiten 8 notificaciones automáticas de tareas en segundo plano y 1 resumen(es) de continuación generado(s) por la compactación del contexto: no son mensajes del propietario ni del asistente.
@@ -608,3 +608,35 @@ Verifico primero las condiciones (HEAD, árbol limpio, remoto sin avanzar, secre
 > *[Llamada a herramienta: Bash]*
 
 > *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+> *[Llamada a herramienta: Bash]*
+
+<!-- 2026-11-22T13:04:03.996Z -->
+**Publicado.** El push normal (sin force) a `origin/main` quedó en el SHA `93c4f52821a9cba5059b4d3d14db1616b856c5c7`, que avanzó desde `70b4481`. Después del push, `HEAD`, `origin/main` y el remoto (`git ls-remote`) coinciden, hay 0 commits de diferencia y el árbol está limpio.
+
+Se publicaron 10 commits: tus 9 hasta `1a44810` más `93c4f52`, que solo actualiza la transcripción 54 y corrige un campo de su entrada en el registro. No toqué B6.2: su contenedor sigue sano, con el mismo arranque y 0 reinicios. Tampoco alteré bases ni volúmenes.
+
+## Verificaciones previas al push
+| Condición | Resultado |
+|---|---|
+| 1. HEAD | `1a44810` al inicio; luego `93c4f52`, un commit posterior solo de trazabilidad |
+| 2. Árbol limpio y remoto sin avanzar | 0 cambios pendientes; `origin/main` seguía en `70b4481`, con 0 commits por detrás, antes y justo antes del push |
+| 3. Secretos | Sin archivos sensibles por tipo. Los 4 avisos del escáner son contraseñas de juguete de las pruebas, ya revisadas. La contraseña de `b62-admin` no está en el árbol ni en la historia (18 commits). `deploy/demo.env` lleva la credencial pública a propósito |
+| 4. README oficial | Comando único con `-p nip46-evaluacion`, `http://127.0.0.1:8000`, usuario `evaluador` y modo continuo. SQLite en el volumen `nip46-evaluacion_app_data`. `deploy/` solo contiene `demo.env` |
+| 5. Evidencias | `docs/evidence/evaluador-instalacion-oficial-2026-11-22.md` (36 comprobaciones, 0 fallidas) y los resultados del clon limpio (1025 passed, 34 skipped, 0 failed y las 36 comprobaciones desde el clon), en el README y en el registro de IA |
+| 6. Transcripciones | Reexportadas redactadas; el escáner dijo «sin hallazgos» |
+| 7. `check` y `git diff --check` | `check` dio «trazabilidad OK» inmediatamente después de exportar; `git diff --check` limpio |
+
+## Pendiente de trazabilidad
+- **Transcripciones 50–54 siguen PARCIALES**, porque esta sesión sigue abierta. La 54 incluye tu autorización de publicación hasta donde el historial lo permitía al exportar. No declaré completa ninguna sesión abierta.
+- `check` vuelve a marcar la 54 como desactualizada (por unos segundos) porque la sesión siguió generando historial tras el commit. Al cerrar la sesión hay que reexportarlas y ejecutar `check` otra vez. Ese ajuste irá en un commit posterior solo de documentación, que no publiqué.
+- **Siguen en tus manos:**
+  - Detener el firmante de B6.2 y cambiar la contraseña de `b62-admin`.
+  - Decidir sobre el correo de autoría en la historia pública y la publicación de las transcripciones.
+  - Decidir P-47 y P-48.
+  - Dependencias sin hashes y base mutable (D-6).
+  - Aportar la evidencia técnica de la validación real, que solo tú tienes.

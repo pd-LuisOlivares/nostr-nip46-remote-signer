@@ -190,6 +190,22 @@
       "phase": "1.0B",
       "slug": "simplificacion-final",
       "title": "Revisión final de los commits locales y simplificación final de la instalación oficial (D-20), con verificación del usuario evaluador en SQLite"
+    },
+    {
+      "n": "55",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T13:07:31.955Z",
+      "phase": "1.0B",
+      "slug": "auditoria-cierre-documental",
+      "title": "Auditoría final de cumplimiento y cierre documental acotado (README, ChatGPT, procedimiento de cierre)"
+    },
+    {
+      "n": "56",
+      "session": "97ea8763-694e-4b53-8496-52b85c37bc64",
+      "start_utc": "2026-11-22T13:23:46.010Z",
+      "phase": "1.0B",
+      "slug": "cierre-trazabilidad",
+      "title": "Cierre de trazabilidad: procedimiento y script de reexportación, y publicación documental autorizada"
     }
   ]
 }
